@@ -184,34 +184,31 @@ function ProjectDetailPage() {
             </Button>
           </div>
         ) : (
-          <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
-            {tasks.map((t) => {
-              const names = (assigneeMap[t.id] ?? []).map((id) => memberById.get(id)).filter(Boolean) as string[];
-              return (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    onClick={() => openEdit(t)}
-                    className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/40"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{t.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {names.length ? names.join(", ") : "Unassigned"}
-                        {t.due_date ? ` · Due ${new Date(t.due_date).toLocaleDateString()}` : ""}
-                      </p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityPill(t.priority)}`}>
-                      {t.priority}
-                    </span>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(t.status)}`}>
-                      {statusLabel(t.status)}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <Tabs defaultValue="open">
+            <TabsList>
+              <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
+              <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="open" className="mt-4">
+              <TaskList
+                tasks={openTasks}
+                assigneeMap={assigneeMap}
+                memberById={memberById}
+                onToggle={(t) => toggleDone.mutate(t)}
+                onEdit={openEdit}
+              />
+            </TabsContent>
+            <TabsContent value="completed" className="mt-4">
+              <TaskList
+                tasks={doneTasks}
+                assigneeMap={assigneeMap}
+                memberById={memberById}
+                onToggle={(t) => toggleDone.mutate(t)}
+                onEdit={openEdit}
+                emptyText="No completed tasks yet."
+              />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
 
