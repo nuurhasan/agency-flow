@@ -226,6 +226,69 @@ function ProjectDetailPage() {
   );
 }
 
+function TaskList({
+  tasks,
+  assigneeMap,
+  memberById,
+  onToggle,
+  onEdit,
+  emptyText = "Nothing here.",
+}: {
+  tasks: TaskRow[];
+  assigneeMap: Record<string, string[]>;
+  memberById: Map<string, string>;
+  onToggle: (t: TaskRow) => void;
+  onEdit: (t: TaskRow) => void;
+  emptyText?: string;
+}) {
+  if (!tasks.length) {
+    return (
+      <p className="rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
+        {emptyText}
+      </p>
+    );
+  }
+  return (
+    <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
+      {tasks.map((t) => {
+        const names = (assigneeMap[t.id] ?? []).map((id) => memberById.get(id)).filter(Boolean) as string[];
+        const done = t.status === "done";
+        return (
+          <li key={t.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
+            <Checkbox
+              checked={done}
+              onCheckedChange={() => onToggle(t)}
+              aria-label={done ? "Mark as not done" : "Mark as done"}
+              className="h-5 w-5 rounded-md"
+            />
+            <button
+              type="button"
+              onClick={() => onEdit(t)}
+              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+            >
+              <div className="min-w-0 flex-1">
+                <p className={`truncate font-medium ${done ? "text-muted-foreground line-through" : ""}`}>
+                  {t.title}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {names.length ? names.join(", ") : "Unassigned"}
+                  {t.due_date ? ` · Due ${new Date(t.due_date).toLocaleDateString()}` : ""}
+                </p>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityPill(t.priority)}`}>
+                {t.priority}
+              </span>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(t.status)}`}>
+                {statusLabel(t.status)}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function priorityPill(p: "low" | "medium" | "high") {
   switch (p) {
     case "high":
