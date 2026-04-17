@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, FolderKanban, ListChecks, Globe2, Users, Settings, LogOut, Sparkles } from "lucide-react";
+import { LayoutDashboard, FolderKanban, ListChecks, Globe2, Users, Settings, LogOut, Sparkles, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -18,6 +20,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { profile, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { data: expiringCount = 0 } = useQuery({
+    queryKey: ["nav-domains-expiring"],
+    queryFn: async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
+      const { count } = await supabase
+        .from("client_domains")
+        .select("id", { count: "exact", head: true })
+        .gte("domain_expiry", today)
+        .lte("domain_expiry", sixtyAhead)
+        .eq("renewed", false);
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
 
   const initials = (profile?.name || profile?.email || "?")
     .split(/\s+/)
@@ -63,6 +81,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            <Link
+              to="/hosting"
+              className={cn(
+                "hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                expiringCount > 0
+                  ? "bg-coral text-coral-ink hover:bg-coral/90"
+                  : "bg-mint text-mint-ink hover:bg-mint/90",
+              )}
+              title={expiringCount > 0 ? `${expiringCount} domain${expiringCount === 1 ? "" : "s"} expiring within 60 days` : "No domains expiring soon"}
+            >
+              <AlertCircle className="h-3.5 w-3.5" />
+              {expiringCount} expiring
+            </Link>
             <Avatar className="h-9 w-9 border border-border">
               <AvatarFallback className="bg-peach text-peach-ink text-xs font-semibold">
                 {initials}

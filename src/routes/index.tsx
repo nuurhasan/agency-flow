@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, CheckCircle2, FolderKanban, Globe2, Plus, TrendingUp } from "lucide-react";
+import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
@@ -25,9 +25,7 @@ function Dashboard() {
     queryKey: ["dash-counters"],
     queryFn: async () => {
       const sevenAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
-      const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
-      const today = new Date().toISOString().slice(0, 10);
-      const [a, b, c, d] = await Promise.all([
+      const [a, b, c] = await Promise.all([
         supabase.from("projects").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
         supabase
@@ -35,18 +33,11 @@ function Dashboard() {
           .select("id", { count: "exact", head: true })
           .eq("status", "done")
           .gte("completed_at", sevenAgo),
-        supabase
-          .from("client_domains")
-          .select("id", { count: "exact", head: true })
-          .gte("domain_expiry", today)
-          .lte("domain_expiry", sixtyAhead)
-          .eq("renewed", false),
       ]);
       return {
         active: a.count ?? 0,
         inProgress: b.count ?? 0,
         completed: c.count ?? 0,
-        expiring: d.count ?? 0,
       };
     },
   });
@@ -110,35 +101,7 @@ function Dashboard() {
     },
   });
 
-  const { data: domains } = useQuery({
-    queryKey: ["dash-domains"],
-    queryFn: async () => {
-      const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from("client_domains")
-        .select("id,client_name,domain,domain_expiry,renewed")
-        .lte("domain_expiry", sixtyAhead)
-        .eq("renewed", false)
-        .order("domain_expiry", { ascending: true })
-        .limit(8);
-      const rows = data ?? [];
-      const domainIds = rows.map((r) => r.id);
-      const { data: assignRows } = domainIds.length
-        ? await supabase.from("domain_assignees").select("domain_id,user_id").in("domain_id", domainIds)
-        : { data: [] };
-      const userIds = Array.from(new Set((assignRows ?? []).map((a) => a.user_id)));
-      const { data: profs } = userIds.length
-        ? await supabase.from("profiles").select("id,name").in("id", userIds)
-        : { data: [] };
-      const profMap = new Map((profs ?? []).map((p) => [p.id, p.name] as const));
-      const ownersByDomain = (assignRows ?? []).reduce<Record<string, string[]>>((acc, a) => {
-        const n = profMap.get(a.user_id);
-        if (n) (acc[a.domain_id] ??= []).push(n);
-        return acc;
-      }, {});
-      return rows.map((r) => ({ ...r, owners: ownersByDomain[r.id] ?? [] }));
-    },
-  });
+
 
   type DashTask = NonNullable<typeof dash>["tasks"][number];
   const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, DashTask[]>>((acc, t) => {
@@ -162,11 +125,10 @@ function Dashboard() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Counter color="mint" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
         <Counter color="sky" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} />
         <Counter color="lavender" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
-        <Counter color="coral" icon={<Globe2 />} label="Domains expiring" value={counters?.expiring ?? 0} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -270,51 +232,8 @@ function Dashboard() {
               </ul>
             )}
           </div>
-
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold">Domains expiring</h2>
-              <Link to="/hosting" className="text-xs text-muted-foreground hover:text-foreground">
-                All
-              </Link>
-            </div>
-            {!domains?.length ? (
-              <p className="text-sm text-muted-foreground">Nothing expiring in the next 60 days. ✨</p>
-            ) : (
-              <ul className="space-y-3">
-                {domains.map((d) => {
-                  const days = d.domain_expiry
-                    ? Math.ceil((new Date(d.domain_expiry).getTime() - Date.now()) / 86400_000)
-                    : null;
-                  const urgency =
-                    days === null
-                      ? "bg-muted text-muted-foreground"
-                      : days < 0
-                      ? "bg-destructive/15 text-destructive"
-                      : days <= 30
-                      ? "bg-coral text-coral-ink"
-                      : "bg-butter text-butter-ink";
-                  const owner = d.owners[0];
-                  return (
-                    <li key={d.id} className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{d.domain}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {d.client_name}
-                          {owner ? ` · ${owner}` : ""}
-                        </p>
-                      </div>
-                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${urgency}`}>
-                        <Calendar className="mr-1 inline h-3 w-3" />
-                        {days === null ? "—" : days < 0 ? "Expired" : `${days}d`}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
         </div>
+
       </div>
     </div>
   );

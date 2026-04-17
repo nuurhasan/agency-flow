@@ -1,5 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import * as React from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Plus } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
+import { TaskDialog } from "@/components/TaskDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 
 export const Route = createFileRoute("/projects/$projectId")({
   component: () => (
@@ -10,14 +17,195 @@ export const Route = createFileRoute("/projects/$projectId")({
   head: () => ({ meta: [{ title: "Project — Studio" }] }),
 });
 
+type TaskRow = {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  status: "todo" | "in_progress" | "waiting" | "done";
+  priority: "low" | "medium" | "high";
+  due_date: string | null;
+  updated_at: string;
+};
+
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
+  const [taskOpen, setTaskOpen] = React.useState(false);
+  const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
+  const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
+
+  const { data: project } = useQuery({
+    queryKey: ["project", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("projects")
+        .select("id,name,color,client_name,status,service_type,description,due_date")
+        .eq("id", projectId)
+        .maybeSingle();
+      return data;
+    },
+  });
+
+  const { data: tasks = [] } = useQuery({
+    queryKey: ["project-tasks", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tasks")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at")
+        .eq("project_id", projectId)
+        .order("updated_at", { ascending: false });
+      return (data ?? []) as TaskRow[];
+    },
+  });
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["members"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id,name").order("name");
+      return data ?? [];
+    },
+  });
+
+  const taskIds = tasks.map((t) => t.id);
+  const { data: assigneeMap = {} } = useQuery({
+    queryKey: ["project-task-assignees", projectId, taskIds.join(",")],
+    enabled: taskIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("task_assignees")
+        .select("task_id,user_id")
+        .in("task_id", taskIds);
+      return (data ?? []).reduce<Record<string, string[]>>((acc, r) => {
+        (acc[r.task_id] ??= []).push(r.user_id);
+        return acc;
+      }, {});
+    },
+  });
+
+  const memberById = new Map(members.map((m) => [m.id, m.name] as const));
+
+  const openNew = () => {
+    setEditingTask(null);
+    setEditingAssignees([]);
+    setTaskOpen(true);
+  };
+
+  const openEdit = (t: TaskRow) => {
+    setEditingTask(t);
+    setEditingAssignees(assigneeMap[t.id] ?? []);
+    setTaskOpen(true);
+  };
+
+  if (!project) {
+    return (
+      <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
+        <p className="font-display text-lg font-semibold">Project not found</p>
+        <Button asChild variant="ghost" className="mt-3">
+          <Link to="/projects"><ArrowLeft className="h-4 w-4" /> Back to projects</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
-      <p className="font-display text-xl font-semibold">Project detail coming next</p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        Tasks, credentials, and details for project <code className="rounded bg-muted px-1.5">{projectId}</code> will live here.
-      </p>
+    <div className="space-y-6">
+      <Link to="/projects" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" /> All projects
+      </Link>
+
+      <div className="flex flex-wrap items-start gap-4 rounded-3xl border border-border bg-card p-6 shadow-soft">
+        <span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${pastelClasses(project.color)} text-xl font-bold`}>
+          {project.name.charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-display text-2xl font-bold tracking-tight">{project.name}</h1>
+            <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(project.status)}`}>
+              {statusLabel(project.status)}
+            </span>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+              {project.service_type}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {project.client_name || "No client"}
+            {project.due_date ? ` · Due ${new Date(project.due_date).toLocaleDateString()}` : ""}
+          </p>
+          {project.description && (
+            <p className="mt-3 text-sm text-foreground/80">{project.description}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold">Tasks</h2>
+          <Button onClick={openNew} className="rounded-full">
+            <Plus className="h-4 w-4" /> New task
+          </Button>
+        </div>
+
+        {tasks.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
+            <p className="font-display text-lg font-semibold">No tasks yet</p>
+            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+              Create the first task to start tracking work for this project.
+            </p>
+            <Button onClick={openNew} className="mt-4 rounded-full">
+              <Plus className="h-4 w-4" /> Add a task
+            </Button>
+          </div>
+        ) : (
+          <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
+            {tasks.map((t) => {
+              const names = (assigneeMap[t.id] ?? []).map((id) => memberById.get(id)).filter(Boolean) as string[];
+              return (
+                <li key={t.id}>
+                  <button
+                    type="button"
+                    onClick={() => openEdit(t)}
+                    className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/40"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{t.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {names.length ? names.join(", ") : "Unassigned"}
+                        {t.due_date ? ` · Due ${new Date(t.due_date).toLocaleDateString()}` : ""}
+                      </p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityPill(t.priority)}`}>
+                      {t.priority}
+                    </span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(t.status)}`}>
+                      {statusLabel(t.status)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      <TaskDialog
+        open={taskOpen}
+        onOpenChange={setTaskOpen}
+        projectId={projectId}
+        task={editingTask}
+        members={members}
+        initialAssignees={editingAssignees}
+      />
     </div>
   );
+}
+
+function priorityPill(p: "low" | "medium" | "high") {
+  switch (p) {
+    case "high":
+      return "bg-coral text-coral-ink";
+    case "medium":
+      return "bg-butter text-butter-ink";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
 }
