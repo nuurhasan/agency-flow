@@ -25,9 +25,7 @@ function Dashboard() {
     queryKey: ["dash-counters"],
     queryFn: async () => {
       const sevenAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
-      const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
-      const today = new Date().toISOString().slice(0, 10);
-      const [a, b, c, d] = await Promise.all([
+      const [a, b, c] = await Promise.all([
         supabase.from("projects").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
         supabase
@@ -35,18 +33,11 @@ function Dashboard() {
           .select("id", { count: "exact", head: true })
           .eq("status", "done")
           .gte("completed_at", sevenAgo),
-        supabase
-          .from("client_domains")
-          .select("id", { count: "exact", head: true })
-          .gte("domain_expiry", today)
-          .lte("domain_expiry", sixtyAhead)
-          .eq("renewed", false),
       ]);
       return {
         active: a.count ?? 0,
         inProgress: b.count ?? 0,
         completed: c.count ?? 0,
-        expiring: d.count ?? 0,
       };
     },
   });
