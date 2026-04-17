@@ -269,51 +269,8 @@ function Dashboard() {
               </ul>
             )}
           </div>
-
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold">Domains expiring</h2>
-              <Link to="/hosting" className="text-xs text-muted-foreground hover:text-foreground">
-                All
-              </Link>
-            </div>
-            {!domains?.length ? (
-              <p className="text-sm text-muted-foreground">Nothing expiring in the next 60 days. ✨</p>
-            ) : (
-              <ul className="space-y-3">
-                {domains.map((d) => {
-                  const days = d.domain_expiry
-                    ? Math.ceil((new Date(d.domain_expiry).getTime() - Date.now()) / 86400_000)
-                    : null;
-                  const urgency =
-                    days === null
-                      ? "bg-muted text-muted-foreground"
-                      : days < 0
-                      ? "bg-destructive/15 text-destructive"
-                      : days <= 30
-                      ? "bg-coral text-coral-ink"
-                      : "bg-butter text-butter-ink";
-                  const owner = d.owners[0];
-                  return (
-                    <li key={d.id} className="flex items-center justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{d.domain}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {d.client_name}
-                          {owner ? ` · ${owner}` : ""}
-                        </p>
-                      </div>
-                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${urgency}`}>
-                        <Calendar className="mr-1 inline h-3 w-3" />
-                        {days === null ? "—" : days < 0 ? "Expired" : `${days}d`}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
         </div>
+
       </div>
     </div>
   );
