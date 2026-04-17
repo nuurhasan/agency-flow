@@ -111,6 +111,8 @@ function ProjectDetailPage() {
   });
 
   const memberById = new Map(members.map((m) => [m.id, m.name] as const));
+  const openTasks = tasks.filter((t) => t.status !== "done");
+  const doneTasks = tasks.filter((t) => t.status === "done");
 
   const openNew = () => {
     setEditingTask(null);
