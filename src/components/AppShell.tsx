@@ -81,6 +81,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            <Link
+              to="/hosting"
+              className={cn(
+                "hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                expiringCount > 0
+                  ? "bg-coral text-coral-ink hover:bg-coral/90"
+                  : "bg-mint text-mint-ink hover:bg-mint/90",
+              )}
+              title={expiringCount > 0 ? `${expiringCount} domain${expiringCount === 1 ? "" : "s"} expiring within 60 days` : "No domains expiring soon"}
+            >
+              <AlertCircle className="h-3.5 w-3.5" />
+              {expiringCount} expiring
+            </Link>
             <Avatar className="h-9 w-9 border border-border">
               <AvatarFallback className="bg-peach text-peach-ink text-xs font-semibold">
                 {initials}
