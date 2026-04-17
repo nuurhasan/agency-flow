@@ -178,13 +178,15 @@ function Dashboard() {
               {dash.projects.map((p) => {
                 const ts = (tasksByProject[p.id] ?? []).slice(0, 3);
                 return (
-                  <Link
+                  <div
                     key={p.id}
-                    to="/projects/$projectId"
-                    params={{ projectId: p.id }}
                     className="group rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:shadow-pop"
                   >
-                    <div className="flex items-start gap-3">
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: p.id }}
+                      className="flex items-start gap-3"
+                    >
                       <span
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${pastelClasses(p.color)} font-bold`}
                       >
@@ -203,29 +205,47 @@ function Dashboard() {
                           {p.client_name || "No client"}
                         </p>
                       </div>
-                    </div>
-                    <div className="mt-4 space-y-1.5">
+                    </Link>
+                    <div className="mt-4 space-y-1">
                       {ts.length === 0 ? (
                         <p className="text-xs italic text-muted-foreground">No tasks yet</p>
                       ) : (
-                        ts.map((t) => (
-                          <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
-                            <span className="truncate">{t.title}</span>
-                            <span className="flex shrink-0 items-center gap-1.5">
-                              {dash.assigneesByTask[t.id]?.[0] && (
-                                <span className="text-[11px] text-muted-foreground">
-                                  {dash.assigneesByTask[t.id][0].split(" ")[0]}
-                                </span>
-                              )}
-                              <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${statusPillClasses(t.status)}`}>
-                                {statusLabel(t.status)}
+                        ts.map((t) => {
+                          const done = t.status === "done";
+                          return (
+                            <div key={t.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm hover:bg-muted/40">
+                              <Checkbox
+                                checked={done}
+                                onCheckedChange={() =>
+                                  toggleDone.mutate({
+                                    id: t.id,
+                                    project_id: t.project_id,
+                                    title: t.title,
+                                    status: t.status,
+                                  })
+                                }
+                                aria-label={done ? "Mark as not done" : "Mark as done"}
+                                className="h-4 w-4 rounded"
+                              />
+                              <span className={`min-w-0 flex-1 truncate ${done ? "text-muted-foreground line-through" : ""}`}>
+                                {t.title}
                               </span>
-                            </span>
-                          </div>
-                        ))
+                              <span className="flex shrink-0 items-center gap-1.5">
+                                {dash.assigneesByTask[t.id]?.[0] && (
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {dash.assigneesByTask[t.id][0].split(" ")[0]}
+                                  </span>
+                                )}
+                                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${statusPillClasses(t.status)}`}>
+                                  {statusLabel(t.status)}
+                                </span>
+                              </span>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
