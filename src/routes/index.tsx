@@ -140,7 +140,8 @@ function Dashboard() {
     },
   });
 
-  const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, typeof dash.tasks>>((acc, t) => {
+  type DashTask = NonNullable<typeof dash>["tasks"][number];
+  const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, DashTask[]>>((acc, t) => {
     (acc[t.project_id] ??= []).push(t);
     return acc;
   }, {});
