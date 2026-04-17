@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { format, formatDistanceToNow, isAfter } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { Calendar, CheckCircle2, FolderKanban, Globe2, Plus, TrendingUp } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,8 +30,17 @@ function Dashboard() {
       const [a, b, c, d] = await Promise.all([
         supabase.from("projects").select("id", { count: "exact", head: true }).eq("status", "active"),
         supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "in_progress"),
-        supabase.from("tasks").select("id", { count: "exact", head: true }).eq("status", "done").gte("completed_at", sevenAgo),
-        supabase.from("client_domains").select("id", { count: "exact", head: true }).gte("domain_expiry", today).lte("domain_expiry", sixtyAhead).eq("renewed", false),
+        supabase
+          .from("tasks")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "done")
+          .gte("completed_at", sevenAgo),
+        supabase
+          .from("client_domains")
+          .select("id", { count: "exact", head: true })
+          .gte("domain_expiry", today)
+          .lte("domain_expiry", sixtyAhead)
+          .eq("renewed", false),
       ]);
       return {
         active: a.count ?? 0,
@@ -42,7 +51,7 @@ function Dashboard() {
     },
   });
 
-  const { data: projects } = useQuery({
+  const { data: dash } = useQuery({
     queryKey: ["dash-projects"],
     queryFn: async () => {
       const { data: projs } = await supabase
@@ -51,21 +60,35 @@ function Dashboard() {
         .neq("status", "archived")
         .order("updated_at", { ascending: false })
         .limit(9);
-      const ids = (projs ?? []).map((p) => p.id);
-      const { data: tasks } = ids.length
+      const projects = projs ?? [];
+      const ids = projects.map((p) => p.id);
+
+      const { data: taskRows } = ids.length
         ? await supabase
             .from("tasks")
             .select("id,project_id,title,status,updated_at")
             .in("project_id", ids)
             .order("updated_at", { ascending: false })
-        : { data: [] as never[] };
-      const { data: assignees } = ids.length
-        ? await supabase
-            .from("task_assignees")
-            .select("task_id,user_id,profiles:profiles!task_assignees_user_id_fkey(name)")
-            .in("task_id", (tasks ?? []).map((t) => t.id))
-        : { data: [] as never[] };
-      return { projs: projs ?? [], tasks: tasks ?? [], assignees: (assignees ?? []) as Array<{ task_id: string; user_id: string; profiles: { name: string } | null }> };
+        : { data: [] };
+      const tasks = taskRows ?? [];
+
+      const taskIds = tasks.map((t) => t.id);
+      const { data: assignRows } = taskIds.length
+        ? await supabase.from("task_assignees").select("task_id,user_id").in("task_id", taskIds)
+        : { data: [] };
+      const userIds = Array.from(new Set((assignRows ?? []).map((a) => a.user_id)));
+      const { data: profRows } = userIds.length
+        ? await supabase.from("profiles").select("id,name").in("id", userIds)
+        : { data: [] };
+      const profMap = new Map((profRows ?? []).map((p) => [p.id, p.name] as const));
+      const assigneesByTask = (assignRows ?? []).reduce<Record<string, string[]>>((acc, a) => {
+        const name = profMap.get(a.user_id);
+        if (!name) return acc;
+        (acc[a.task_id] ??= []).push(name);
+        return acc;
+      }, {});
+
+      return { projects, tasks, assigneesByTask };
     },
   });
 
@@ -74,16 +97,16 @@ function Dashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("activity_log")
-        .select("id,action,meta,created_at,actor_id,project_id,task_id,profiles:profiles!activity_log_actor_id_fkey(name)")
+        .select("id,action,meta,created_at,actor_id")
         .order("created_at", { ascending: false })
         .limit(12);
-      return (data ?? []) as Array<{
-        id: string;
-        action: string;
-        meta: Record<string, unknown> | null;
-        created_at: string;
-        profiles: { name: string } | null;
-      }>;
+      const rows = data ?? [];
+      const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]));
+      const { data: profs } = actorIds.length
+        ? await supabase.from("profiles").select("id,name").in("id", actorIds)
+        : { data: [] };
+      const map = new Map((profs ?? []).map((p) => [p.id, p.name] as const));
+      return rows.map((r) => ({ ...r, actorName: r.actor_id ? map.get(r.actor_id) ?? null : null }));
     },
   });
 
@@ -93,38 +116,43 @@ function Dashboard() {
       const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
       const { data } = await supabase
         .from("client_domains")
-        .select("id,client_name,domain,domain_expiry,renewed,domain_assignees(user_id,profiles:profiles!domain_assignees_user_id_fkey(name))")
+        .select("id,client_name,domain,domain_expiry,renewed")
         .lte("domain_expiry", sixtyAhead)
         .eq("renewed", false)
         .order("domain_expiry", { ascending: true })
         .limit(8);
-      return (data ?? []) as Array<{
-        id: string;
-        client_name: string;
-        domain: string;
-        domain_expiry: string | null;
-        renewed: boolean;
-        domain_assignees: Array<{ user_id: string; profiles: { name: string } | null }>;
-      }>;
+      const rows = data ?? [];
+      const domainIds = rows.map((r) => r.id);
+      const { data: assignRows } = domainIds.length
+        ? await supabase.from("domain_assignees").select("domain_id,user_id").in("domain_id", domainIds)
+        : { data: [] };
+      const userIds = Array.from(new Set((assignRows ?? []).map((a) => a.user_id)));
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("id,name").in("id", userIds)
+        : { data: [] };
+      const profMap = new Map((profs ?? []).map((p) => [p.id, p.name] as const));
+      const ownersByDomain = (assignRows ?? []).reduce<Record<string, string[]>>((acc, a) => {
+        const n = profMap.get(a.user_id);
+        if (n) (acc[a.domain_id] ??= []).push(n);
+        return acc;
+      }, {});
+      return rows.map((r) => ({ ...r, owners: ownersByDomain[r.id] ?? [] }));
     },
   });
 
-  const tasksByProject = (projects?.tasks ?? []).reduce<Record<string, typeof projects.tasks>>((acc, t) => {
+  const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, typeof dash.tasks>>((acc, t) => {
     (acc[t.project_id] ??= []).push(t);
-    return acc;
-  }, {});
-  const assigneeNamesByTask = (projects?.assignees ?? []).reduce<Record<string, string[]>>((acc, a) => {
-    if (!a.profiles?.name) return acc;
-    (acc[a.task_id] ??= []).push(a.profiles.name);
     return acc;
   }, {});
 
   return (
     <div className="space-y-8">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-4xl font-bold tracking-tight">Hey there ✦</h1>
-          <p className="mt-1 text-muted-foreground">Everything happening across the agency, at a glance.</p>
+          <p className="mt-1 text-muted-foreground">
+            Everything happening across the agency, at a glance.
+          </p>
         </div>
         <Button asChild className="rounded-full" size="lg">
           <Link to="/projects">
@@ -133,7 +161,6 @@ function Dashboard() {
         </Button>
       </div>
 
-      {/* Counters */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Counter color="mint" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
         <Counter color="sky" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} />
@@ -142,7 +169,6 @@ function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Projects grid */}
         <div className="lg:col-span-2">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-xl font-semibold">Projects</h2>
@@ -150,7 +176,7 @@ function Dashboard() {
               View all →
             </Link>
           </div>
-          {!projects?.projs.length ? (
+          {!dash?.projects.length ? (
             <EmptyCard
               title="No projects yet"
               body="Create your first project to start tracking work for a client."
@@ -158,7 +184,7 @@ function Dashboard() {
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {projects.projs.map((p) => {
+              {dash.projects.map((p) => {
                 const ts = (tasksByProject[p.id] ?? []).slice(0, 3);
                 return (
                   <Link
@@ -176,11 +202,15 @@ function Dashboard() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <p className="truncate font-semibold">{p.name}</p>
-                          <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}
+                          >
                             {statusLabel(p.status)}
                           </span>
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">{p.client_name || "No client"}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {p.client_name || "No client"}
+                        </p>
                       </div>
                     </div>
                     <div className="mt-4 space-y-1.5">
@@ -191,9 +221,9 @@ function Dashboard() {
                           <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
                             <span className="truncate">{t.title}</span>
                             <span className="flex shrink-0 items-center gap-1.5">
-                              {assigneeNamesByTask[t.id]?.[0] && (
+                              {dash.assigneesByTask[t.id]?.[0] && (
                                 <span className="text-[11px] text-muted-foreground">
-                                  {assigneeNamesByTask[t.id][0].split(" ")[0]}
+                                  {dash.assigneesByTask[t.id][0].split(" ")[0]}
                                 </span>
                               )}
                               <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${statusPillClasses(t.status)}`}>
@@ -211,12 +241,13 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Side: activity + expiring */}
         <div className="space-y-6">
           <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
             <h2 className="mb-3 font-display text-lg font-semibold">Activity</h2>
             {!activity?.length ? (
-              <p className="text-sm text-muted-foreground">No activity yet — assign a task to start the feed.</p>
+              <p className="text-sm text-muted-foreground">
+                No activity yet — assign a task to start the feed.
+              </p>
             ) : (
               <ul className="space-y-3">
                 {activity.map((a) => (
@@ -224,8 +255,10 @@ function Dashboard() {
                     <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-lavender" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm">
-                        <span className="font-medium">{a.profiles?.name ?? "Someone"}</span>{" "}
-                        <span className="text-muted-foreground">{humanAction(a.action, a.meta)}</span>
+                        <span className="font-medium">{a.actorName ?? "Someone"}</span>{" "}
+                        <span className="text-muted-foreground">
+                          {humanAction(a.action, (a.meta as Record<string, unknown> | null) ?? null)}
+                        </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
@@ -260,7 +293,7 @@ function Dashboard() {
                       : days <= 30
                       ? "bg-coral text-coral-ink"
                       : "bg-butter text-butter-ink";
-                  const owner = d.domain_assignees[0]?.profiles?.name;
+                  const owner = d.owners[0];
                   return (
                     <li key={d.id} className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
@@ -354,7 +387,3 @@ function humanAction(action: string, meta: Record<string, unknown> | null): stri
       return action;
   }
 }
-
-// silence unused import warning for isAfter / format if removed
-void isAfter;
-void format;
