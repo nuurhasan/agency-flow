@@ -24,6 +24,31 @@ function DashboardRoute() {
 }
 
 function Dashboard() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const toggleDone = useMutation({
+    mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
+      const nextStatus = t.status === "done" ? "todo" : "done";
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: nextStatus })
+        .eq("id", t.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          task_id: t.id,
+          project_id: t.project_id,
+          action: nextStatus === "done" ? "task.completed" : "task.updated",
+          meta: { title: t.title },
+        });
+      }
+    },
+    onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
   const { data: counters } = useQuery({
     queryKey: ["dash-counters"],
     queryFn: async () => {
