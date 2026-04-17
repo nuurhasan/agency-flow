@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { Calendar, CheckCircle2, FolderKanban, Globe2, Plus, TrendingUp } from "lucide-react";
+import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
