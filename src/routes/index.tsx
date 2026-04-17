@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/")({
   component: DashboardRoute,
@@ -21,6 +24,31 @@ function DashboardRoute() {
 }
 
 function Dashboard() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const toggleDone = useMutation({
+    mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
+      const nextStatus = t.status === "done" ? "todo" : "done";
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: nextStatus })
+        .eq("id", t.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          task_id: t.id,
+          project_id: t.project_id,
+          action: nextStatus === "done" ? "task.completed" : "task.updated",
+          meta: { title: t.title },
+        });
+      }
+    },
+    onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
   const { data: counters } = useQuery({
     queryKey: ["dash-counters"],
     queryFn: async () => {
@@ -150,13 +178,15 @@ function Dashboard() {
               {dash.projects.map((p) => {
                 const ts = (tasksByProject[p.id] ?? []).slice(0, 3);
                 return (
-                  <Link
+                  <div
                     key={p.id}
-                    to="/projects/$projectId"
-                    params={{ projectId: p.id }}
                     className="group rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:shadow-pop"
                   >
-                    <div className="flex items-start gap-3">
+                    <Link
+                      to="/projects/$projectId"
+                      params={{ projectId: p.id }}
+                      className="flex items-start gap-3"
+                    >
                       <span
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${pastelClasses(p.color)} font-bold`}
                       >
@@ -175,29 +205,47 @@ function Dashboard() {
                           {p.client_name || "No client"}
                         </p>
                       </div>
-                    </div>
-                    <div className="mt-4 space-y-1.5">
+                    </Link>
+                    <div className="mt-4 space-y-1">
                       {ts.length === 0 ? (
                         <p className="text-xs italic text-muted-foreground">No tasks yet</p>
                       ) : (
-                        ts.map((t) => (
-                          <div key={t.id} className="flex items-center justify-between gap-2 text-sm">
-                            <span className="truncate">{t.title}</span>
-                            <span className="flex shrink-0 items-center gap-1.5">
-                              {dash.assigneesByTask[t.id]?.[0] && (
-                                <span className="text-[11px] text-muted-foreground">
-                                  {dash.assigneesByTask[t.id][0].split(" ")[0]}
-                                </span>
-                              )}
-                              <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${statusPillClasses(t.status)}`}>
-                                {statusLabel(t.status)}
+                        ts.map((t) => {
+                          const done = t.status === "done";
+                          return (
+                            <div key={t.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm hover:bg-muted/40">
+                              <Checkbox
+                                checked={done}
+                                onCheckedChange={() =>
+                                  toggleDone.mutate({
+                                    id: t.id,
+                                    project_id: t.project_id,
+                                    title: t.title,
+                                    status: t.status,
+                                  })
+                                }
+                                aria-label={done ? "Mark as not done" : "Mark as done"}
+                                className="h-4 w-4 rounded"
+                              />
+                              <span className={`min-w-0 flex-1 truncate ${done ? "text-muted-foreground line-through" : ""}`}>
+                                {t.title}
                               </span>
-                            </span>
-                          </div>
-                        ))
+                              <span className="flex shrink-0 items-center gap-1.5">
+                                {dash.assigneesByTask[t.id]?.[0] && (
+                                  <span className="text-[11px] text-muted-foreground">
+                                    {dash.assigneesByTask[t.id][0].split(" ")[0]}
+                                  </span>
+                                )}
+                                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${statusPillClasses(t.status)}`}>
+                                  {statusLabel(t.status)}
+                                </span>
+                              </span>
+                            </div>
+                          );
+                        })
                       )}
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>

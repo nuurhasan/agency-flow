@@ -1,11 +1,15 @@
 import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ArrowLeft, Plus } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 
 export const Route = createFileRoute("/projects/$projectId")({
@@ -30,9 +34,33 @@ type TaskRow = {
 
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [taskOpen, setTaskOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
+
+  const toggleDone = useMutation({
+    mutationFn: async (t: TaskRow) => {
+      const nextStatus = t.status === "done" ? "todo" : "done";
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: nextStatus })
+        .eq("id", t.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          task_id: t.id,
+          project_id: t.project_id,
+          action: nextStatus === "done" ? "task.completed" : "task.updated",
+          meta: { title: t.title },
+        });
+      }
+    },
+    onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
 
   const { data: project } = useQuery({
     queryKey: ["project", projectId],
@@ -83,6 +111,8 @@ function ProjectDetailPage() {
   });
 
   const memberById = new Map(members.map((m) => [m.id, m.name] as const));
+  const openTasks = tasks.filter((t) => t.status !== "done");
+  const doneTasks = tasks.filter((t) => t.status === "done");
 
   const openNew = () => {
     setEditingTask(null);
@@ -156,34 +186,31 @@ function ProjectDetailPage() {
             </Button>
           </div>
         ) : (
-          <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
-            {tasks.map((t) => {
-              const names = (assigneeMap[t.id] ?? []).map((id) => memberById.get(id)).filter(Boolean) as string[];
-              return (
-                <li key={t.id}>
-                  <button
-                    type="button"
-                    onClick={() => openEdit(t)}
-                    className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/40"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{t.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {names.length ? names.join(", ") : "Unassigned"}
-                        {t.due_date ? ` · Due ${new Date(t.due_date).toLocaleDateString()}` : ""}
-                      </p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityPill(t.priority)}`}>
-                      {t.priority}
-                    </span>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(t.status)}`}>
-                      {statusLabel(t.status)}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <Tabs defaultValue="open">
+            <TabsList>
+              <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
+              <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="open" className="mt-4">
+              <TaskList
+                tasks={openTasks}
+                assigneeMap={assigneeMap}
+                memberById={memberById}
+                onToggle={(t) => toggleDone.mutate(t)}
+                onEdit={openEdit}
+              />
+            </TabsContent>
+            <TabsContent value="completed" className="mt-4">
+              <TaskList
+                tasks={doneTasks}
+                assigneeMap={assigneeMap}
+                memberById={memberById}
+                onToggle={(t) => toggleDone.mutate(t)}
+                onEdit={openEdit}
+                emptyText="No completed tasks yet."
+              />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
 
@@ -196,6 +223,69 @@ function ProjectDetailPage() {
         initialAssignees={editingAssignees}
       />
     </div>
+  );
+}
+
+function TaskList({
+  tasks,
+  assigneeMap,
+  memberById,
+  onToggle,
+  onEdit,
+  emptyText = "Nothing here.",
+}: {
+  tasks: TaskRow[];
+  assigneeMap: Record<string, string[]>;
+  memberById: Map<string, string>;
+  onToggle: (t: TaskRow) => void;
+  onEdit: (t: TaskRow) => void;
+  emptyText?: string;
+}) {
+  if (!tasks.length) {
+    return (
+      <p className="rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center text-sm text-muted-foreground">
+        {emptyText}
+      </p>
+    );
+  }
+  return (
+    <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
+      {tasks.map((t) => {
+        const names = (assigneeMap[t.id] ?? []).map((id) => memberById.get(id)).filter(Boolean) as string[];
+        const done = t.status === "done";
+        return (
+          <li key={t.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
+            <Checkbox
+              checked={done}
+              onCheckedChange={() => onToggle(t)}
+              aria-label={done ? "Mark as not done" : "Mark as done"}
+              className="h-5 w-5 rounded-md"
+            />
+            <button
+              type="button"
+              onClick={() => onEdit(t)}
+              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+            >
+              <div className="min-w-0 flex-1">
+                <p className={`truncate font-medium ${done ? "text-muted-foreground line-through" : ""}`}>
+                  {t.title}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {names.length ? names.join(", ") : "Unassigned"}
+                  {t.due_date ? ` · Due ${new Date(t.due_date).toLocaleDateString()}` : ""}
+                </p>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityPill(t.priority)}`}>
+                {t.priority}
+              </span>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(t.status)}`}>
+                {statusLabel(t.status)}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
