@@ -34,9 +34,33 @@ type TaskRow = {
 
 function ProjectDetailPage() {
   const { projectId } = Route.useParams();
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const [taskOpen, setTaskOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
+
+  const toggleDone = useMutation({
+    mutationFn: async (t: TaskRow) => {
+      const nextStatus = t.status === "done" ? "todo" : "done";
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: nextStatus })
+        .eq("id", t.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          task_id: t.id,
+          project_id: t.project_id,
+          action: nextStatus === "done" ? "task.completed" : "task.updated",
+          meta: { title: t.title },
+        });
+      }
+    },
+    onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
 
   const { data: project } = useQuery({
     queryKey: ["project", projectId],
