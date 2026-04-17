@@ -21,6 +21,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { data: expiringCount = 0 } = useQuery({
+    queryKey: ["nav-domains-expiring"],
+    queryFn: async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
+      const { count } = await supabase
+        .from("client_domains")
+        .select("id", { count: "exact", head: true })
+        .gte("domain_expiry", today)
+        .lte("domain_expiry", sixtyAhead)
+        .eq("renewed", false);
+      return count ?? 0;
+    },
+    refetchInterval: 60_000,
+  });
+
   const initials = (profile?.name || profile?.email || "?")
     .split(/\s+/)
     .map((p) => p[0])
