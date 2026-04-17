@@ -110,35 +110,7 @@ function Dashboard() {
     },
   });
 
-  const { data: domains } = useQuery({
-    queryKey: ["dash-domains"],
-    queryFn: async () => {
-      const sixtyAhead = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10);
-      const { data } = await supabase
-        .from("client_domains")
-        .select("id,client_name,domain,domain_expiry,renewed")
-        .lte("domain_expiry", sixtyAhead)
-        .eq("renewed", false)
-        .order("domain_expiry", { ascending: true })
-        .limit(8);
-      const rows = data ?? [];
-      const domainIds = rows.map((r) => r.id);
-      const { data: assignRows } = domainIds.length
-        ? await supabase.from("domain_assignees").select("domain_id,user_id").in("domain_id", domainIds)
-        : { data: [] };
-      const userIds = Array.from(new Set((assignRows ?? []).map((a) => a.user_id)));
-      const { data: profs } = userIds.length
-        ? await supabase.from("profiles").select("id,name").in("id", userIds)
-        : { data: [] };
-      const profMap = new Map((profs ?? []).map((p) => [p.id, p.name] as const));
-      const ownersByDomain = (assignRows ?? []).reduce<Record<string, string[]>>((acc, a) => {
-        const n = profMap.get(a.user_id);
-        if (n) (acc[a.domain_id] ??= []).push(n);
-        return acc;
-      }, {});
-      return rows.map((r) => ({ ...r, owners: ownersByDomain[r.id] ?? [] }));
-    },
-  });
+
 
   type DashTask = NonNullable<typeof dash>["tasks"][number];
   const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, DashTask[]>>((acc, t) => {
