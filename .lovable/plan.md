@@ -1,97 +1,95 @@
 
-# Agency PM System — Build Plan
 
-A simple, colorful, glanceable agency operating system. Pastel UI, dashboard-first, no bloat.
+# Plan: Polish dashboard + tasks UI, and a feature roadmap for an SEO/hosting agency
 
-## Design direction
-- Playful pastel palette (mint, peach, lavender, sky, butter) on near-white background
-- Rounded cards, soft shadows, colored status pills, friendly empty states
-- Single-accent CTAs, generous whitespace, Inter or similar modern sans
-- Fully responsive (works on laptop + tablet)
+Two parts: (1) concrete UI polish for the homepage project section and `/tasks`, and (2) a prioritized feature roadmap tailored to a design + SEO + hosting agency.
 
-## Auth & roles
-- **Open signup initially**, with an Admin toggle in Settings to disable signup once team is in
-- Roles stored in a separate `user_roles` table: `admin` | `member`
-- First user to sign up auto-becomes `admin`; subsequent users default to `member`
-- Admins: manage team, toggle signup, delete anything, manage settings
-- Members: full access to projects/tasks/clients, can't manage team
+---
 
-## Pages & navigation
-Top nav: **Dashboard · Projects · Tasks · Hosting & Clients · Team · Settings**
+## Part 1 — Visual polish (Dashboard + Tasks)
 
-### 1. Dashboard (built first — the heart)
-- 4 summary counters at top: Active Projects · Tasks In Progress · Tasks Completed (7d) · Domains Expiring Soon
-- **Project grid** — colorful cards showing: project name, color/icon tag, client, status pill, latest 3 tasks (title + status pill + assignee avatar)
-- **Activity feed** (sidebar): recent task updates, completions, who did what, when
-- **Domains expiring widget**: list of domains expiring in next 60 days, days remaining, responsible team member, color-coded urgency
-- Global search bar (projects, tasks, clients)
+Direction: keep the playful pastel system, but tighten hierarchy, add subtle motion, and lean into "calm modern" — fewer borders, more whitespace, soft gradients on hero areas, consistent rounded-3xl cards with hover lift.
 
-### 2. Projects
-- List/grid view with filters (status, service type, client)
-- Project detail page: header (name, color, client, status, service type, dates), tabs for **Tasks**, **Credentials**, **Details**
-- Create/edit project modal
-- Fields: name, color tag, icon, description, status, client name, service type (website/SEO/hosting/maintenance/branding/other), created date, optional due date
+### Dashboard project cards (`src/routes/index.tsx`)
+- **Header refresh**: replace "Hey there ✦" with a time-aware greeting + today's date + a slim KPI strip.
+- **Counter cards**: add a tiny sparkline trend (last 7 days) under the number for "Tasks in progress" and "Completed". Use a soft pastel gradient background instead of flat card.
+- **Project card upgrade**:
+  - Top-left color square gets a subtle gradient (e.g. `from-mint to-mint/60`) and a thin colored ring on hover.
+  - Add a **progress bar** under the project name (X of Y tasks done) — instantly readable.
+  - Show **stacked avatars** of project assignees (top 3 + overflow).
+  - Service-type chip moved to top-right next to status pill.
+  - Task rows: lighter dividers, hover background slides in from the left, completed tasks fade to ~60% opacity.
+  - Add a small "+" inline at the bottom of the list to quick-add a task without leaving the dashboard.
+- **Animation**: cards fade-in stagger on mount (`animate-fade-in` with 50ms delay per card). Hover uses `hover:-translate-y-0.5` + softer shadow transition.
 
-### 3. Tasks (within projects + global view)
-- Global Tasks page: filterable list (status, assignee, priority, project), overdue tasks highlighted in coral
-- Task fields: title, description, project, assignees (multi), status (To Do / In Progress / Waiting / Done), priority (low/med/high), due date, completed date
-- Simple comment thread per task
-- **Email notification** sent when a user is assigned to a task
-- Status changes logged into activity feed
+### Tasks page (`src/routes/tasks.tsx`)
+- **Sticky filter bar** with a frosted/blur background so it stays visible while scrolling.
+- **Active filter chips** under the bar (e.g. "Project: Acme ×") so users can see and remove filters at a glance.
+- **Task row redesign**:
+  - Left vertical color bar showing project color (4px) — instantly groups visually.
+  - Larger, custom-styled checkbox that animates a check-draw on completion.
+  - Inline assignee avatars instead of comma-separated names.
+  - Due date as a colored pill (mint = future, butter = soon, coral = overdue) instead of plain text.
+  - Subtle row slide-out animation when a task is checked off.
+- **View toggle**: add a List / Board (Kanban by status) toggle. Board columns: Todo, In progress, Waiting, Done — drag between columns.
+- **Empty/done celebrations**: when "Open" tab hits 0, show a friendly illustration + "Inbox zero ✨".
+- **Quick-add row** at the top of each project group on the Tasks page (press Enter to create).
 
-### 4. Credentials (inside each project)
-- **Encrypted at rest** using pgsodium/vault, masked with •••••• in UI
-- Reveal + copy buttons
-- Each entry: label, URL, username, password, notes
-- Multiple entries per project (e.g. WordPress, hosting, registrar)
+### Shared polish
+- Add `animate-fade-in` and a new `animate-stagger-in` keyframe to `src/styles.css`.
+- Introduce a reusable `<StatPill>` and `<AvatarStack>` component in `src/components/ui/` for consistency.
+- Replace remaining `rounded-md` on primary buttons with `rounded-full` site-wide for cohesion.
+- Soft pastel gradient banner at the top of Dashboard and Tasks (e.g. `bg-gradient-to-br from-lavender/40 via-background to-mint/30`) for a more "premium" feel without losing minimalism.
 
-### 5. Hosting & Clients
-- Table/card view of all client domains
-- Fields: client name, domain, registrar/host, domain expiry, hosting expiry, assigned team members, notes, "renewed" toggle
-- Color-coded urgency (green >60d, amber 30–60d, coral <30d, red expired)
-- **Domain expiry reminder logic**:
-  - Daily scheduled job checks every domain
-  - Starts emailing assigned members 30 days before expiry
-  - Re-sends every 5 days until either: expiry date is updated to a future date, OR record marked as renewed
-  - "Mark as renewed" button bumps expiry +1 year and clears reminder state
+---
 
-### 6. Team
-- Admin: list of members with name/email/role, change role, remove member
-- Members: read-only directory
+## Part 2 — Feature roadmap for a design / SEO / hosting agency
 
-### 7. Settings
-- Admin only: toggle "Allow new signups" on/off, agency name, default reminder lead time
+Grouped by impact. Pick any subset to implement next.
 
-## Email notifications
-- Lovable's built-in email infrastructure (no external service needed)
-- Triggered on:
-  - Task assignment → assignee(s) get "You've been assigned: [task]" with link
-  - Domain expiry reminders → assigned members get "[domain] expires in X days"
-- Branded pastel email templates matching app style
+### A. Hosting & Domain (deepen the core differentiator)
+1. **Credentials vault per project** — encrypted FTP / cPanel / WP-admin / DNS / registrar logins with masked UI, reveal + copy button, audit log of who viewed what.
+2. **Uptime monitoring** — ping each domain every 5 min via a cron edge function, store status, show green/red dot on Hosting page + alert email when down.
+3. **SSL expiry tracking** — alongside domain/hosting expiry, fetch SSL cert expiry once a day; same color-coded urgency.
+4. **Renewal cost & margin tracker** — store cost (what you pay registrar) vs. price (what client pays), surface annual revenue from hosting at a glance.
+5. **Auto-invoice on renewal** — generate a renewal invoice (PDF) when "Mark as renewed" is clicked, emailed to client.
 
-## Data model (high level)
-- `profiles` (id, name, email, avatar)
-- `user_roles` (user_id, role)
-- `app_settings` (singleton: signups_enabled, agency_name)
-- `projects` (name, color, icon, description, status, client_name, service_type, due_date, created_by)
-- `tasks` (project_id, title, description, status, priority, due_date, completed_at, created_by)
-- `task_assignees` (task_id, user_id)
-- `task_comments` (task_id, user_id, body)
-- `activity_log` (actor_id, project_id, task_id, action, created_at)
-- `project_credentials` (project_id, label, url, username, password_encrypted, notes)
-- `client_domains` (client_name, domain, provider, domain_expiry, hosting_expiry, notes, renewed)
-- `domain_assignees` (domain_id, user_id)
-- `domain_reminder_state` (domain_id, last_sent_at, next_due_at)
+### B. SEO toolkit (high-value for an SEO agency)
+6. **Keyword tracker per project** — store target keywords, fetch SERP rank weekly (via SerpApi / DataForSEO), show trend graph.
+7. **Site audit snapshot** — on-demand PageSpeed + Core Web Vitals fetch (Google PageSpeed Insights API), saved as monthly snapshots per project.
+8. **Backlink log** — manual + auto entry of acquired backlinks per project, with DA/DR field and status (live / lost).
+9. **Monthly client SEO report** — auto-compile rank changes + traffic + backlinks + tasks-completed into a branded PDF, emailed monthly.
+10. **Google Search Console & GA4 integration** — pull clicks/impressions/sessions per project domain into the dashboard.
 
-Strict RLS on all tables. Authenticated team members can read everything (transparency), only admins/owners can delete sensitive records.
+### C. Client-facing polish
+11. **Client portal** (read-only role) — clients log in to see their project status, completed tasks, upcoming renewals, and reports. Big trust win.
+12. **Public status page** per client (optional, tokenized URL) — uptime + recent updates.
+13. **Approvals / proofing** — designer uploads a mockup, client clicks Approve / Request changes, threaded comments per pin on the image.
 
-## Build order
-1. Auth + roles + settings + base layout/navigation
-2. **Dashboard** (with mock-friendly placeholders that fill in as data appears)
-3. Projects (CRUD + detail page + credentials)
-4. Tasks (CRUD + assignment emails + global view)
-5. Hosting & Clients + domain expiry reminder cron
-6. Team page + Settings polish + activity feed wiring
+### D. Project & ops productivity
+14. **Recurring tasks / templates** — "New WordPress site" template auto-creates 15 tasks; "Monthly SEO" recurs every month.
+15. **Time tracking** (lightweight) — start/stop timer on a task, weekly summary per member.
+16. **Calendar view** (`/calendar`) — month grid showing tasks by due date + domain renewals + project deadlines, color-coded.
+17. **Pipeline / leads board** — Kanban for prospects (Lead → Proposal → Won/Lost) before they become projects.
 
-## Out of scope (intentionally)
-File uploads, invoicing, chat, time tracking, Gantt charts, custom fields, automations builder.
+### E. Communication & notifications
+18. **Wire up the assignment + renewal emails** (infrastructure already deployed).
+19. **In-app notifications bell** — task assigned, comment added, domain expiring, monitor down.
+20. **Slack / Discord webhook** per project for activity feed.
+
+### F. Billing & finance (lighter touch)
+21. **Simple invoicing** — generate PDF invoices for projects (one-off) + recurring (hosting). Stripe payment link per invoice.
+22. **MRR dashboard widget** — recurring revenue from hosting + retainers.
+
+---
+
+## My top-5 recommendation (in build order)
+
+1. **UI polish from Part 1** (immediate perceived-quality lift)
+2. **Credentials vault** (you're already storing the foundation; massive daily-use win)
+3. **Recurring tasks + templates** (huge time-save for repeatable agency work)
+4. **Wire up the assignment + domain expiry emails** (infra is ready, low effort, high value)
+5. **Monthly SEO report PDF** (turns the app into a billable deliverable for the agency)
+
+After approval I'll start with the UI polish, then ask which roadmap item you want next.
+
