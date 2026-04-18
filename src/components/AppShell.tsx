@@ -96,11 +96,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <AlertCircle className="h-3.5 w-3.5" />
               {expiringCount} expiring
             </Link>
-            <Avatar className="h-9 w-9 border border-border">
-              <AvatarFallback className="bg-peach text-peach-ink text-xs font-semibold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <Link to="/account" aria-label="Account settings" title="Account settings">
+              <Avatar className="h-9 w-9 border border-border transition-opacity hover:opacity-80">
+                {profile?.avatar_url ? (
+                  <AvatarImage src={profile.avatar_url} alt={profile.name || "Avatar"} />
+                ) : null}
+                <AvatarFallback className="bg-peach text-peach-ink text-xs font-semibold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
