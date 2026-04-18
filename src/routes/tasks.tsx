@@ -371,7 +371,8 @@ function TasksPage() {
                         people={(assigneeMap[t.id] ?? [])
                           .map((id) => memberById.get(id))
                           .filter(Boolean) as { id: string; name: string }[]}
-                        onToggle={() => toggleDone.mutate(t)}
+                        onComplete={() => toggleDone.mutate({ task: t, nextStatus: "done" })}
+                        onReopen={() => toggleDone.mutate({ task: t, nextStatus: "todo" })}
                         onEdit={() => openEdit(t)}
                       />
                     ))}
