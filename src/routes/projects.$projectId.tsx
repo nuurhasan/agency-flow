@@ -305,6 +305,7 @@ function ProjectDetailPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        </div>
       </div>
 
       <Tabs defaultValue="tasks">
