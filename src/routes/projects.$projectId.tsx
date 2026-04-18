@@ -46,7 +46,7 @@ type TaskRow = {
   project_id: string;
   title: string;
   description: string | null;
-  status: "todo" | "in_progress" | "waiting" | "done";
+  status: "todo" | "in_progress" | "in_review" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;

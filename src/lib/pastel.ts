@@ -50,7 +50,7 @@ export function statusPillClasses(status: string): string {
     case "todo":
       return "bg-lavender text-lavender-ink";
     case "on_hold":
-    case "waiting":
+    case "in_review":
       return "bg-butter text-butter-ink";
     case "completed":
     case "done":
