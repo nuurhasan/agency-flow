@@ -417,7 +417,7 @@ function TaskRowItem({
       setTimeout(() => {
         onToggle();
         setLeaving(false);
-      }, 220);
+      }, 420);
     } else {
       onToggle();
     }
