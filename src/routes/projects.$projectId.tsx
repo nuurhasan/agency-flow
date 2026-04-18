@@ -283,6 +283,12 @@ function ProjectDetailPage() {
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {project.service_type}
             </span>
+            {activeSprint && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-ink">
+                <Zap className="h-3 w-3" /> {activeSprint.name}
+                {activeSprint.end_date ? ` · ends ${new Date(activeSprint.end_date).toLocaleDateString()}` : ""}
+              </span>
+            )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {project.client_name || "No client"}
