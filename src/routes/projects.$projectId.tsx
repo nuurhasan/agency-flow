@@ -2,9 +2,11 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles, KeyRound } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
+import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
+import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -39,6 +41,31 @@ function ProjectDetailPage() {
   const [taskOpen, setTaskOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
+  const [applyOpen, setApplyOpen] = React.useState(false);
+
+  const credActions = useCredentialActions();
+  const CredDialog = credActions.Dialog;
+
+  const { data: credentials = [] } = useQuery({
+    queryKey: ["project-credentials", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("project_credentials")
+        .select("id,project_id,label,url,username,notes,created_by,password_encrypted")
+        .eq("project_id", projectId)
+        .order("updated_at", { ascending: false });
+      return (data ?? []).map((c) => ({
+        id: c.id,
+        project_id: c.project_id,
+        label: c.label,
+        url: c.url,
+        username: c.username,
+        notes: c.notes,
+        created_by: c.created_by,
+        has_password: !!c.password_encrypted,
+      })) as Cred[];
+    },
+  });
 
   const toggleDone = useMutation({
     mutationFn: async (t: TaskRow) => {
