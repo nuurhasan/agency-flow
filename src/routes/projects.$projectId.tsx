@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -178,6 +178,18 @@ function ProjectDetailPage() {
     },
   });
 
+  const { data: sprints = [] } = useQuery({
+    queryKey: ["project-sprints", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sprints")
+        .select("id,name,status,end_date")
+        .eq("project_id", projectId);
+      return data ?? [];
+    },
+  });
+  const activeSprint = sprints.find((s) => s.status === "active");
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -271,6 +283,12 @@ function ProjectDetailPage() {
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {project.service_type}
             </span>
+            {activeSprint && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-ink">
+                <Zap className="h-3 w-3" /> {activeSprint.name}
+                {activeSprint.end_date ? ` · ends ${new Date(activeSprint.end_date).toLocaleDateString()}` : ""}
+              </span>
+            )}
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {project.client_name || "No client"}
@@ -339,7 +357,7 @@ function ProjectDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <TabsList>
             <TabsTrigger value="tasks">Tasks ({tasks.length})</TabsTrigger>
-            <TabsTrigger value="sprints">Sprints</TabsTrigger>
+            <TabsTrigger value="sprints">Sprints ({sprints.length})</TabsTrigger>
             <TabsTrigger value="credentials">
               <KeyRound className="h-3.5 w-3.5" /> Credentials ({credentials.length})
             </TabsTrigger>

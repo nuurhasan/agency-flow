@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
-import { Archive, Plus, Search } from "lucide-react";
+import { Archive, Plus, Search, Zap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +42,21 @@ function ProjectsPage() {
       return data ?? [];
     },
   });
+
+  const { data: activeSprints = [] } = useQuery({
+    queryKey: ["active-sprints"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sprints")
+        .select("id,project_id,name")
+        .eq("status", "active");
+      return data ?? [];
+    },
+  });
+  const activeSprintByProject = React.useMemo(
+    () => new Map(activeSprints.map((s) => [s.project_id, s])),
+    [activeSprints],
+  );
 
   const filtered = (projects ?? []).filter((p) => {
     if (status !== "all" && p.status !== status) return false;
@@ -130,13 +145,20 @@ function ProjectsPage() {
               {p.description && (
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
               )}
-              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                {p.status !== "active" ? (
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
-                    {statusLabel(p.status)}
-                  </span>
-                ) : <span />}
-                {p.due_date && <span>Due {new Date(p.due_date).toLocaleDateString()}</span>}
+              <div className="mt-4 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {p.status !== "active" && (
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
+                      {statusLabel(p.status)}
+                    </span>
+                  )}
+                  {activeSprintByProject.has(p.id) && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-ink">
+                      <Zap className="h-3 w-3" /> {activeSprintByProject.get(p.id)!.name}
+                    </span>
+                  )}
+                </div>
+                {p.due_date && <span className="shrink-0">Due {new Date(p.due_date).toLocaleDateString()}</span>}
               </div>
             </Link>
           ))}
