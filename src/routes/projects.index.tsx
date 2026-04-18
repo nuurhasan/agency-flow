@@ -115,17 +115,19 @@ function ProjectsPage() {
                   <p className="truncate font-semibold">{p.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{p.client_name || "No client"}</p>
                 </div>
-                {p.status !== "active" && (
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
-                    {statusLabel(p.status)}
-                  </span>
-                )}
+                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  {p.service_type}
+                </span>
               </div>
               {p.description && (
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
               )}
               <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="rounded-full bg-muted px-2 py-0.5">{p.service_type}</span>
+                {p.status !== "active" ? (
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
+                    {statusLabel(p.status)}
+                  </span>
+                ) : <span />}
                 {p.due_date && <span>Due {new Date(p.due_date).toLocaleDateString()}</span>}
               </div>
             </Link>
