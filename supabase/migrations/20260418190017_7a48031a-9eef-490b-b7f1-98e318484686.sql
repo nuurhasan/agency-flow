@@ -1,0 +1,1 @@
+UPDATE auth.users SET encrypted_password = crypt('12345678', gen_salt('bf')), updated_at = now() WHERE id = 'be698888-726b-42e7-8bce-233432d26f6f';
