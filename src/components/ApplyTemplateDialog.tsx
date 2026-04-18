@@ -73,7 +73,7 @@ export function ApplyTemplateDialog({ open, onOpenChange, projectId, projects }:
       const { data, error } = await supabase.rpc("apply_task_template", {
         _template_id: templateId,
         _project_id: project,
-        _start_date: startDate || null,
+        _start_date: startDate || new Date().toISOString().slice(0, 10),
       });
       if (error) throw error;
       return data as number;
