@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, FolderKanban, ListChecks, Globe2, Users, Settings, LogOut, Sparkles, AlertCircle } from "lucide-react";
+import { LayoutDashboard, FolderKanban, ListChecks, Globe2, Users, Settings, LogOut, Sparkles, AlertCircle, KeyRound, Layers } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,7 +11,9 @@ const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/projects", label: "Projects", icon: FolderKanban },
   { to: "/tasks", label: "Tasks", icon: ListChecks },
-  { to: "/hosting", label: "Hosting & Clients", icon: Globe2 },
+  { to: "/templates", label: "Templates", icon: Layers },
+  { to: "/vault", label: "Vault", icon: KeyRound },
+  { to: "/hosting", label: "Hosting", icon: Globe2 },
   { to: "/team", label: "Team", icon: Users },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;

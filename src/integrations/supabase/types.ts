@@ -140,6 +140,35 @@ export type Database = {
         }
         Relationships: []
       }
+      credential_reveal_log: {
+        Row: {
+          actor_id: string
+          credential_id: string
+          id: string
+          revealed_at: string
+        }
+        Insert: {
+          actor_id: string
+          credential_id: string
+          id?: string
+          revealed_at?: string
+        }
+        Update: {
+          actor_id?: string
+          credential_id?: string
+          id?: string
+          revealed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credential_reveal_log_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "project_credentials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       domain_assignees: {
         Row: {
           domain_id: string
@@ -477,6 +506,80 @@ export type Database = {
           },
         ]
       }
+      task_template_items: {
+        Row: {
+          created_at: string
+          default_due_offset_days: number | null
+          default_priority: Database["public"]["Enums"]["task_priority"]
+          description: string | null
+          id: string
+          position: number
+          template_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          default_due_offset_days?: number | null
+          default_priority?: Database["public"]["Enums"]["task_priority"]
+          description?: string | null
+          id?: string
+          position?: number
+          template_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          default_due_offset_days?: number | null
+          default_priority?: Database["public"]["Enums"]["task_priority"]
+          description?: string | null
+          id?: string
+          position?: number
+          template_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "task_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_templates: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           completed_at: string | null
@@ -553,6 +656,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_task_template: {
+        Args: { _project_id: string; _start_date: string; _template_id: string }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

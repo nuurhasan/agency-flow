@@ -2,9 +2,11 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, Sparkles, KeyRound } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
+import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
+import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -39,6 +41,31 @@ function ProjectDetailPage() {
   const [taskOpen, setTaskOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
+  const [applyOpen, setApplyOpen] = React.useState(false);
+
+  const credActions = useCredentialActions();
+  const CredDialog = credActions.Dialog;
+
+  const { data: credentials = [] } = useQuery({
+    queryKey: ["project-credentials", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("project_credentials")
+        .select("id,project_id,label,url,username,notes,created_by,password_encrypted")
+        .eq("project_id", projectId)
+        .order("updated_at", { ascending: false });
+      return (data ?? []).map((c) => ({
+        id: c.id,
+        project_id: c.project_id,
+        label: c.label,
+        url: c.url,
+        username: c.username,
+        notes: c.notes,
+        created_by: c.created_by,
+        has_password: !!c.password_encrypted,
+      })) as Cred[];
+    },
+  });
 
   const toggleDone = useMutation({
     mutationFn: async (t: TaskRow) => {
@@ -167,52 +194,82 @@ function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold">Tasks</h2>
-          <Button onClick={openNew} className="rounded-full">
-            <Plus className="h-4 w-4" /> New task
-          </Button>
-        </div>
-
-        {tasks.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
-            <p className="font-display text-lg font-semibold">No tasks yet</p>
-            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-              Create the first task to start tracking work for this project.
-            </p>
-            <Button onClick={openNew} className="mt-4 rounded-full">
-              <Plus className="h-4 w-4" /> Add a task
+      <Tabs defaultValue="tasks">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <TabsList>
+            <TabsTrigger value="tasks">Tasks ({tasks.length})</TabsTrigger>
+            <TabsTrigger value="credentials">
+              <KeyRound className="h-3.5 w-3.5" /> Credentials ({credentials.length})
+            </TabsTrigger>
+          </TabsList>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
+              <Sparkles className="h-4 w-4" /> Apply template
+            </Button>
+            <Button onClick={openNew} className="rounded-full">
+              <Plus className="h-4 w-4" /> New task
             </Button>
           </div>
-        ) : (
-          <Tabs defaultValue="open">
-            <TabsList>
-              <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
-              <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
-            </TabsList>
-            <TabsContent value="open" className="mt-4">
-              <TaskList
-                tasks={openTasks}
-                assigneeMap={assigneeMap}
-                memberById={memberById}
-                onToggle={(t) => toggleDone.mutate(t)}
-                onEdit={openEdit}
-              />
-            </TabsContent>
-            <TabsContent value="completed" className="mt-4">
-              <TaskList
-                tasks={doneTasks}
-                assigneeMap={assigneeMap}
-                memberById={memberById}
-                onToggle={(t) => toggleDone.mutate(t)}
-                onEdit={openEdit}
-                emptyText="No completed tasks yet."
-              />
-            </TabsContent>
-          </Tabs>
-        )}
-      </div>
+        </div>
+
+        <TabsContent value="tasks" className="mt-4 space-y-4">
+          {tasks.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
+              <p className="font-display text-lg font-semibold">No tasks yet</p>
+              <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+                Create the first task or apply a template to bulk-add a checklist.
+              </p>
+              <div className="mt-4 flex justify-center gap-2">
+                <Button onClick={openNew} className="rounded-full">
+                  <Plus className="h-4 w-4" /> Add a task
+                </Button>
+                <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
+                  <Sparkles className="h-4 w-4" /> Apply template
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Tabs defaultValue="open">
+              <TabsList>
+                <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
+                <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
+              </TabsList>
+              <TabsContent value="open" className="mt-4">
+                <TaskList
+                  tasks={openTasks}
+                  assigneeMap={assigneeMap}
+                  memberById={memberById}
+                  onToggle={(t) => toggleDone.mutate(t)}
+                  onEdit={openEdit}
+                />
+              </TabsContent>
+              <TabsContent value="completed" className="mt-4">
+                <TaskList
+                  tasks={doneTasks}
+                  assigneeMap={assigneeMap}
+                  memberById={memberById}
+                  onToggle={(t) => toggleDone.mutate(t)}
+                  onEdit={openEdit}
+                  emptyText="No completed tasks yet."
+                />
+              </TabsContent>
+            </Tabs>
+          )}
+        </TabsContent>
+
+        <TabsContent value="credentials" className="mt-4 space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={credActions.openNew} className="rounded-full">
+              <Plus className="h-4 w-4" /> New credential
+            </Button>
+          </div>
+          <CredentialList
+            credentials={credentials}
+            onEdit={credActions.openEdit}
+            onDelete={credActions.onDelete}
+          />
+        </TabsContent>
+      </Tabs>
 
       <TaskDialog
         open={taskOpen}
@@ -221,6 +278,18 @@ function ProjectDetailPage() {
         task={editingTask}
         members={members}
         initialAssignees={editingAssignees}
+      />
+      <CredDialog
+        open={credActions.open}
+        onOpenChange={credActions.setOpen}
+        projectId={projectId}
+        credential={credActions.editing}
+      />
+      <ApplyTemplateDialog
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        projectId={projectId}
+        projects={[{ id: projectId, name: project.name }]}
       />
     </div>
   );
