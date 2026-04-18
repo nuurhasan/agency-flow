@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Search, ListChecks } from "lucide-react";
+import { Plus, Search, ListChecks, Sparkles, X } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { pastelClasses, statusLabel, statusPillClasses, priorityClasses } from "@/lib/pastel";
+import { AvatarStack } from "@/components/ui/avatar-stack";
+import { DueDatePill } from "@/components/ui/due-date-pill";
 
 export const Route = createFileRoute("/tasks")({
   component: () => (
@@ -38,6 +40,16 @@ type TaskRow = {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;
+};
+
+const COLOR_BAR: Record<string, string> = {
+  mint: "bg-mint",
+  peach: "bg-peach",
+  lavender: "bg-lavender",
+  sky: "bg-sky",
+  butter: "bg-butter",
+  blush: "bg-blush",
+  coral: "bg-coral",
 };
 
 function TasksPage() {
@@ -106,7 +118,7 @@ function TasksPage() {
     [projects],
   );
   const memberById = React.useMemo(
-    () => new Map(members.map((m) => [m.id, m.name] as const)),
+    () => new Map(members.map((m) => [m.id, m] as const)),
     [members],
   );
 
@@ -189,58 +201,122 @@ function TasksPage() {
     setTaskOpen(true);
   };
 
+  const activeFilters: { key: string; label: string; clear: () => void }[] = [];
+  if (projectFilter !== "all") {
+    activeFilters.push({
+      key: "project",
+      label: `Project: ${projectById.get(projectFilter)?.name ?? "—"}`,
+      clear: () => setProjectFilter("all"),
+    });
+  }
+  if (assigneeFilter !== "all") {
+    activeFilters.push({
+      key: "assignee",
+      label:
+        assigneeFilter === "unassigned"
+          ? "Unassigned"
+          : `Assignee: ${memberById.get(assigneeFilter)?.name ?? "—"}`,
+      clear: () => setAssigneeFilter("all"),
+    });
+  }
+  if (priorityFilter !== "all") {
+    activeFilters.push({
+      key: "priority",
+      label: `Priority: ${priorityFilter}`,
+      clear: () => setPriorityFilter("all"),
+    });
+  }
+  if (search.trim()) {
+    activeFilters.push({
+      key: "search",
+      label: `“${search.trim()}”`,
+      clear: () => setSearch(""),
+    });
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-sm text-muted-foreground">
-            Everything across the agency, in one place.
-          </p>
+      {/* Hero */}
+      <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">Tasks</h1>
+            <p className="text-sm text-muted-foreground">
+              Everything across the agency, in one place.
+            </p>
+          </div>
+          <Button onClick={openNew} disabled={projects.length === 0} className="rounded-full shadow-pop">
+            <Plus className="h-4 w-4" /> New task
+          </Button>
         </div>
-        <Button onClick={openNew} disabled={projects.length === 0} className="rounded-full">
-          <Plus className="h-4 w-4" /> New task
-        </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-3xl border border-border bg-card p-3 shadow-soft">
-        <div className="relative min-w-[200px] flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tasks…"
-            className="pl-9"
-          />
+      {/* Sticky filter bar */}
+      <div className="sticky top-2 z-20 -mx-1 space-y-2 px-1">
+        <div className="flex flex-wrap items-center gap-2 rounded-3xl border border-border bg-card/80 p-3 shadow-soft backdrop-blur-md">
+          <div className="relative min-w-[200px] flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search tasks…"
+              className="pl-9"
+            />
+          </div>
+          <Select value={projectFilter} onValueChange={setProjectFilter}>
+            <SelectTrigger className="w-[170px]"><SelectValue placeholder="Project" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All projects</SelectItem>
+              {projects.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Assignee" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All assignees</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="w-[140px]"><SelectValue placeholder="Priority" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All priorities</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={projectFilter} onValueChange={setProjectFilter}>
-          <SelectTrigger className="w-[170px]"><SelectValue placeholder="Project" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All projects</SelectItem>
-            {projects.map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+        {activeFilters.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 px-1">
+            {activeFilters.map((f) => (
+              <button
+                key={f.key}
+                onClick={f.clear}
+                className="group inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium shadow-soft transition-colors hover:bg-muted"
+              >
+                {f.label}
+                <X className="h-3 w-3 text-muted-foreground transition-colors group-hover:text-foreground" />
+              </button>
             ))}
-          </SelectContent>
-        </Select>
-        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Assignee" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All assignees</SelectItem>
-            <SelectItem value="unassigned">Unassigned</SelectItem>
-            {members.map((m) => (
-              <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Priority" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All priorities</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-          </SelectContent>
-        </Select>
+            <button
+              onClick={() => {
+                setProjectFilter("all");
+                setAssigneeFilter("all");
+                setPriorityFilter("all");
+                setSearch("");
+              }}
+              className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
@@ -252,12 +328,20 @@ function TasksPage() {
 
         <TabsContent value={tab} className="mt-4 space-y-6">
           {grouped.length === 0 ? (
-            <EmptyState onNew={openNew} hasProjects={projects.length > 0} />
+            tab === "open" && counts.open === 0 && tasks.length > 0 ? (
+              <InboxZero />
+            ) : (
+              <EmptyState onNew={openNew} hasProjects={projects.length > 0} />
+            )
           ) : (
-            grouped.map(([pid, list]) => {
+            grouped.map(([pid, list], gIdx) => {
               const p = projectById.get(pid);
               return (
-                <section key={pid} className="space-y-2">
+                <section
+                  key={pid}
+                  style={{ animationDelay: `${gIdx * 40}ms` }}
+                  className="animate-fade-in-up space-y-2"
+                >
                   <div className="flex items-center gap-2">
                     <span
                       className={`flex h-7 w-7 items-center justify-center rounded-lg ${pastelClasses(p?.color)} text-xs font-bold`}
@@ -278,14 +362,15 @@ function TasksPage() {
                       {list.length} task{list.length === 1 ? "" : "s"}
                     </span>
                   </div>
-                  <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
+                  <ul className="divide-y divide-border/60 overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
                     {list.map((t) => (
                       <TaskRowItem
                         key={t.id}
                         task={t}
-                        names={(assigneeMap[t.id] ?? [])
+                        projectColor={p?.color ?? "lavender"}
+                        people={(assigneeMap[t.id] ?? [])
                           .map((id) => memberById.get(id))
-                          .filter(Boolean) as string[]}
+                          .filter(Boolean) as { id: string; name: string }[]}
                         onToggle={() => toggleDone.mutate(t)}
                         onEdit={() => openEdit(t)}
                       />
@@ -312,25 +397,45 @@ function TasksPage() {
 
 function TaskRowItem({
   task,
-  names,
+  projectColor,
+  people,
   onToggle,
   onEdit,
 }: {
   task: TaskRow;
-  names: string[];
+  projectColor: string;
+  people: { id: string; name: string }[];
   onToggle: () => void;
   onEdit: () => void;
 }) {
   const done = task.status === "done";
-  const overdue =
-    !done && task.due_date ? new Date(task.due_date) < new Date(new Date().toDateString()) : false;
+  const [leaving, setLeaving] = React.useState(false);
+
+  const handleToggle = (checked: boolean | "indeterminate") => {
+    if (!done && checked === true) {
+      setLeaving(true);
+      setTimeout(() => {
+        onToggle();
+        setLeaving(false);
+      }, 220);
+    } else {
+      onToggle();
+    }
+  };
+
   return (
-    <li className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
+    <li
+      className={`group relative flex items-center gap-3 py-3 pl-5 pr-5 transition-colors hover:bg-muted/40 ${leaving ? "animate-slide-out-left" : ""}`}
+    >
+      <span
+        className={`absolute inset-y-2 left-0 w-1 rounded-r ${COLOR_BAR[projectColor] ?? "bg-lavender"}`}
+        aria-hidden
+      />
       <Checkbox
         checked={done}
-        onCheckedChange={onToggle}
+        onCheckedChange={handleToggle}
         aria-label={done ? "Mark as not done" : "Mark as done"}
-        className="h-5 w-5 rounded-md"
+        className="h-5 w-5 rounded-md transition-transform active:scale-90"
       />
       <button
         type="button"
@@ -338,21 +443,17 @@ function TaskRowItem({
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
         <div className="min-w-0 flex-1">
-          <p className={`truncate font-medium ${done ? "text-muted-foreground line-through" : ""}`}>
+          <p className={`truncate font-medium transition-colors ${done ? "text-muted-foreground line-through" : ""}`}>
             {task.title}
           </p>
-          <p className="truncate text-xs text-muted-foreground">
-            {names.length ? names.join(", ") : "Unassigned"}
-            {task.due_date ? (
-              <>
-                {" · "}
-                <span className={overdue ? "font-medium text-coral-ink" : ""}>
-                  {overdue ? "Overdue " : "Due "}
-                  {new Date(task.due_date).toLocaleDateString()}
-                </span>
-              </>
-            ) : null}
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            {people.length ? (
+              <AvatarStack people={people} max={3} size="xs" />
+            ) : (
+              <span className="text-xs italic text-muted-foreground">Unassigned</span>
+            )}
+            <DueDatePill date={task.due_date} done={done} />
+          </div>
         </div>
         <span
           className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
@@ -366,6 +467,20 @@ function TaskRowItem({
         </span>
       </button>
     </li>
+  );
+}
+
+function InboxZero() {
+  return (
+    <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
+      <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-mint text-mint-ink">
+        <Sparkles className="h-7 w-7" />
+      </span>
+      <p className="mt-3 font-display text-xl font-semibold">Inbox zero ✨</p>
+      <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+        Every open task is done. Take a breath — or queue up the next thing.
+      </p>
+    </div>
   );
 }
 
