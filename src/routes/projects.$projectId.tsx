@@ -178,6 +178,18 @@ function ProjectDetailPage() {
     },
   });
 
+  const { data: sprints = [] } = useQuery({
+    queryKey: ["project-sprints", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sprints")
+        .select("id,name,status,end_date")
+        .eq("project_id", projectId);
+      return data ?? [];
+    },
+  });
+  const activeSprint = sprints.find((s) => s.status === "active");
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
