@@ -115,9 +115,11 @@ function ProjectsPage() {
                   <p className="truncate font-semibold">{p.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{p.client_name || "No client"}</p>
                 </div>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
-                  {statusLabel(p.status)}
-                </span>
+                {p.status !== "active" && (
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
+                    {statusLabel(p.status)}
+                  </span>
+                )}
               </div>
               {p.description && (
                 <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>

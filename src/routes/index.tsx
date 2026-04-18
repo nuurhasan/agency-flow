@@ -238,11 +238,13 @@ function Dashboard() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <p className="truncate font-semibold">{p.name}</p>
-                          <span
-                            className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}
-                          >
-                            {statusLabel(p.status)}
-                          </span>
+                          {p.status !== "active" && (
+                            <span
+                              className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}
+                            >
+                              {statusLabel(p.status)}
+                            </span>
+                          )}
                         </div>
                         <div className="mt-0.5 flex items-center gap-2">
                           <p className="truncate text-xs text-muted-foreground">

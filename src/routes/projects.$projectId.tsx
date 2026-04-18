@@ -204,9 +204,11 @@ function ProjectDetailPage() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight">{project.name}</h1>
-            <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(project.status)}`}>
-              {statusLabel(project.status)}
-            </span>
+            {project.status !== "active" && (
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(project.status)}`}>
+                {statusLabel(project.status)}
+              </span>
+            )}
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {project.service_type}
             </span>
