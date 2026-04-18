@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/auth";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { AvatarStack } from "@/components/ui/avatar-stack";
 
 export const Route = createFileRoute("/")({
   component: DashboardRoute,
@@ -21,6 +23,23 @@ function DashboardRoute() {
       <Dashboard />
     </AuthGate>
   );
+}
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 5) return "Burning the midnight oil";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 21) return "Good evening";
+  return "Working late";
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
 }
 
 function Dashboard() {
@@ -107,7 +126,21 @@ function Dashboard() {
         return acc;
       }, {});
 
-      return { projects, tasks, assigneesByTask };
+      // Project-level assignees (union of all task assignees per project)
+      const projectAssignees = (assignRows ?? []).reduce<Record<string, Set<string>>>((acc, a) => {
+        const t = tasks.find((tk) => tk.id === a.task_id);
+        if (!t) return acc;
+        (acc[t.project_id] ??= new Set()).add(a.user_id);
+        return acc;
+      }, {});
+      const projectPeopleByProject: Record<string, { id: string; name: string }[]> = {};
+      Object.entries(projectAssignees).forEach(([pid, set]) => {
+        projectPeopleByProject[pid] = Array.from(set)
+          .map((uid) => ({ id: uid, name: profMap.get(uid) ?? "?" }))
+          .filter((p) => p.name !== "?");
+      });
+
+      return { projects, tasks, assigneesByTask, projectPeopleByProject };
     },
   });
 
@@ -129,8 +162,6 @@ function Dashboard() {
     },
   });
 
-
-
   type DashTask = NonNullable<typeof dash>["tasks"][number];
   const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, DashTask[]>>((acc, t) => {
     (acc[t.project_id] ??= []).push(t);
@@ -139,18 +170,24 @@ function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-4xl font-bold tracking-tight">Hey there ✦</h1>
-          <p className="mt-1 text-muted-foreground">
-            Everything happening across the agency, at a glance.
-          </p>
+      {/* Hero */}
+      <div className="hero-gradient relative overflow-hidden rounded-3xl border border-border p-6 sm:p-8">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">{todayLabel()}</p>
+            <h1 className="mt-1 font-display text-4xl font-bold tracking-tight">
+              {greeting()} ✦
+            </h1>
+            <p className="mt-1 text-muted-foreground">
+              Everything happening across the agency, at a glance.
+            </p>
+          </div>
+          <Button asChild className="rounded-full shadow-pop" size="lg">
+            <Link to="/projects">
+              <Plus className="h-4 w-4" /> New project
+            </Link>
+          </Button>
         </div>
-        <Button asChild className="rounded-full" size="lg">
-          <Link to="/projects">
-            <Plus className="h-4 w-4" /> New project
-          </Link>
-        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -175,12 +212,18 @@ function Dashboard() {
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {dash.projects.map((p) => {
-                const ts = (tasksByProject[p.id] ?? []).slice(0, 3);
+              {dash.projects.map((p, idx) => {
+                const allTasks = tasksByProject[p.id] ?? [];
+                const ts = allTasks.slice(0, 3);
+                const total = allTasks.length;
+                const done = allTasks.filter((t) => t.status === "done").length;
+                const pct = total ? Math.round((done / total) * 100) : 0;
+                const people = dash.projectPeopleByProject?.[p.id] ?? [];
                 return (
                   <div
                     key={p.id}
-                    className="group rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:shadow-pop"
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                    className="group animate-fade-in-up rounded-3xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-pop"
                   >
                     <Link
                       to="/projects/$projectId"
@@ -188,7 +231,7 @@ function Dashboard() {
                       className="flex items-start gap-3"
                     >
                       <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${pastelClasses(p.color)} font-bold`}
+                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold ring-0 transition-all group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-offset-card ${pastelClasses(p.color)} ring-current/30`}
                       >
                         {p.name.charAt(0).toUpperCase()}
                       </span>
@@ -201,21 +244,40 @@ function Dashboard() {
                             {statusLabel(p.status)}
                           </span>
                         </div>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {p.client_name || "No client"}
-                        </p>
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <p className="truncate text-xs text-muted-foreground">
+                            {p.client_name || "No client"}
+                          </p>
+                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            {p.service_type}
+                          </span>
+                        </div>
                       </div>
                     </Link>
-                    <div className="mt-4 space-y-1">
+
+                    {/* Progress */}
+                    <div className="mt-4 flex items-center gap-3">
+                      <Progress value={pct} className="h-1.5 flex-1" />
+                      <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground">
+                        {done}/{total}
+                      </span>
+                      <AvatarStack people={people} max={3} size="xs" />
+                    </div>
+
+                    <div className="mt-3 space-y-0.5">
                       {ts.length === 0 ? (
-                        <p className="text-xs italic text-muted-foreground">No tasks yet</p>
+                        <p className="px-1.5 py-1 text-xs italic text-muted-foreground">No tasks yet</p>
                       ) : (
                         ts.map((t) => {
-                          const done = t.status === "done";
+                          const tdone = t.status === "done";
                           return (
-                            <div key={t.id} className="flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm hover:bg-muted/40">
+                            <div
+                              key={t.id}
+                              className={`group/task relative flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm transition-all ${tdone ? "opacity-60" : ""}`}
+                            >
+                              <span className="pointer-events-none absolute inset-0 -z-10 rounded-lg bg-muted/50 opacity-0 transition-all duration-200 group-hover/task:opacity-100" />
                               <Checkbox
-                                checked={done}
+                                checked={tdone}
                                 onCheckedChange={() =>
                                   toggleDone.mutate({
                                     id: t.id,
@@ -224,22 +286,17 @@ function Dashboard() {
                                     status: t.status,
                                   })
                                 }
-                                aria-label={done ? "Mark as not done" : "Mark as done"}
+                                aria-label={tdone ? "Mark as not done" : "Mark as done"}
                                 className="h-4 w-4 rounded"
                               />
-                              <span className={`min-w-0 flex-1 truncate ${done ? "text-muted-foreground line-through" : ""}`}>
+                              <span className={`min-w-0 flex-1 truncate ${tdone ? "text-muted-foreground line-through" : ""}`}>
                                 {t.title}
                               </span>
-                              <span className="flex shrink-0 items-center gap-1.5">
-                                {dash.assigneesByTask[t.id]?.[0] && (
-                                  <span className="text-[11px] text-muted-foreground">
-                                    {dash.assigneesByTask[t.id][0].split(" ")[0]}
-                                  </span>
-                                )}
-                                <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${statusPillClasses(t.status)}`}>
-                                  {statusLabel(t.status)}
+                              {dash.assigneesByTask[t.id]?.[0] && (
+                                <span className="hidden shrink-0 text-[11px] text-muted-foreground sm:inline">
+                                  {dash.assigneesByTask[t.id][0].split(" ")[0]}
                                 </span>
-                              </span>
+                              )}
                             </div>
                           );
                         })
@@ -281,7 +338,6 @@ function Dashboard() {
             )}
           </div>
         </div>
-
       </div>
     </div>
   );
@@ -299,7 +355,7 @@ function Counter({
   value: number;
 }) {
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
+    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-pop">
       <div className="flex items-start justify-between">
         <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${pastelClasses(color)}`}>
           {icon}

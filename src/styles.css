@@ -182,3 +182,27 @@
     letter-spacing: -0.015em;
   }
 }
+
+@layer utilities {
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slide-out-left {
+    to { opacity: 0; transform: translateX(-12px); }
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 0.4s ease-out both;
+  }
+  .animate-slide-out-left {
+    animation: slide-out-left 0.25s ease-in forwards;
+  }
+
+  /* Soft pastel hero gradient banner */
+  .hero-gradient {
+    background:
+      radial-gradient(80% 60% at 0% 0%, color-mix(in oklab, var(--lavender) 55%, transparent) 0%, transparent 60%),
+      radial-gradient(70% 60% at 100% 0%, color-mix(in oklab, var(--mint) 45%, transparent) 0%, transparent 60%),
+      radial-gradient(60% 80% at 50% 100%, color-mix(in oklab, var(--peach) 35%, transparent) 0%, transparent 70%);
+  }
+}
