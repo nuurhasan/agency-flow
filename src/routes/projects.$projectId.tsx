@@ -84,16 +84,27 @@ function ProjectDetailPage() {
       toast.error(e instanceof Error ? e.message : "Failed to delete (admins only)"),
   });
 
-  const setArchived = useMutation({
-    mutationFn: async (next: "active" | "archived") => {
+  type ProjectStatus = "planning" | "active" | "on_hold" | "completed" | "archived";
+  const PROJECT_STATUSES: ProjectStatus[] = ["planning", "active", "on_hold", "completed", "archived"];
+
+  const setStatus = useMutation({
+    mutationFn: async (next: ProjectStatus) => {
       const { error } = await supabase
         .from("projects")
         .update({ status: next })
         .eq("id", projectId);
       if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          project_id: projectId,
+          action: "project.status_changed",
+          meta: { status: next },
+        });
+      }
     },
     onSuccess: (_d, next) => {
-      toast.success(next === "archived" ? "Project archived" : "Project restored");
+      toast.success(next === "archived" ? "Project archived" : `Status set to ${statusLabel(next)}`);
       qc.invalidateQueries();
       if (next === "archived") navigate({ to: "/projects/archived" });
     },
