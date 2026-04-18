@@ -357,7 +357,7 @@ function ProjectDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <TabsList>
             <TabsTrigger value="tasks">Tasks ({tasks.length})</TabsTrigger>
-            <TabsTrigger value="sprints">Sprints</TabsTrigger>
+            <TabsTrigger value="sprints">Sprints ({sprints.length})</TabsTrigger>
             <TabsTrigger value="credentials">
               <KeyRound className="h-3.5 w-3.5" /> Credentials ({credentials.length})
             </TabsTrigger>
