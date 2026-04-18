@@ -62,6 +62,7 @@ function ProjectDetailPage() {
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
   const [applyOpen, setApplyOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
 
   const credActions = useCredentialActions();
   const CredDialog = credActions.Dialog;
@@ -78,6 +79,22 @@ function ProjectDetailPage() {
     },
     onError: (e) =>
       toast.error(e instanceof Error ? e.message : "Failed to delete (admins only)"),
+  });
+
+  const setArchived = useMutation({
+    mutationFn: async (next: "active" | "archived") => {
+      const { error } = await supabase
+        .from("projects")
+        .update({ status: next })
+        .eq("id", projectId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, next) => {
+      toast.success(next === "archived" ? "Project archived" : "Project restored");
+      qc.invalidateQueries();
+      if (next === "archived") navigate({ to: "/projects/archived" });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
   const { data: credentials = [] } = useQuery({
