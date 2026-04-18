@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { priorityClasses } from "@/lib/pastel";
+import { BacklogList } from "@/components/BacklogList";
 
 export type BoardTask = {
   id: string;
@@ -32,19 +33,38 @@ const COLUMNS: Array<{ id: BoardTask["status"]; label: string }> = [
   { id: "done", label: "Done" },
 ];
 
+export const BACKLOG_DROP_ID = "__backlog__";
+
 interface Props {
   sprintId: string;
   projectId: string;
-  tasks: BoardTask[];
-  /** Allow dropping tasks from the backlog into this board */
-  acceptBacklog?: boolean;
+  /** Tasks belonging to this sprint */
+  sprintTasks: BoardTask[];
+  /** Tasks in the backlog for this project */
+  backlogTasks: BoardTask[];
+  onEditTask?: (taskId: string) => void;
 }
 
-const BACKLOG_DROP_ID = "__backlog__";
-
-export function SprintBoard({ sprintId, projectId, tasks, acceptBacklog = true }: Props) {
+/**
+ * Combined Sprint Board + Backlog with drag-and-drop between them.
+ * Wraps the whole thing in a single DndContext so cards can move between
+ * any column and the backlog.
+ */
+export function SprintBoard({
+  sprintId,
+  projectId,
+  sprintTasks,
+  backlogTasks,
+  onEditTask,
+}: Props) {
   const qc = useQueryClient();
-  const [activeTask, setActiveTask] = React.useState<BoardTask | null>(null);
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+
+  const allTasks = React.useMemo(
+    () => [...sprintTasks, ...backlogTasks],
+    [sprintTasks, backlogTasks]
+  );
+  const activeTask = activeId ? allTasks.find((t) => t.id === activeId) ?? null : null;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -68,11 +88,7 @@ export function SprintBoard({ sprintId, projectId, tasks, acceptBacklog = true }
       }
       const { error } = await supabase
         .from("tasks")
-        .update({
-          status: target,
-          sprint_id: sprintId,
-          is_backlog: false,
-        })
+        .update({ status: target, sprint_id: sprintId, is_backlog: false })
         .eq("id", task.id);
       if (error) throw error;
     },
@@ -83,16 +99,13 @@ export function SprintBoard({ sprintId, projectId, tasks, acceptBacklog = true }
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to move task"),
   });
 
-  const onDragStart = (e: DragStartEvent) => {
-    const id = e.active.id as string;
-    setActiveTask(tasks.find((t) => t.id === id) ?? null);
-  };
+  const onDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
 
   const onDragEnd = (e: DragEndEvent) => {
-    setActiveTask(null);
+    setActiveId(null);
     const overId = e.over?.id as string | undefined;
     if (!overId) return;
-    const task = tasks.find((t) => t.id === e.active.id);
+    const task = allTasks.find((t) => t.id === e.active.id);
     if (!task) return;
 
     if (overId === BACKLOG_DROP_ID) {
@@ -102,7 +115,7 @@ export function SprintBoard({ sprintId, projectId, tasks, acceptBacklog = true }
     }
 
     const target = overId as BoardTask["status"];
-    if (target === task.status && task.sprint_id === sprintId) return;
+    if (target === task.status && task.sprint_id === sprintId && !task.is_backlog) return;
     moveTask.mutate({ task, target });
   };
 
@@ -113,20 +126,28 @@ export function SprintBoard({ sprintId, projectId, tasks, acceptBacklog = true }
       in_review: [],
       done: [],
     };
-    for (const t of tasks) {
-      if (t.sprint_id === sprintId) map[t.status].push(t);
+    for (const t of sprintTasks) {
+      if (map[t.status]) map[t.status].push(t);
     }
     return map;
-  }, [tasks, sprintId]);
+  }, [sprintTasks]);
 
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {COLUMNS.map((col) => (
-          <Column key={col.id} id={col.id} label={col.label} tasks={grouped[col.id]} />
-        ))}
+      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {COLUMNS.map((col) => (
+            <Column
+              key={col.id}
+              id={col.id}
+              label={col.label}
+              tasks={grouped[col.id]}
+              onEditTask={onEditTask}
+            />
+          ))}
+        </div>
+        <BacklogList tasks={backlogTasks} onEdit={onEditTask} />
       </div>
-      {acceptBacklog && <BacklogDropHint />}
       <DragOverlay>
         {activeTask ? <TaskCard task={activeTask} dragging /> : null}
       </DragOverlay>
@@ -138,10 +159,12 @@ function Column({
   id,
   label,
   tasks,
+  onEditTask,
 }: {
   id: BoardTask["status"];
   label: string;
   tasks: BoardTask[];
+  onEditTask?: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
@@ -161,7 +184,7 @@ function Column({
       </div>
       <div className="flex flex-col gap-2">
         {tasks.map((t) => (
-          <DraggableCard key={t.id} task={t} />
+          <DraggableCard key={t.id} task={t} onClick={() => onEditTask?.(t.id)} />
         ))}
         {tasks.length === 0 && (
           <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
@@ -173,13 +196,14 @@ function Column({
   );
 }
 
-function DraggableCard({ task }: { task: BoardTask }) {
+function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      onDoubleClick={onClick}
       className={`cursor-grab active:cursor-grabbing ${isDragging ? "opacity-30" : ""}`}
     >
       <TaskCard task={task} />
@@ -210,10 +234,3 @@ function TaskCard({ task, dragging = false }: { task: BoardTask; dragging?: bool
     </div>
   );
 }
-
-function BacklogDropHint() {
-  // Reserved for future inline hint; the actual backlog droppable lives in BacklogList.
-  return null;
-}
-
-export { BACKLOG_DROP_ID };
