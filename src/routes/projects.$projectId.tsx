@@ -343,10 +343,26 @@ function ProjectDetailPage() {
             </div>
           ) : (
             <Tabs defaultValue="open">
-              <TabsList>
-                <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
-                <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
-              </TabsList>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <TabsList>
+                  <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
+                  <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
+                </TabsList>
+                <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+                  <SelectTrigger className="h-9 w-[200px] rounded-full">
+                    <SelectValue placeholder="Assignee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All assignees</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {members.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <TabsContent value="open" className="mt-4">
                 <TaskList
                   tasks={openTasks}
@@ -354,6 +370,11 @@ function ProjectDetailPage() {
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
                   onEdit={openEdit}
+                  emptyText={
+                    assigneeFilter === "all"
+                      ? "Nothing here."
+                      : "No open tasks match this filter."
+                  }
                 />
               </TabsContent>
               <TabsContent value="completed" className="mt-4">
@@ -363,7 +384,11 @@ function ProjectDetailPage() {
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
                   onEdit={openEdit}
-                  emptyText="No completed tasks yet."
+                  emptyText={
+                    assigneeFilter === "all"
+                      ? "No completed tasks yet."
+                      : "No completed tasks match this filter."
+                  }
                 />
               </TabsContent>
             </Tabs>
