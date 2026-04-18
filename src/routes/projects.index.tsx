@@ -43,6 +43,21 @@ function ProjectsPage() {
     },
   });
 
+  const { data: activeSprints = [] } = useQuery({
+    queryKey: ["active-sprints"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("sprints")
+        .select("id,project_id,name")
+        .eq("status", "active");
+      return data ?? [];
+    },
+  });
+  const activeSprintByProject = React.useMemo(
+    () => new Map(activeSprints.map((s) => [s.project_id, s])),
+    [activeSprints],
+  );
+
   const filtered = (projects ?? []).filter((p) => {
     if (status !== "all" && p.status !== status) return false;
     if (service !== "all" && p.service_type !== service) return false;
