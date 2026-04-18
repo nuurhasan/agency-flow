@@ -400,7 +400,26 @@ function ProjectDetailPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="credentials" className="mt-4 space-y-4">
+        <TabsContent value="sprints" className="mt-4">
+          <SprintsTab
+            projectId={projectId}
+            tasks={tasks.map((t) => ({
+              id: t.id,
+              title: t.title,
+              status: t.status,
+              priority: t.priority,
+              due_date: t.due_date,
+              sprint_id: t.sprint_id,
+              is_backlog: t.is_backlog,
+            }))}
+            onEditTask={(id) => {
+              const t = tasks.find((x) => x.id === id);
+              if (t) openEdit(t);
+            }}
+          />
+        </TabsContent>
+
+
           <div className="flex justify-end">
             <Button onClick={credActions.openNew} className="rounded-full">
               <Plus className="h-4 w-4" /> New credential
