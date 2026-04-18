@@ -66,6 +66,7 @@ function ProjectDetailPage() {
   const [applyOpen, setApplyOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
   const credActions = useCredentialActions();
   const CredDialog = credActions.Dialog;
@@ -221,7 +222,8 @@ function ProjectDetailPage() {
     if (assigneeFilter === "unassigned") return ids.length === 0;
     return ids.includes(assigneeFilter);
   };
-  const visibleTasks = tasks.filter((t) => matchesAssignee(t.id));
+  const matchesStatus = (t: TaskRow) => statusFilter === "all" || t.status === statusFilter;
+  const visibleTasks = tasks.filter((t) => matchesAssignee(t.id) && matchesStatus(t));
   const openTasks = visibleTasks.filter((t) => t.status !== "done");
   const doneTasks = visibleTasks.filter((t) => t.status === "done");
   const isArchived = project?.status === "archived";
@@ -395,20 +397,34 @@ function ProjectDetailPage() {
                   <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
                   <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
                 </TabsList>
-                <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-                  <SelectTrigger className="h-9 w-[200px] rounded-full">
-                    <SelectValue placeholder="Assignee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All assignees</SelectItem>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {members.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="h-9 w-[160px] rounded-full">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      <SelectItem value="todo">To Do</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="in_review">In Review</SelectItem>
+                      <SelectItem value="done">Done</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+                    <SelectTrigger className="h-9 w-[200px] rounded-full">
+                      <SelectValue placeholder="Assignee" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All assignees</SelectItem>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {members.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <TabsContent value="open" className="mt-4">
                 <TaskList
