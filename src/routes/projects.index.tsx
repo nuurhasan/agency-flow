@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
-import { Archive, Plus, Search } from "lucide-react";
+import { Archive, Plus, Search, Zap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
