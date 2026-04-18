@@ -222,7 +222,8 @@ function ProjectDetailPage() {
     if (assigneeFilter === "unassigned") return ids.length === 0;
     return ids.includes(assigneeFilter);
   };
-  const visibleTasks = tasks.filter((t) => matchesAssignee(t.id));
+  const matchesStatus = (t: TaskRow) => statusFilter === "all" || t.status === statusFilter;
+  const visibleTasks = tasks.filter((t) => matchesAssignee(t.id) && matchesStatus(t));
   const openTasks = visibleTasks.filter((t) => t.status !== "done");
   const doneTasks = visibleTasks.filter((t) => t.status === "done");
   const isArchived = project?.status === "archived";
