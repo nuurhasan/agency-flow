@@ -250,11 +250,24 @@ function ProjectDetailPage() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold tracking-tight">{project.name}</h1>
-            {project.status !== "active" && (
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(project.status)}`}>
-                {statusLabel(project.status)}
-              </span>
-            )}
+            <Select
+              value={project.status}
+              onValueChange={(v) => setStatus.mutate(v as ProjectStatus)}
+              disabled={setStatus.isPending}
+            >
+              <SelectTrigger
+                className={`h-7 w-auto gap-1.5 rounded-full border-0 px-2.5 py-0 text-[11px] font-medium shadow-none focus:ring-0 ${statusPillClasses(project.status)}`}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PROJECT_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {statusLabel(s)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {project.service_type}
             </span>
@@ -272,8 +285,8 @@ function ProjectDetailPage() {
             variant="outline"
             size="sm"
             className="rounded-full"
-            onClick={() => setArchived.mutate(isArchived ? "active" : "archived")}
-            disabled={setArchived.isPending}
+            onClick={() => setStatus.mutate(isArchived ? "active" : "archived")}
+            disabled={setStatus.isPending}
           >
             {isArchived ? (
               <>
