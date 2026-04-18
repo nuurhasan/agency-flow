@@ -66,6 +66,7 @@ function ProjectDetailPage() {
   const [applyOpen, setApplyOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
   const credActions = useCredentialActions();
   const CredDialog = credActions.Dialog;
