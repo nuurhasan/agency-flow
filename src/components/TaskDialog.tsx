@@ -24,7 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const STATUSES = ["todo", "in_progress", "waiting", "done"] as const;
+const STATUSES = ["todo", "in_progress", "in_review", "done"] as const;
+const STATUS_LABELS: Record<(typeof STATUSES)[number], string> = {
+  todo: "To Do",
+  in_progress: "In Progress",
+  in_review: "In Review",
+  done: "Done",
+};
 const PRIORITIES = ["low", "medium", "high"] as const;
 
 interface Props {
@@ -198,7 +204,7 @@ export function TaskDialog({
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>{s.replace("_", " ")}</SelectItem>
+                    <SelectItem key={s} value={s}>{STATUS_LABELS[s]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

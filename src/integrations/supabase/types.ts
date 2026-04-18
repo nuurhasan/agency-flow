@@ -424,6 +424,53 @@ export type Database = {
         }
         Relationships: []
       }
+      sprints: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          goal: string | null
+          id: string
+          name: string
+          project_id: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["sprint_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          goal?: string | null
+          id?: string
+          name: string
+          project_id: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["sprint_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          goal?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["sprint_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprints_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -582,40 +629,49 @@ export type Database = {
       }
       tasks: {
         Row: {
+          board_position: number
           completed_at: string | null
           created_at: string
           created_by: string | null
           description: string | null
           due_date: string | null
           id: string
+          is_backlog: boolean
           priority: Database["public"]["Enums"]["task_priority"]
           project_id: string
+          sprint_id: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
         }
         Insert: {
+          board_position?: number
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
+          is_backlog?: boolean
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id: string
+          sprint_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
         }
         Update: {
+          board_position?: number
           completed_at?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           due_date?: string | null
           id?: string
+          is_backlog?: boolean
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id?: string
+          sprint_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
           updated_at?: string
@@ -626,6 +682,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_sprint_id_fkey"
+            columns: ["sprint_id"]
+            isOneToOne: false
+            referencedRelation: "sprints"
             referencedColumns: ["id"]
           },
         ]
@@ -656,10 +719,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_sprint: { Args: { _sprint_id: string }; Returns: undefined }
       apply_task_template: {
         Args: { _project_id: string; _start_date: string; _template_id: string }
         Returns: number
       }
+      complete_sprint: { Args: { _sprint_id: string }; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -717,8 +782,9 @@ export type Database = {
         | "maintenance"
         | "branding"
         | "other"
+      sprint_status: "planned" | "active" | "completed"
       task_priority: "low" | "medium" | "high"
-      task_status: "todo" | "in_progress" | "waiting" | "done"
+      task_status: "todo" | "in_progress" | "in_review" | "done"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -862,8 +928,9 @@ export const Constants = {
         "branding",
         "other",
       ],
+      sprint_status: ["planned", "active", "completed"],
       task_priority: ["low", "medium", "high"],
-      task_status: ["todo", "in_progress", "waiting", "done"],
+      task_status: ["todo", "in_progress", "in_review", "done"],
     },
   },
 } as const

@@ -18,6 +18,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
+import { SprintsTab } from "@/components/SprintsTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -46,10 +47,12 @@ type TaskRow = {
   project_id: string;
   title: string;
   description: string | null;
-  status: "todo" | "in_progress" | "waiting" | "done";
+  status: "todo" | "in_progress" | "in_review" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;
+  sprint_id: string | null;
+  is_backlog: boolean;
 };
 
 function ProjectDetailPage() {
@@ -157,7 +160,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id,project_id,title,description,status,priority,due_date,updated_at")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id,is_backlog")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false });
       return (data ?? []) as TaskRow[];
@@ -312,6 +315,7 @@ function ProjectDetailPage() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <TabsList>
             <TabsTrigger value="tasks">Tasks ({tasks.length})</TabsTrigger>
+            <TabsTrigger value="sprints">Sprints</TabsTrigger>
             <TabsTrigger value="credentials">
               <KeyRound className="h-3.5 w-3.5" /> Credentials ({credentials.length})
             </TabsTrigger>
@@ -394,6 +398,25 @@ function ProjectDetailPage() {
               </TabsContent>
             </Tabs>
           )}
+        </TabsContent>
+
+        <TabsContent value="sprints" className="mt-4">
+          <SprintsTab
+            projectId={projectId}
+            tasks={tasks.map((t) => ({
+              id: t.id,
+              title: t.title,
+              status: t.status,
+              priority: t.priority,
+              due_date: t.due_date,
+              sprint_id: t.sprint_id,
+              is_backlog: t.is_backlog,
+            }))}
+            onEditTask={(id) => {
+              const t = tasks.find((x) => x.id === id);
+              if (t) openEdit(t);
+            }}
+          />
         </TabsContent>
 
         <TabsContent value="credentials" className="mt-4 space-y-4">

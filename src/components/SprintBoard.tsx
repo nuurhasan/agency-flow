@@ -1,0 +1,236 @@
+import * as React from "react";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+  useDroppable,
+  useDraggable,
+} from "@dnd-kit/core";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { priorityClasses } from "@/lib/pastel";
+import { BacklogList } from "@/components/BacklogList";
+
+export type BoardTask = {
+  id: string;
+  title: string;
+  status: "todo" | "in_progress" | "in_review" | "done";
+  priority: "low" | "medium" | "high";
+  due_date: string | null;
+  sprint_id: string | null;
+  is_backlog: boolean;
+};
+
+const COLUMNS: Array<{ id: BoardTask["status"]; label: string }> = [
+  { id: "todo", label: "To Do" },
+  { id: "in_progress", label: "In Progress" },
+  { id: "in_review", label: "In Review" },
+  { id: "done", label: "Done" },
+];
+
+export const BACKLOG_DROP_ID = "__backlog__";
+
+interface Props {
+  sprintId: string;
+  projectId: string;
+  /** Tasks belonging to this sprint */
+  sprintTasks: BoardTask[];
+  /** Tasks in the backlog for this project */
+  backlogTasks: BoardTask[];
+  onEditTask?: (taskId: string) => void;
+}
+
+/**
+ * Combined Sprint Board + Backlog with drag-and-drop between them.
+ * Wraps the whole thing in a single DndContext so cards can move between
+ * any column and the backlog.
+ */
+export function SprintBoard({
+  sprintId,
+  projectId,
+  sprintTasks,
+  backlogTasks,
+  onEditTask,
+}: Props) {
+  const qc = useQueryClient();
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+
+  const allTasks = React.useMemo(
+    () => [...sprintTasks, ...backlogTasks],
+    [sprintTasks, backlogTasks]
+  );
+  const activeTask = activeId ? allTasks.find((t) => t.id === activeId) ?? null : null;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  const moveTask = useMutation({
+    mutationFn: async ({
+      task,
+      target,
+    }: {
+      task: BoardTask;
+      target: BoardTask["status"] | typeof BACKLOG_DROP_ID;
+    }) => {
+      if (target === BACKLOG_DROP_ID) {
+        const { error } = await supabase
+          .from("tasks")
+          .update({ sprint_id: null, is_backlog: true })
+          .eq("id", task.id);
+        if (error) throw error;
+        return;
+      }
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: target, sprint_id: sprintId, is_backlog: false })
+        .eq("id", task.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to move task"),
+  });
+
+  const onDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
+
+  const onDragEnd = (e: DragEndEvent) => {
+    setActiveId(null);
+    const overId = e.over?.id as string | undefined;
+    if (!overId) return;
+    const task = allTasks.find((t) => t.id === e.active.id);
+    if (!task) return;
+
+    if (overId === BACKLOG_DROP_ID) {
+      if (task.is_backlog) return;
+      moveTask.mutate({ task, target: BACKLOG_DROP_ID });
+      return;
+    }
+
+    const target = overId as BoardTask["status"];
+    if (target === task.status && task.sprint_id === sprintId && !task.is_backlog) return;
+    moveTask.mutate({ task, target });
+  };
+
+  const grouped = React.useMemo(() => {
+    const map: Record<BoardTask["status"], BoardTask[]> = {
+      todo: [],
+      in_progress: [],
+      in_review: [],
+      done: [],
+    };
+    for (const t of sprintTasks) {
+      if (map[t.status]) map[t.status].push(t);
+    }
+    return map;
+  }, [sprintTasks]);
+
+  return (
+    <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {COLUMNS.map((col) => (
+            <Column
+              key={col.id}
+              id={col.id}
+              label={col.label}
+              tasks={grouped[col.id]}
+              onEditTask={onEditTask}
+            />
+          ))}
+        </div>
+        <BacklogList tasks={backlogTasks} onEdit={onEditTask} />
+      </div>
+      <DragOverlay>
+        {activeTask ? <TaskCard task={activeTask} dragging /> : null}
+      </DragOverlay>
+    </DndContext>
+  );
+}
+
+function Column({
+  id,
+  label,
+  tasks,
+  onEditTask,
+}: {
+  id: BoardTask["status"];
+  label: string;
+  tasks: BoardTask[];
+  onEditTask?: (id: string) => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-colors ${
+        isOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+      }`}
+    >
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </p>
+        <span className="rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+          {tasks.length}
+        </span>
+      </div>
+      <div className="flex flex-col gap-2">
+        {tasks.map((t) => (
+          <DraggableCard key={t.id} task={t} onClick={() => onEditTask?.(t.id)} />
+        ))}
+        {tasks.length === 0 && (
+          <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+            Drop tasks here
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => void }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      onDoubleClick={onClick}
+      className={`cursor-grab active:cursor-grabbing ${isDragging ? "opacity-30" : ""}`}
+    >
+      <TaskCard task={task} />
+    </div>
+  );
+}
+
+function TaskCard({ task, dragging = false }: { task: BoardTask; dragging?: boolean }) {
+  return (
+    <div
+      className={`rounded-xl border border-border bg-card p-3 shadow-soft ${
+        dragging ? "rotate-2 shadow-pop" : ""
+      }`}
+    >
+      <p className="text-sm font-medium leading-snug">{task.title}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
+        >
+          {task.priority}
+        </span>
+        {task.due_date && (
+          <span className="text-[11px] text-muted-foreground">
+            Due {new Date(task.due_date).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
