@@ -189,8 +189,16 @@ function ProjectDetailPage() {
   });
 
   const memberById = new Map(members.map((m) => [m.id, m.name] as const));
-  const openTasks = tasks.filter((t) => t.status !== "done");
-  const doneTasks = tasks.filter((t) => t.status === "done");
+  const matchesAssignee = (id: string) => {
+    if (assigneeFilter === "all") return true;
+    const ids = assigneeMap[id] ?? [];
+    if (assigneeFilter === "unassigned") return ids.length === 0;
+    return ids.includes(assigneeFilter);
+  };
+  const visibleTasks = tasks.filter((t) => matchesAssignee(t.id));
+  const openTasks = visibleTasks.filter((t) => t.status !== "done");
+  const doneTasks = visibleTasks.filter((t) => t.status === "done");
+  const isArchived = project?.status === "archived";
 
   const openNew = () => {
     setEditingTask(null);
@@ -245,25 +253,43 @@ function ProjectDetailPage() {
             <p className="mt-3 text-sm text-foreground/80">{project.description}</p>
           )}
         </div>
-        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" /> Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete this project?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This permanently deletes <strong>{project.name}</strong> along with its tasks,
-                credentials, and activity. This action cannot be undone. Only admins can delete
-                projects.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            onClick={() => setArchived.mutate(isArchived ? "active" : "archived")}
+            disabled={setArchived.isPending}
+          >
+            {isArchived ? (
+              <>
+                <ArchiveRestore className="h-4 w-4" /> Unarchive
+              </>
+            ) : (
+              <>
+                <Archive className="h-4 w-4" /> Archive
+              </>
+            )}
+          </Button>
+          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes <strong>{project.name}</strong> along with its tasks,
+                  credentials, and activity. This action cannot be undone. Only admins can delete
+                  projects.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
