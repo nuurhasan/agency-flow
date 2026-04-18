@@ -123,8 +123,8 @@ function TasksPage() {
   );
 
   const toggleDone = useMutation({
-    mutationFn: async (t: TaskRow) => {
-      const nextStatus = t.status === "done" ? "todo" : "done";
+    mutationFn: async (vars: { task: TaskRow; nextStatus: "todo" | "done" }) => {
+      const { task: t, nextStatus } = vars;
       const { error } = await supabase.from("tasks").update({ status: nextStatus }).eq("id", t.id);
       if (error) throw error;
       if (user) {
