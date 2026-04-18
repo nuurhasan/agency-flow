@@ -378,44 +378,98 @@ function TaskList({
       </p>
     );
   }
+
   return (
     <ul className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card shadow-soft">
       {tasks.map((t) => {
-        const names = (assigneeMap[t.id] ?? []).map((id) => memberById.get(id)).filter(Boolean) as string[];
-        const done = t.status === "done";
+        const names = (assigneeMap[t.id] ?? [])
+          .map((id) => memberById.get(id))
+          .filter(Boolean) as string[];
+
         return (
-          <li key={t.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
-            <Checkbox
-              checked={done}
-              onCheckedChange={() => onToggle(t)}
-              aria-label={done ? "Mark as not done" : "Mark as done"}
-              className="h-5 w-5 rounded-md"
-            />
-            <button
-              type="button"
-              onClick={() => onEdit(t)}
-              className="flex min-w-0 flex-1 items-center gap-3 text-left"
-            >
-              <div className="min-w-0 flex-1">
-                <p className={`truncate font-medium ${done ? "text-muted-foreground line-through" : ""}`}>
-                  {t.title}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {names.length ? names.join(", ") : "Unassigned"}
-                  {t.due_date ? ` · Due ${new Date(t.due_date).toLocaleDateString()}` : ""}
-                </p>
-              </div>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityPill(t.priority)}`}>
-                {t.priority}
-              </span>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(t.status)}`}>
-                {statusLabel(t.status)}
-              </span>
-            </button>
-          </li>
+          <TaskListItem
+            key={t.id}
+            task={t}
+            names={names}
+            onToggle={() => onToggle(t)}
+            onEdit={() => onEdit(t)}
+          />
         );
       })}
     </ul>
+  );
+}
+
+function TaskListItem({
+  task,
+  names,
+  onToggle,
+  onEdit,
+}: {
+  task: TaskRow;
+  names: string[];
+  onToggle: () => void;
+  onEdit: () => void;
+}) {
+  const serverDone = task.status === "done";
+  const [completing, setCompleting] = React.useState(false);
+  const [leaving, setLeaving] = React.useState(false);
+
+  const showAsDone = serverDone || completing;
+
+  const handleToggle = (checked: boolean | "indeterminate") => {
+    if (serverDone) {
+      onToggle();
+      return;
+    }
+
+    if (checked === true && !completing) {
+      setCompleting(true);
+      window.setTimeout(() => setLeaving(true), 1800);
+      window.setTimeout(() => onToggle(), 2250);
+    }
+  };
+
+  return (
+    <li
+      className={`flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40 ${leaving ? "animate-slide-out-left" : ""}`}
+    >
+      <Checkbox
+        checked={showAsDone}
+        onCheckedChange={handleToggle}
+        aria-label={showAsDone ? "Mark as not done" : "Mark as done"}
+        className="h-5 w-5 rounded-md"
+      />
+      <button
+        type="button"
+        onClick={onEdit}
+        className="flex min-w-0 flex-1 items-center gap-3 text-left"
+      >
+        <div className="min-w-0 flex-1">
+          <p
+            className={`truncate font-medium transition-all duration-300 ${showAsDone ? "text-muted-foreground line-through" : ""}`}
+          >
+            {task.title}
+          </p>
+          <p
+            className={`truncate text-xs text-muted-foreground transition-opacity duration-300 ${showAsDone ? "opacity-60" : ""}`}
+          >
+            {names.length ? names.join(", ") : "Unassigned"}
+            {task.due_date ? ` · Due ${new Date(task.due_date).toLocaleDateString()}` : ""}
+          </p>
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityPill(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
+        >
+          {task.priority}
+        </span>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
+        >
+          {statusLabel(showAsDone ? "done" : task.status)}
+        </span>
+      </button>
+    </li>
   );
 }
 
