@@ -83,9 +83,10 @@ function TasksPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("projects")
-        .select("id,name,color,client_name")
+        .select("id,name,color,client_name,status")
+        .neq("status", "archived")
         .order("name");
-      return data ?? [];
+      return (data ?? []) as { id: string; name: string; color: string; client_name: string; status: string }[];
     },
   });
 
@@ -144,6 +145,7 @@ function TasksPage() {
   const filtered = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     return tasks.filter((t) => {
+      if (!projectById.has(t.project_id)) return false;
       if (tab === "open" && t.status === "done") return false;
       if (tab === "completed" && t.status !== "done") return false;
       if (tab === "mine") {
@@ -162,7 +164,7 @@ function TasksPage() {
       if (q && !t.title.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [tasks, tab, search, projectFilter, priorityFilter, assigneeFilter, assigneeMap, user]);
+  }, [tasks, tab, search, projectFilter, priorityFilter, assigneeFilter, assigneeMap, user, projectById]);
 
   const grouped = React.useMemo(() => {
     const map = new Map<string, TaskRow[]>();

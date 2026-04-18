@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Sparkles, KeyRound, Trash2 } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +23,13 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 
 export const Route = createFileRoute("/projects/$projectId")({
@@ -55,6 +62,7 @@ function ProjectDetailPage() {
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
   const [applyOpen, setApplyOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
+  const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
 
   const credActions = useCredentialActions();
   const CredDialog = credActions.Dialog;
@@ -71,6 +79,22 @@ function ProjectDetailPage() {
     },
     onError: (e) =>
       toast.error(e instanceof Error ? e.message : "Failed to delete (admins only)"),
+  });
+
+  const setArchived = useMutation({
+    mutationFn: async (next: "active" | "archived") => {
+      const { error } = await supabase
+        .from("projects")
+        .update({ status: next })
+        .eq("id", projectId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, next) => {
+      toast.success(next === "archived" ? "Project archived" : "Project restored");
+      qc.invalidateQueries();
+      if (next === "archived") navigate({ to: "/projects/archived" });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
   const { data: credentials = [] } = useQuery({
@@ -165,8 +189,16 @@ function ProjectDetailPage() {
   });
 
   const memberById = new Map(members.map((m) => [m.id, m.name] as const));
-  const openTasks = tasks.filter((t) => t.status !== "done");
-  const doneTasks = tasks.filter((t) => t.status === "done");
+  const matchesAssignee = (id: string) => {
+    if (assigneeFilter === "all") return true;
+    const ids = assigneeMap[id] ?? [];
+    if (assigneeFilter === "unassigned") return ids.length === 0;
+    return ids.includes(assigneeFilter);
+  };
+  const visibleTasks = tasks.filter((t) => matchesAssignee(t.id));
+  const openTasks = visibleTasks.filter((t) => t.status !== "done");
+  const doneTasks = visibleTasks.filter((t) => t.status === "done");
+  const isArchived = project?.status === "archived";
 
   const openNew = () => {
     setEditingTask(null);
@@ -221,25 +253,43 @@ function ProjectDetailPage() {
             <p className="mt-3 text-sm text-foreground/80">{project.description}</p>
           )}
         </div>
-        <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" /> Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete this project?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This permanently deletes <strong>{project.name}</strong> along with its tasks,
-                credentials, and activity. This action cannot be undone. Only admins can delete
-                projects.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            onClick={() => setArchived.mutate(isArchived ? "active" : "archived")}
+            disabled={setArchived.isPending}
+          >
+            {isArchived ? (
+              <>
+                <ArchiveRestore className="h-4 w-4" /> Unarchive
+              </>
+            ) : (
+              <>
+                <Archive className="h-4 w-4" /> Archive
+              </>
+            )}
+          </Button>
+          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" /> Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this project?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes <strong>{project.name}</strong> along with its tasks,
+                  credentials, and activity. This action cannot be undone. Only admins can delete
+                  projects.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
@@ -255,6 +305,7 @@ function ProjectDetailPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        </div>
       </div>
 
       <Tabs defaultValue="tasks">
@@ -293,10 +344,26 @@ function ProjectDetailPage() {
             </div>
           ) : (
             <Tabs defaultValue="open">
-              <TabsList>
-                <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
-                <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
-              </TabsList>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <TabsList>
+                  <TabsTrigger value="open">Open ({openTasks.length})</TabsTrigger>
+                  <TabsTrigger value="completed">Completed ({doneTasks.length})</TabsTrigger>
+                </TabsList>
+                <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+                  <SelectTrigger className="h-9 w-[200px] rounded-full">
+                    <SelectValue placeholder="Assignee" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All assignees</SelectItem>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {members.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <TabsContent value="open" className="mt-4">
                 <TaskList
                   tasks={openTasks}
@@ -304,6 +371,11 @@ function ProjectDetailPage() {
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
                   onEdit={openEdit}
+                  emptyText={
+                    assigneeFilter === "all"
+                      ? "Nothing here."
+                      : "No open tasks match this filter."
+                  }
                 />
               </TabsContent>
               <TabsContent value="completed" className="mt-4">
@@ -313,7 +385,11 @@ function ProjectDetailPage() {
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
                   onEdit={openEdit}
-                  emptyText="No completed tasks yet."
+                  emptyText={
+                    assigneeFilter === "all"
+                      ? "No completed tasks yet."
+                      : "No completed tasks match this filter."
+                  }
                 />
               </TabsContent>
             </Tabs>

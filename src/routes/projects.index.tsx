@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
-import { Plus, Search } from "lucide-react";
+import { Archive, Plus, Search } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +37,7 @@ function ProjectsPage() {
       const { data } = await supabase
         .from("projects")
         .select("id,name,color,client_name,status,service_type,due_date,description")
+        .neq("status", "archived")
         .order("updated_at", { ascending: false });
       return data ?? [];
     },
@@ -56,9 +57,16 @@ function ProjectsPage() {
           <h1 className="font-display text-3xl font-bold tracking-tight">Projects</h1>
           <p className="mt-1 text-muted-foreground">All client work, in one colorful place.</p>
         </div>
-        <Button onClick={() => setOpen(true)} className="rounded-full" size="lg">
-          <Plus className="h-4 w-4" /> New project
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" className="rounded-full" size="lg">
+            <Link to="/projects/archived">
+              <Archive className="h-4 w-4" /> Archived
+            </Link>
+          </Button>
+          <Button onClick={() => setOpen(true)} className="rounded-full" size="lg">
+            <Plus className="h-4 w-4" /> New project
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
@@ -75,7 +83,7 @@ function ProjectsPage() {
           <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            {["planning", "active", "on_hold", "completed", "archived"].map((s) => (
+            {["planning", "active", "on_hold", "completed"].map((s) => (
               <SelectItem key={s} value={s}>{statusLabel(s)}</SelectItem>
             ))}
           </SelectContent>
