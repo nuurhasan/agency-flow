@@ -49,13 +49,29 @@ function ProjectDetailPage() {
   const { projectId } = Route.useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [taskOpen, setTaskOpen] = React.useState(false);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
   const [applyOpen, setApplyOpen] = React.useState(false);
+  const [deleteOpen, setDeleteOpen] = React.useState(false);
 
   const credActions = useCredentialActions();
   const CredDialog = credActions.Dialog;
+
+  const deleteProject = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("projects").delete().eq("id", projectId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Project deleted");
+      qc.invalidateQueries({ queryKey: ["projects"] });
+      navigate({ to: "/projects" });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "Failed to delete (admins only)"),
+  });
 
   const { data: credentials = [] } = useQuery({
     queryKey: ["project-credentials", projectId],
