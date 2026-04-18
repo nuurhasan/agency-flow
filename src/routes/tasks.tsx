@@ -123,8 +123,8 @@ function TasksPage() {
   );
 
   const toggleDone = useMutation({
-    mutationFn: async (t: TaskRow) => {
-      const nextStatus = t.status === "done" ? "todo" : "done";
+    mutationFn: async (vars: { task: TaskRow; nextStatus: "todo" | "done" }) => {
+      const { task: t, nextStatus } = vars;
       const { error } = await supabase.from("tasks").update({ status: nextStatus }).eq("id", t.id);
       if (error) throw error;
       if (user) {
@@ -371,7 +371,8 @@ function TasksPage() {
                         people={(assigneeMap[t.id] ?? [])
                           .map((id) => memberById.get(id))
                           .filter(Boolean) as { id: string; name: string }[]}
-                        onToggle={() => toggleDone.mutate(t)}
+                        onComplete={() => toggleDone.mutate({ task: t, nextStatus: "done" })}
+                        onReopen={() => toggleDone.mutate({ task: t, nextStatus: "todo" })}
                         onEdit={() => openEdit(t)}
                       />
                     ))}
@@ -399,27 +400,41 @@ function TaskRowItem({
   task,
   projectColor,
   people,
-  onToggle,
+  onComplete,
+  onReopen,
   onEdit,
 }: {
   task: TaskRow;
   projectColor: string;
   people: { id: string; name: string }[];
-  onToggle: () => void;
+  onComplete: () => void;
+  onReopen: () => void;
   onEdit: () => void;
 }) {
-  const done = task.status === "done";
+  const serverDone = task.status === "done";
+  // Optimistic completion overlay: lets us show strikethrough → linger → fade out
+  // BEFORE the row is removed from the list by the query refetch.
+  const [completing, setCompleting] = React.useState(false);
   const [leaving, setLeaving] = React.useState(false);
 
+  const showAsDone = serverDone || completing;
+
   const handleToggle = (checked: boolean | "indeterminate") => {
-    if (!done && checked === true) {
-      setLeaving(true);
+    if (serverDone) {
+      // Re-opening a completed task: just flip immediately.
+      onReopen();
+      return;
+    }
+    if (checked === true && !completing) {
+      // 1. Mark as done locally (strikethrough appears)
+      setCompleting(true);
+      // 2. Linger ~2s so user sees the completion state
+      setTimeout(() => setLeaving(true), 1800);
+      // 3. After fade/collapse animation finishes, persist to DB
       setTimeout(() => {
-        onToggle();
-        setLeaving(false);
-      }, 420);
-    } else {
-      onToggle();
+        onComplete();
+        // setCompleting/setLeaving are reset implicitly: row unmounts on refetch
+      }, 2250);
     }
   };
 
@@ -432,9 +447,9 @@ function TaskRowItem({
         aria-hidden
       />
       <Checkbox
-        checked={done}
+        checked={showAsDone}
         onCheckedChange={handleToggle}
-        aria-label={done ? "Mark as not done" : "Mark as done"}
+        aria-label={showAsDone ? "Mark as not done" : "Mark as done"}
         className="h-5 w-5 rounded-md transition-transform active:scale-90"
       />
       <button
@@ -443,27 +458,27 @@ function TaskRowItem({
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
       >
         <div className="min-w-0 flex-1">
-          <p className={`truncate font-medium transition-colors ${done ? "text-muted-foreground line-through" : ""}`}>
+          <p className={`truncate font-medium transition-all duration-300 ${showAsDone ? "text-muted-foreground line-through" : ""}`}>
             {task.title}
           </p>
-          <div className="mt-1 flex items-center gap-2">
+          <div className={`mt-1 flex items-center gap-2 transition-opacity duration-300 ${showAsDone ? "opacity-60" : ""}`}>
             {people.length ? (
               <AvatarStack people={people} max={3} size="xs" />
             ) : (
               <span className="text-xs italic text-muted-foreground">Unassigned</span>
             )}
-            <DueDatePill date={task.due_date} done={done} />
+            <DueDatePill date={task.due_date} done={showAsDone} />
           </div>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityClasses(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
         >
           {task.priority}
         </span>
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(task.status)}`}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
         >
-          {statusLabel(task.status)}
+          {statusLabel(showAsDone ? "done" : task.status)}
         </span>
       </button>
     </li>
