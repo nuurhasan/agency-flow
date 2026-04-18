@@ -83,9 +83,10 @@ function TasksPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("projects")
-        .select("id,name,color,client_name")
+        .select("id,name,color,client_name,status")
+        .neq("status", "archived")
         .order("name");
-      return data ?? [];
+      return (data ?? []) as { id: string; name: string; color: string; client_name: string; status: string }[];
     },
   });
 

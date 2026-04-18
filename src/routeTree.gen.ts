@@ -19,6 +19,7 @@ import { Route as HostingRouteImport } from './routes/hosting'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
+import { Route as ProjectsArchivedRouteImport } from './routes/projects.archived'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 
@@ -72,6 +73,11 @@ const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
   path: '/projects/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsArchivedRoute = ProjectsArchivedRouteImport.update({
+  id: '/projects/archived',
+  path: '/projects/archived',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsProjectIdRoute = ProjectsProjectIdRouteImport.update({
   id: '/projects/$projectId',
   path: '/projects/$projectId',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/templates': typeof TemplatesRoute
   '/vault': typeof VaultRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/projects/archived': typeof ProjectsArchivedRoute
   '/projects/': typeof ProjectsIndexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/templates': typeof TemplatesRoute
   '/vault': typeof VaultRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/projects/archived': typeof ProjectsArchivedRoute
   '/projects': typeof ProjectsIndexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/templates': typeof TemplatesRoute
   '/vault': typeof VaultRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
+  '/projects/archived': typeof ProjectsArchivedRoute
   '/projects/': typeof ProjectsIndexRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/vault'
     | '/projects/$projectId'
+    | '/projects/archived'
     | '/projects/'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/vault'
     | '/projects/$projectId'
+    | '/projects/archived'
     | '/projects'
     | '/lovable/email/queue/process'
   id:
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/vault'
     | '/projects/$projectId'
+    | '/projects/archived'
     | '/projects/'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   TemplatesRoute: typeof TemplatesRoute
   VaultRoute: typeof VaultRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
+  ProjectsArchivedRoute: typeof ProjectsArchivedRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects/archived': {
+      id: '/projects/archived'
+      path: '/projects/archived'
+      fullPath: '/projects/archived'
+      preLoaderRoute: typeof ProjectsArchivedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId': {
       id: '/projects/$projectId'
       path: '/projects/$projectId'
@@ -287,9 +307,19 @@ const rootRouteChildren: RootRouteChildren = {
   TemplatesRoute: TemplatesRoute,
   VaultRoute: VaultRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
+  ProjectsArchivedRoute: ProjectsArchivedRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
