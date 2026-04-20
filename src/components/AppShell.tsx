@@ -56,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="font-display text-lg font-bold tracking-tight">Studio</span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="ml-auto hidden items-center gap-1 md:flex">
             {NAV.map((item) => {
               const active =
                 item.to === "/"
@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <Link
               to="/hosting"
               className={cn(
@@ -145,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8">{children}</main>
+      <main key={location.pathname} className="mx-auto w-full max-w-7xl animate-in fade-in duration-200 px-4 py-8 md:px-8">{children}</main>
     </div>
   );
 }
