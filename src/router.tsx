@@ -60,9 +60,12 @@ export const getRouter = () => {
     context: {},
     scrollRestoration: true,
     defaultPreload: "intent",
-    defaultPreloadDelay: 30,
+    defaultPreloadDelay: 0,
     // Let TanStack Query control freshness (see __root.tsx)
     defaultPreloadStaleTime: 0,
+    // Show the new route immediately on click; don't wait for any pending state.
+    defaultPendingMs: 0,
+    defaultPendingMinMs: 0,
     defaultErrorComponent: DefaultErrorComponent,
   });
 
