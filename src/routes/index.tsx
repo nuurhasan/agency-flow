@@ -350,22 +350,45 @@ function Counter({
   icon,
   label,
   value,
+  to,
 }: {
-  color: string;
+  color: "mint" | "sky" | "lavender" | "peach" | "butter" | "blush" | "coral";
   icon: React.ReactNode;
   label: string;
   value: number;
+  to: "/projects" | "/tasks" | "/hosting" | "/team" | "/settings" | "/vault" | "/";
 }) {
+  const tints: Record<string, string> = {
+    mint: "from-mint/70 to-mint/30 text-mint-ink",
+    sky: "from-sky/70 to-sky/30 text-sky-ink",
+    lavender: "from-lavender/70 to-lavender/30 text-lavender-ink",
+    peach: "from-peach/70 to-peach/30 text-peach-ink",
+    butter: "from-butter/80 to-butter/30 text-butter-ink",
+    blush: "from-blush/70 to-blush/30 text-blush-ink",
+    coral: "from-coral/70 to-coral/30 text-coral-ink",
+  };
+  const iconBg: Record<string, string> = {
+    mint: "bg-white/60 text-mint-ink",
+    sky: "bg-white/60 text-sky-ink",
+    lavender: "bg-white/60 text-lavender-ink",
+    peach: "bg-white/60 text-peach-ink",
+    butter: "bg-white/60 text-butter-ink",
+    blush: "bg-white/60 text-blush-ink",
+    coral: "bg-white/60 text-coral-ink",
+  };
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-pop">
+    <Link
+      to={to}
+      className={`group block rounded-3xl border border-border/50 bg-gradient-to-br p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-pop ${tints[color]}`}
+    >
       <div className="flex items-start justify-between">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl ${pastelClasses(color)}`}>
+        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl backdrop-blur-sm ${iconBg[color]}`}>
           {icon}
         </span>
         <span className="font-display text-3xl font-bold">{value}</span>
       </div>
-      <p className="mt-3 text-sm font-medium text-muted-foreground">{label}</p>
-    </div>
+      <p className="mt-3 text-sm font-semibold opacity-80">{label}</p>
+    </Link>
   );
 }
 
