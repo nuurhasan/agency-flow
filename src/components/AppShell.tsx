@@ -145,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 md:px-8">{children}</main>
+      <main key={location.pathname} className="mx-auto w-full max-w-7xl animate-in fade-in duration-200 px-4 py-8 md:px-8">{children}</main>
     </div>
   );
 }
