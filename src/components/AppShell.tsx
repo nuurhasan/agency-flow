@@ -10,9 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/projects", label: "Projects", icon: FolderKanban },
-  { to: "/projects/archived", label: "Archived", icon: Archive },
   { to: "/tasks", label: "Tasks", icon: ListChecks },
-  { to: "/templates", label: "Templates", icon: Layers },
   { to: "/vault", label: "Vault", icon: KeyRound },
   { to: "/hosting", label: "Hosting", icon: Globe2 },
   { to: "/team", label: "Team", icon: Users },
