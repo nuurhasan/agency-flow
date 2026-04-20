@@ -472,11 +472,13 @@ function TaskRowItem({
             <DueDatePill date={task.due_date} done={showAsDone} />
           </div>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityClasses(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
-        >
-          {task.priority}
-        </span>
+        {task.priority === "high" && (
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityClasses(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
+          >
+            High
+          </span>
+        )}
         <span
           className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
         >

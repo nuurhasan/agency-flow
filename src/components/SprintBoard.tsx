@@ -220,11 +220,13 @@ function TaskCard({ task, dragging = false }: { task: BoardTask; dragging?: bool
     >
       <p className="text-sm font-medium leading-snug">{task.title}</p>
       <div className="mt-2 flex items-center gap-2">
-        <span
-          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
-        >
-          {task.priority}
-        </span>
+        {task.priority === "high" && (
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
+          >
+            High
+          </span>
+        )}
         {task.due_date && (
           <span className="text-[11px] text-muted-foreground">
             Due {new Date(task.due_date).toLocaleDateString()}
