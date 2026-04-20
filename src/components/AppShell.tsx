@@ -56,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span className="font-display text-lg font-bold tracking-tight">Studio</span>
           </Link>
 
-          <nav className="hidden flex-1 items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 md:flex">
             {NAV.map((item) => {
               const active =
                 item.to === "/"

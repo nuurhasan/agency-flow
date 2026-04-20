@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
+import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
@@ -61,6 +62,8 @@ function ProjectDetailPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [taskOpen, setTaskOpen] = React.useState(false);
+  const [viewOpen, setViewOpen] = React.useState(false);
+  const [viewingTask, setViewingTask] = React.useState<TaskRow | null>(null);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
   const [applyOpen, setApplyOpen] = React.useState(false);
@@ -238,6 +241,11 @@ function ProjectDetailPage() {
     setEditingTask(t);
     setEditingAssignees(assigneeMap[t.id] ?? []);
     setTaskOpen(true);
+  };
+
+  const openView = (t: TaskRow) => {
+    setViewingTask(t);
+    setViewOpen(true);
   };
 
   if (!project) {
@@ -432,7 +440,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
-                  onEdit={openEdit}
+                  onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
                       ? "Nothing here."
@@ -446,7 +454,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
-                  onEdit={openEdit}
+                  onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
                       ? "No completed tasks yet."
@@ -472,7 +480,7 @@ function ProjectDetailPage() {
             }))}
             onEditTask={(id) => {
               const t = tasks.find((x) => x.id === id);
-              if (t) openEdit(t);
+              if (t) openView(t);
             }}
           />
         </TabsContent>
@@ -498,6 +506,23 @@ function ProjectDetailPage() {
         task={editingTask}
         members={members}
         initialAssignees={editingAssignees}
+      />
+      <TaskDetailDialog
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+        task={viewingTask}
+        projectName={project.name}
+        assignees={
+          viewingTask
+            ? (assigneeMap[viewingTask.id] ?? [])
+                .map((id) => {
+                  const name = memberById.get(id);
+                  return name ? { id, name } : null;
+                })
+                .filter(Boolean) as { id: string; name: string }[]
+            : []
+        }
+        onEdit={() => viewingTask && openEdit(viewingTask)}
       />
       <CredDialog
         open={credActions.open}
@@ -617,11 +642,13 @@ function TaskListItem({
             {task.due_date ? ` · Due ${new Date(task.due_date).toLocaleDateString()}` : ""}
           </p>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityPill(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
-        >
-          {task.priority}
-        </span>
+        {task.priority === "high" && (
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityPill(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
+          >
+            High
+          </span>
+        )}
         <span
           className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
         >

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Plus, Search, ListChecks, Sparkles, X } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
+import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,8 @@ function TasksPage() {
   const [tab, setTab] = React.useState<"open" | "completed" | "mine">("open");
 
   const [taskOpen, setTaskOpen] = React.useState(false);
+  const [viewOpen, setViewOpen] = React.useState(false);
+  const [viewingTask, setViewingTask] = React.useState<TaskRow | null>(null);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
 
@@ -201,6 +204,11 @@ function TasksPage() {
     setEditingTask(t);
     setEditingAssignees(assigneeMap[t.id] ?? []);
     setTaskOpen(true);
+  };
+
+  const openView = (t: TaskRow) => {
+    setViewingTask(t);
+    setViewOpen(true);
   };
 
   const activeFilters: { key: string; label: string; clear: () => void }[] = [];
@@ -375,7 +383,7 @@ function TasksPage() {
                           .filter(Boolean) as { id: string; name: string }[]}
                         onComplete={() => toggleDone.mutate({ task: t, nextStatus: "done" })}
                         onReopen={() => toggleDone.mutate({ task: t, nextStatus: "todo" })}
-                        onEdit={() => openEdit(t)}
+                        onEdit={() => openView(t)}
                       />
                     ))}
                   </ul>
@@ -393,6 +401,20 @@ function TasksPage() {
         members={members}
         projects={projects.map((p) => ({ id: p.id, name: p.name }))}
         initialAssignees={editingAssignees}
+      />
+      <TaskDetailDialog
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+        task={viewingTask}
+        projectName={viewingTask ? projectById.get(viewingTask.project_id)?.name : undefined}
+        assignees={
+          viewingTask
+            ? (assigneeMap[viewingTask.id] ?? [])
+                .map((id) => memberById.get(id))
+                .filter(Boolean) as { id: string; name: string }[]
+            : []
+        }
+        onEdit={() => viewingTask && openEdit(viewingTask)}
       />
     </div>
   );
@@ -472,11 +494,13 @@ function TaskRowItem({
             <DueDatePill date={task.due_date} done={showAsDone} />
           </div>
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityClasses(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
-        >
-          {task.priority}
-        </span>
+        {task.priority === "high" && (
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium transition-opacity ${priorityClasses(task.priority)} ${showAsDone ? "opacity-50" : ""}`}
+          >
+            High
+          </span>
+        )}
         <span
           className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
         >

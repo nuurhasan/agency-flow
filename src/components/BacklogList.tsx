@@ -66,11 +66,13 @@ function BacklogCard({ task, onEdit }: { task: BoardTask; onEdit?: (id: string) 
         className="flex min-w-0 flex-1 items-center gap-2 text-left"
       >
         <span className="truncate text-sm font-medium">{task.title}</span>
-        <span
-          className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
-        >
-          {task.priority}
-        </span>
+        {task.priority === "high" && (
+          <span
+            className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
+          >
+            High
+          </span>
+        )}
       </button>
     </div>
   );
