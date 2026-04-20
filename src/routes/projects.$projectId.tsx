@@ -440,7 +440,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
-                  onEdit={openEdit}
+                  onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
                       ? "Nothing here."
@@ -454,7 +454,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
-                  onEdit={openEdit}
+                  onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
                       ? "No completed tasks yet."
@@ -480,7 +480,7 @@ function ProjectDetailPage() {
             }))}
             onEditTask={(id) => {
               const t = tasks.find((x) => x.id === id);
-              if (t) openEdit(t);
+              if (t) openView(t);
             }}
           />
         </TabsContent>
@@ -506,6 +506,23 @@ function ProjectDetailPage() {
         task={editingTask}
         members={members}
         initialAssignees={editingAssignees}
+      />
+      <TaskDetailDialog
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+        task={viewingTask}
+        projectName={project.name}
+        assignees={
+          viewingTask
+            ? (assigneeMap[viewingTask.id] ?? [])
+                .map((id) => {
+                  const name = memberById.get(id);
+                  return name ? { id, name } : null;
+                })
+                .filter(Boolean) as { id: string; name: string }[]
+            : []
+        }
+        onEdit={() => viewingTask && openEdit(viewingTask)}
       />
       <CredDialog
         open={credActions.open}
