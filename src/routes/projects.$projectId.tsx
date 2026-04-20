@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
+import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
@@ -61,6 +62,8 @@ function ProjectDetailPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [taskOpen, setTaskOpen] = React.useState(false);
+  const [viewOpen, setViewOpen] = React.useState(false);
+  const [viewingTask, setViewingTask] = React.useState<TaskRow | null>(null);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
   const [applyOpen, setApplyOpen] = React.useState(false);
@@ -238,6 +241,11 @@ function ProjectDetailPage() {
     setEditingTask(t);
     setEditingAssignees(assigneeMap[t.id] ?? []);
     setTaskOpen(true);
+  };
+
+  const openView = (t: TaskRow) => {
+    setViewingTask(t);
+    setViewOpen(true);
   };
 
   if (!project) {
