@@ -17,7 +17,7 @@ import {
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
-import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
+
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
 import { MembersTab } from "@/components/MembersTab";
