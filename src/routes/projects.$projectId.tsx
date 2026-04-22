@@ -195,6 +195,22 @@ function ProjectDetailPage() {
   });
   const activeSprint = sprints.find((s) => s.status === "active");
 
+  const { data: projectMemberRows = [] } = useQuery({
+    queryKey: ["project-members", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("project_members")
+        .select("user_id,role")
+        .eq("project_id", projectId);
+      return data ?? [];
+    },
+  });
+  const memberCount = projectMemberRows.length;
+  const projectMemberIds = React.useMemo(
+    () => new Set(projectMemberRows.map((r) => r.user_id)),
+    [projectMemberRows],
+  );
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -202,6 +218,11 @@ function ProjectDetailPage() {
       return data ?? [];
     },
   });
+  // Restrict the assignee filter dropdown to project members only
+  const projectMembers = React.useMemo(
+    () => members.filter((m) => projectMemberIds.has(m.id)),
+    [members, projectMemberIds],
+  );
 
   const taskIds = tasks.map((t) => t.id);
   const { data: assigneeMap = {} } = useQuery({
