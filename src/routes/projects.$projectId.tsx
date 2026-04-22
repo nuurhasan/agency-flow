@@ -165,7 +165,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("projects")
-        .select("id,name,color,client_name,status,service_type,description,due_date,owner_id")
+        .select("id,name,color,icon,client_name,status,service_type,description,due_date,owner_id")
         .eq("id", projectId)
         .maybeSingle();
       return data;
