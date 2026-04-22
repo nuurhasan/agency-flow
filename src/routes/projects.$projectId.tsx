@@ -393,6 +393,9 @@ function ProjectDetailPage() {
             <TabsTrigger value="credentials">
               <KeyRound className="h-3.5 w-3.5" /> Credentials ({credentials.length})
             </TabsTrigger>
+            <TabsTrigger value="members">
+              <Users className="h-3.5 w-3.5" /> Members ({memberCount})
+            </TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
@@ -447,7 +450,7 @@ function ProjectDetailPage() {
                     <SelectContent>
                       <SelectItem value="all">All assignees</SelectItem>
                       <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {members.map((m) => (
+                      {projectMembers.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
                           {m.name}
                         </SelectItem>
