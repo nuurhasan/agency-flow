@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
+import * as React from "react";
 import { AuthGate } from "@/components/AuthGate";
+import { ProjectDialog } from "@/components/ProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
@@ -45,6 +47,7 @@ function todayLabel() {
 function Dashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [newProjectOpen, setNewProjectOpen] = React.useState(false);
 
   const toggleDone = useMutation({
     mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
@@ -182,13 +185,12 @@ function Dashboard() {
               Everything happening across the agency, at a glance.
             </p>
           </div>
-          <Button asChild className="rounded-full shadow-pop" size="lg">
-            <Link to="/projects">
-              <Plus className="h-4 w-4" /> New project
-            </Link>
+          <Button onClick={() => setNewProjectOpen(true)} className="rounded-full shadow-pop" size="lg">
+            <Plus className="h-4 w-4" /> New project
           </Button>
         </div>
       </div>
+      <ProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Counter to="/projects" color="mint" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
@@ -208,7 +210,7 @@ function Dashboard() {
             <EmptyCard
               title="No projects yet"
               body="Create your first project to start tracking work for a client."
-              cta={{ to: "/projects", label: "Create a project" }}
+              cta={{ label: "Create a project", onClick: () => setNewProjectOpen(true) }}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -399,17 +401,19 @@ function EmptyCard({
 }: {
   title: string;
   body: string;
-  cta?: { to: string; label: string };
+  cta?: { to: string; label: string } | { onClick: () => void; label: string };
 }) {
   return (
     <div className="rounded-3xl border border-dashed border-border bg-card/50 p-10 text-center">
       <p className="font-display text-lg font-semibold">{title}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{body}</p>
-      {cta && (
+      {cta && ("to" in cta ? (
         <Button asChild className="mt-4 rounded-full">
           <Link to={cta.to}>{cta.label}</Link>
         </Button>
-      )}
+      ) : (
+        <Button onClick={cta.onClick} className="mt-4 rounded-full">{cta.label}</Button>
+      ))}
     </div>
   );
 }
