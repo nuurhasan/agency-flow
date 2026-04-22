@@ -379,6 +379,38 @@ export type Database = {
           },
         ]
       }
+      project_members: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          project_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          project_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          project_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           client_name: string
@@ -390,6 +422,7 @@ export type Database = {
           icon: string
           id: string
           name: string
+          owner_id: string
           service_type: Database["public"]["Enums"]["service_type"]
           status: Database["public"]["Enums"]["project_status"]
           updated_at: string
@@ -404,6 +437,7 @@ export type Database = {
           icon?: string
           id?: string
           name: string
+          owner_id: string
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["project_status"]
           updated_at?: string
@@ -418,6 +452,7 @@ export type Database = {
           icon?: string
           id?: string
           name?: string
+          owner_id?: string
           service_type?: Database["public"]["Enums"]["service_type"]
           status?: Database["public"]["Enums"]["project_status"]
           updated_at?: string
@@ -741,6 +776,14 @@ export type Database = {
         Returns: boolean
       }
       is_authenticated: { Args: never; Returns: boolean }
+      is_project_member: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_project_owner: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
