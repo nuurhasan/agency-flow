@@ -522,6 +522,10 @@ function ProjectDetailPage() {
             onDelete={credActions.onDelete}
           />
         </TabsContent>
+
+        <TabsContent value="members" className="mt-4">
+          <MembersTab projectId={projectId} ownerId={project.owner_id} />
+        </TabsContent>
       </Tabs>
 
       <TaskDialog
