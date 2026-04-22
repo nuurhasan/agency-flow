@@ -147,24 +147,6 @@ function Dashboard() {
     },
   });
 
-  const { data: activity } = useQuery({
-    queryKey: ["dash-activity"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("activity_log")
-        .select("id,action,meta,created_at,actor_id")
-        .order("created_at", { ascending: false })
-        .limit(12);
-      const rows = data ?? [];
-      const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]));
-      const { data: profs } = actorIds.length
-        ? await supabase.from("profiles").select("id,name").in("id", actorIds)
-        : { data: [] };
-      const map = new Map((profs ?? []).map((p) => [p.id, p.name] as const));
-      return rows.map((r) => ({ ...r, actorName: r.actor_id ? map.get(r.actor_id) ?? null : null }));
-    },
-  });
-
   type DashTask = NonNullable<typeof dash>["tasks"][number];
   const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, DashTask[]>>((acc, t) => {
     (acc[t.project_id] ??= []).push(t);
@@ -198,14 +180,15 @@ function Dashboard() {
         <Counter to="/tasks" color="lavender" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-xl font-semibold">Projects</h2>
-            <Link to="/projects" className="text-sm text-muted-foreground hover:text-foreground">
-              View all →
-            </Link>
-          </div>
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold">Projects</h2>
+          <Link to="/projects" className="text-sm text-muted-foreground hover:text-foreground">
+            View all →
+          </Link>
+        </div>
+        <div>
+          <div className="hidden">{/* layout preserved */}</div>
           {!dash?.projects.length ? (
             <EmptyCard
               title="No projects yet"
