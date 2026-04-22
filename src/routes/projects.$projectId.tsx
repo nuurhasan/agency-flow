@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2, Users, Zap } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +17,7 @@ import {
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
-import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
+
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
 import { MembersTab } from "@/components/MembersTab";
@@ -67,7 +67,7 @@ function ProjectDetailPage() {
   const [viewingTask, setViewingTask] = React.useState<TaskRow | null>(null);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
-  const [applyOpen, setApplyOpen] = React.useState(false);
+  
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
@@ -398,9 +398,6 @@ function ProjectDetailPage() {
             </TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
-              <Sparkles className="h-4 w-4" /> Apply template
-            </Button>
             <Button onClick={openNew} className="rounded-full">
               <Plus className="h-4 w-4" /> New task
             </Button>
@@ -412,14 +409,11 @@ function ProjectDetailPage() {
             <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
               <p className="font-display text-lg font-semibold">No tasks yet</p>
               <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                Create the first task or apply a template to bulk-add a checklist.
+                Create the first task to get started.
               </p>
               <div className="mt-4 flex justify-center gap-2">
                 <Button onClick={openNew} className="rounded-full">
                   <Plus className="h-4 w-4" /> Add a task
-                </Button>
-                <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
-                  <Sparkles className="h-4 w-4" /> Apply template
                 </Button>
               </div>
             </div>
@@ -558,12 +552,6 @@ function ProjectDetailPage() {
         onOpenChange={credActions.setOpen}
         projectId={projectId}
         credential={credActions.editing}
-      />
-      <ApplyTemplateDialog
-        open={applyOpen}
-        onOpenChange={setApplyOpen}
-        projectId={projectId}
-        projects={[{ id: projectId, name: project.name }]}
       />
     </div>
   );
