@@ -47,6 +47,7 @@ function todayLabel() {
 function Dashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const [newProjectOpen, setNewProjectOpen] = React.useState(false);
 
   const toggleDone = useMutation({
     mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
