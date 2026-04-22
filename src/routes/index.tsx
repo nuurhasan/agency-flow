@@ -401,17 +401,19 @@ function EmptyCard({
 }: {
   title: string;
   body: string;
-  cta?: { to: string; label: string };
+  cta?: { to: string; label: string } | { onClick: () => void; label: string };
 }) {
   return (
     <div className="rounded-3xl border border-dashed border-border bg-card/50 p-10 text-center">
       <p className="font-display text-lg font-semibold">{title}</p>
       <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{body}</p>
-      {cta && (
+      {cta && ("to" in cta ? (
         <Button asChild className="mt-4 rounded-full">
           <Link to={cta.to}>{cta.label}</Link>
         </Button>
-      )}
+      ) : (
+        <Button onClick={cta.onClick} className="mt-4 rounded-full">{cta.label}</Button>
+      ))}
     </div>
   );
 }
