@@ -19,12 +19,13 @@ interface Props {
 }
 
 export function MembersTab({ projectId, ownerId }: Props) {
-  const { user } = useAuth();
+  const { user, profile: ownProfile } = useAuth();
   const qc = useQueryClient();
   const isOwner = user?.id === ownerId;
 
   const { data: members = [] } = useQuery({
     queryKey: ["project-members", projectId],
+    enabled: !!user,
     queryFn: async () => {
       const { data: rows } = await supabase
         .from("project_members")
@@ -48,6 +49,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
 
   const { data: allPeople = [] } = useQuery({
     queryKey: ["all-profiles"],
+    enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
@@ -144,7 +146,9 @@ export function MembersTab({ projectId, ownerId }: Props) {
 
       <ul className="space-y-2">
         {members.map((m) => {
-          const name = m.profile?.name || m.profile?.email || "Unknown";
+          const isMe = m.user_id === user?.id;
+          const profile = m.profile ?? (isMe && ownProfile ? ownProfile : null);
+          const name = profile?.name || profile?.email || "Unknown";
           const initials = name
             .split(/\s+/)
             .map((s) => s[0])
@@ -170,7 +174,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
                   )}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {m.profile?.email}
+                  {profile?.email}
                 </p>
               </div>
               {isThisOwner ? (
