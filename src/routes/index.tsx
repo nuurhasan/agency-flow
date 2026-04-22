@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+
 import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
 import * as React from "react";
 import { AuthGate } from "@/components/AuthGate";
@@ -368,25 +368,3 @@ function EmptyCard({
   );
 }
 
-function humanAction(action: string, meta: Record<string, unknown> | null): string {
-  switch (action) {
-    case "task.created":
-      return `created task "${meta?.title ?? ""}"`;
-    case "task.completed":
-      return `completed task "${meta?.title ?? ""}"`;
-    case "task.updated":
-      return `updated task "${meta?.title ?? ""}"`;
-    case "task.assigned":
-      return `assigned a task`;
-    case "task.commented":
-      return `commented on a task`;
-    case "project.created":
-      return `created project "${meta?.name ?? ""}"`;
-    case "project.updated":
-      return `updated project "${meta?.name ?? ""}"`;
-    case "domain.renewed":
-      return `marked ${meta?.domain ?? "a domain"} as renewed`;
-    default:
-      return action;
-  }
-}
