@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function MembersTab({ projectId, ownerId }: Props) {
-  const { user } = useAuth();
+  const { user, profile: ownProfile } = useAuth();
   const qc = useQueryClient();
   const isOwner = user?.id === ownerId;
 
