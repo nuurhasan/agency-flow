@@ -185,13 +185,12 @@ function Dashboard() {
               Everything happening across the agency, at a glance.
             </p>
           </div>
-          <Button asChild className="rounded-full shadow-pop" size="lg">
-            <Link to="/projects">
-              <Plus className="h-4 w-4" /> New project
-            </Link>
+          <Button onClick={() => setNewProjectOpen(true)} className="rounded-full shadow-pop" size="lg">
+            <Plus className="h-4 w-4" /> New project
           </Button>
         </div>
       </div>
+      <ProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <Counter to="/projects" color="mint" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
