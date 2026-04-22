@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2, Zap } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2, Users, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
+import { MembersTab } from "@/components/MembersTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -163,7 +164,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("projects")
-        .select("id,name,color,client_name,status,service_type,description,due_date")
+        .select("id,name,color,client_name,status,service_type,description,due_date,owner_id")
         .eq("id", projectId)
         .maybeSingle();
       return data;
@@ -194,6 +195,22 @@ function ProjectDetailPage() {
   });
   const activeSprint = sprints.find((s) => s.status === "active");
 
+  const { data: projectMemberRows = [] } = useQuery({
+    queryKey: ["project-members", projectId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("project_members")
+        .select("user_id,role")
+        .eq("project_id", projectId);
+      return data ?? [];
+    },
+  });
+  const memberCount = projectMemberRows.length;
+  const projectMemberIds = React.useMemo(
+    () => new Set(projectMemberRows.map((r) => r.user_id)),
+    [projectMemberRows],
+  );
+
   const { data: members = [] } = useQuery({
     queryKey: ["members"],
     queryFn: async () => {
@@ -201,6 +218,11 @@ function ProjectDetailPage() {
       return data ?? [];
     },
   });
+  // Restrict the assignee filter dropdown to project members only
+  const projectMembers = React.useMemo(
+    () => members.filter((m) => projectMemberIds.has(m.id)),
+    [members, projectMemberIds],
+  );
 
   const taskIds = tasks.map((t) => t.id);
   const { data: assigneeMap = {} } = useQuery({
@@ -371,6 +393,9 @@ function ProjectDetailPage() {
             <TabsTrigger value="credentials">
               <KeyRound className="h-3.5 w-3.5" /> Credentials ({credentials.length})
             </TabsTrigger>
+            <TabsTrigger value="members">
+              <Users className="h-3.5 w-3.5" /> Members ({memberCount})
+            </TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
@@ -425,7 +450,7 @@ function ProjectDetailPage() {
                     <SelectContent>
                       <SelectItem value="all">All assignees</SelectItem>
                       <SelectItem value="unassigned">Unassigned</SelectItem>
-                      {members.map((m) => (
+                      {projectMembers.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
                           {m.name}
                         </SelectItem>
@@ -496,6 +521,10 @@ function ProjectDetailPage() {
             onEdit={credActions.openEdit}
             onDelete={credActions.onDelete}
           />
+        </TabsContent>
+
+        <TabsContent value="members" className="mt-4">
+          <MembersTab projectId={projectId} ownerId={project.owner_id} />
         </TabsContent>
       </Tabs>
 
