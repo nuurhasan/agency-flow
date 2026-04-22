@@ -409,14 +409,11 @@ function ProjectDetailPage() {
             <div className="rounded-3xl border border-dashed border-border bg-card/50 p-12 text-center">
               <p className="font-display text-lg font-semibold">No tasks yet</p>
               <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-                Create the first task or apply a template to bulk-add a checklist.
+                Create the first task to get started.
               </p>
               <div className="mt-4 flex justify-center gap-2">
                 <Button onClick={openNew} className="rounded-full">
                   <Plus className="h-4 w-4" /> Add a task
-                </Button>
-                <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
-                  <Sparkles className="h-4 w-4" /> Apply template
                 </Button>
               </div>
             </div>
