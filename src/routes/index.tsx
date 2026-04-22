@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
+
 import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
 import * as React from "react";
 import { AuthGate } from "@/components/AuthGate";
@@ -147,24 +147,6 @@ function Dashboard() {
     },
   });
 
-  const { data: activity } = useQuery({
-    queryKey: ["dash-activity"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("activity_log")
-        .select("id,action,meta,created_at,actor_id")
-        .order("created_at", { ascending: false })
-        .limit(12);
-      const rows = data ?? [];
-      const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]));
-      const { data: profs } = actorIds.length
-        ? await supabase.from("profiles").select("id,name").in("id", actorIds)
-        : { data: [] };
-      const map = new Map((profs ?? []).map((p) => [p.id, p.name] as const));
-      return rows.map((r) => ({ ...r, actorName: r.actor_id ? map.get(r.actor_id) ?? null : null }));
-    },
-  });
-
   type DashTask = NonNullable<typeof dash>["tasks"][number];
   const tasksByProject = (dash?.tasks ?? []).reduce<Record<string, DashTask[]>>((acc, t) => {
     (acc[t.project_id] ??= []).push(t);
@@ -198,22 +180,21 @@ function Dashboard() {
         <Counter to="/tasks" color="lavender" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-xl font-semibold">Projects</h2>
-            <Link to="/projects" className="text-sm text-muted-foreground hover:text-foreground">
-              View all →
-            </Link>
-          </div>
-          {!dash?.projects.length ? (
-            <EmptyCard
-              title="No projects yet"
-              body="Create your first project to start tracking work for a client."
-              cta={{ label: "Create a project", onClick: () => setNewProjectOpen(true) }}
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold">Projects</h2>
+          <Link to="/projects" className="text-sm text-muted-foreground hover:text-foreground">
+            View all →
+          </Link>
+        </div>
+        {!dash?.projects.length ? (
+          <EmptyCard
+            title="No projects yet"
+            body="Create your first project to start tracking work for a client."
+            cta={{ label: "Create a project", onClick: () => setNewProjectOpen(true) }}
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {dash.projects.map((p, idx) => {
                 const allTasks = tasksByProject[p.id] ?? [];
                 const ts = allTasks.slice(0, 3);
@@ -311,37 +292,6 @@ function Dashboard() {
               })}
             </div>
           )}
-        </div>
-
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
-            <h2 className="mb-3 font-display text-lg font-semibold">Activity</h2>
-            {!activity?.length ? (
-              <p className="text-sm text-muted-foreground">
-                No activity yet — assign a task to start the feed.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {activity.map((a) => (
-                  <li key={a.id} className="flex gap-3">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-lavender" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{a.actorName ?? "Someone"}</span>{" "}
-                        <span className="text-muted-foreground">
-                          {humanAction(a.action, (a.meta as Record<string, unknown> | null) ?? null)}
-                        </span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -418,25 +368,3 @@ function EmptyCard({
   );
 }
 
-function humanAction(action: string, meta: Record<string, unknown> | null): string {
-  switch (action) {
-    case "task.created":
-      return `created task "${meta?.title ?? ""}"`;
-    case "task.completed":
-      return `completed task "${meta?.title ?? ""}"`;
-    case "task.updated":
-      return `updated task "${meta?.title ?? ""}"`;
-    case "task.assigned":
-      return `assigned a task`;
-    case "task.commented":
-      return `commented on a task`;
-    case "project.created":
-      return `created project "${meta?.name ?? ""}"`;
-    case "project.updated":
-      return `updated project "${meta?.name ?? ""}"`;
-    case "domain.renewed":
-      return `marked ${meta?.domain ?? "a domain"} as renewed`;
-    default:
-      return action;
-  }
-}

@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
-import { Archive, Plus, Search, Zap } from "lucide-react";
+import { Activity, Archive, Plus, Search, Zap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -84,86 +86,104 @@ function ProjectsPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search projects or clients…"
-            className="pl-9"
-          />
-        </div>
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {["planning", "active", "on_hold", "completed"].map((s) => (
-              <SelectItem key={s} value={s}>{statusLabel(s)}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={service} onValueChange={setService}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Service" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All services</SelectItem>
-            {["website", "seo", "hosting", "maintenance", "branding", "other"].map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <Tabs defaultValue="all">
+        <TabsList>
+          <TabsTrigger value="all">All projects</TabsTrigger>
+          <TabsTrigger value="activity">
+            <Activity className="h-3.5 w-3.5" /> Activity
+          </TabsTrigger>
+        </TabsList>
 
-      {filtered.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border bg-card/50 p-16 text-center">
-          <p className="font-display text-lg font-semibold">No projects match</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Try clearing filters, or create a new project to get started.
-          </p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p) => (
-            <Link
-              key={p.id}
-              to="/projects/$projectId"
-              params={{ projectId: p.id }}
-              className="group rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:shadow-pop"
-            >
-              <div className="flex items-start gap-3">
-                <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${pastelClasses(p.color)} text-lg font-bold`}>
-                  {p.name.charAt(0).toUpperCase()}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">{p.name}</p>
-                  <p className="truncate text-xs text-muted-foreground">{p.client_name || "No client"}</p>
-                </div>
-                <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                  {p.service_type}
-                </span>
-              </div>
-              {p.description && (
-                <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
-              )}
-              <div className="mt-4 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {p.status !== "active" && (
-                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
-                      {statusLabel(p.status)}
+        <TabsContent value="all" className="mt-4 space-y-6">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search projects or clients…"
+                className="pl-9"
+              />
+            </div>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                {["planning", "active", "on_hold", "completed"].map((s) => (
+                  <SelectItem key={s} value={s}>{statusLabel(s)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={service} onValueChange={setService}>
+              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Service" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All services</SelectItem>
+                {["website", "seo", "hosting", "maintenance", "branding", "other"].map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-border bg-card/50 p-16 text-center">
+              <p className="font-display text-lg font-semibold">No projects match</p>
+              <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+                Try clearing filters, or create a new project to get started.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((p) => (
+                <Link
+                  key={p.id}
+                  to="/projects/$projectId"
+                  params={{ projectId: p.id }}
+                  className="group rounded-3xl border border-border bg-card p-5 shadow-soft transition-all hover:shadow-pop"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${pastelClasses(p.color)} text-lg font-bold`}>
+                      {p.name.charAt(0).toUpperCase()}
                     </span>
-                  )}
-                  {activeSprintByProject.has(p.id) && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-ink">
-                      <Zap className="h-3 w-3" /> {activeSprintByProject.get(p.id)!.name}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold">{p.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">{p.client_name || "No client"}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      {p.service_type}
                     </span>
+                  </div>
+                  {p.description && (
+                    <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
                   )}
-                </div>
-                {p.due_date && <span className="shrink-0">Due {new Date(p.due_date).toLocaleDateString()}</span>}
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+                  <div className="mt-4 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {p.status !== "active" && (
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(p.status)}`}>
+                          {statusLabel(p.status)}
+                        </span>
+                      )}
+                      {activeSprintByProject.has(p.id) && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-mint px-2 py-0.5 text-[11px] font-medium text-mint-ink">
+                          <Zap className="h-3 w-3" /> {activeSprintByProject.get(p.id)!.name}
+                        </span>
+                      )}
+                    </div>
+                    {p.due_date && <span className="shrink-0">Due {new Date(p.due_date).toLocaleDateString()}</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="activity" className="mt-4">
+          <ActivityFeed
+            limit={50}
+            emptyText="No activity yet across your projects — assign or update a task to start the feed."
+          />
+        </TabsContent>
+      </Tabs>
 
       <ProjectDialog open={open} onOpenChange={setOpen} />
     </div>
