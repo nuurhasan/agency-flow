@@ -398,9 +398,6 @@ function ProjectDetailPage() {
             </TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setApplyOpen(true)} className="rounded-full">
-              <Sparkles className="h-4 w-4" /> Apply template
-            </Button>
             <Button onClick={openNew} className="rounded-full">
               <Plus className="h-4 w-4" /> New task
             </Button>
