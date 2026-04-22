@@ -562,6 +562,11 @@ function ProjectDetailPage() {
         projectId={projectId}
         credential={credActions.editing}
       />
+      <ProjectDialog
+        open={editProjectOpen}
+        onOpenChange={setEditProjectOpen}
+        project={project}
+      />
     </div>
   );
 }
