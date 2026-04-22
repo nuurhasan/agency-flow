@@ -67,7 +67,7 @@ function ProjectDetailPage() {
   const [viewingTask, setViewingTask] = React.useState<TaskRow | null>(null);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
-  const [applyOpen, setApplyOpen] = React.useState(false);
+  
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
