@@ -146,7 +146,9 @@ export function MembersTab({ projectId, ownerId }: Props) {
 
       <ul className="space-y-2">
         {members.map((m) => {
-          const name = m.profile?.name || m.profile?.email || "Unknown";
+          const isMe = m.user_id === user?.id;
+          const profile = m.profile ?? (isMe && ownProfile ? ownProfile : null);
+          const name = profile?.name || profile?.email || "Unknown";
           const initials = name
             .split(/\s+/)
             .map((s) => s[0])
