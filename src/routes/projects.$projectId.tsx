@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2, Zap } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Plus, Sparkles, KeyRound, Trash2, Users, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { ApplyTemplateDialog } from "@/components/ApplyTemplateDialog";
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
+import { MembersTab } from "@/components/MembersTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
