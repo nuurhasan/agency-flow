@@ -210,7 +210,7 @@ function Dashboard() {
             <EmptyCard
               title="No projects yet"
               body="Create your first project to start tracking work for a client."
-              cta={{ to: "/projects", label: "Create a project" }}
+              cta={{ label: "Create a project", onClick: () => setNewProjectOpen(true) }}
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
