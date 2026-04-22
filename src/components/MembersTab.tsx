@@ -174,7 +174,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
                   )}
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {m.profile?.email}
+                  {profile?.email}
                 </p>
               </div>
               {isThisOwner ? (
