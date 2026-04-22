@@ -295,36 +295,6 @@ function Dashboard() {
             </div>
           )}
         </div>
-
-        <div className="space-y-6">
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
-            <h2 className="mb-3 font-display text-lg font-semibold">Activity</h2>
-            {!activity?.length ? (
-              <p className="text-sm text-muted-foreground">
-                No activity yet — assign a task to start the feed.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {activity.map((a) => (
-                  <li key={a.id} className="flex gap-3">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-lavender" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm">
-                        <span className="font-medium">{a.actorName ?? "Someone"}</span>{" "}
-                        <span className="text-muted-foreground">
-                          {humanAction(a.action, (a.meta as Record<string, unknown> | null) ?? null)}
-                        </span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
