@@ -336,6 +336,14 @@ function ProjectDetailPage() {
             variant="outline"
             size="sm"
             className="rounded-full"
+            onClick={() => setEditProjectOpen(true)}
+          >
+            <Pencil className="h-4 w-4" /> Edit
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
             onClick={() => setStatus.mutate(isArchived ? "active" : "archived")}
             disabled={setStatus.isPending}
           >
