@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Pencil, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
