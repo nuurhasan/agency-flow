@@ -352,11 +352,6 @@ export function ProjectDialog({ open, onOpenChange, project }: Props) {
   );
 }
 
-// Trick to keep map stable
-function SERVE_DUMMY_NEVER_USED<T>(arr: readonly T[]): readonly T[] {
-  return arr;
-}
-
 function initial(p: Props["project"]) {
   return {
     name: p?.name ?? "",
