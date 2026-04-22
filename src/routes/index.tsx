@@ -187,16 +187,14 @@ function Dashboard() {
             View all →
           </Link>
         </div>
-        <div>
-          <div className="hidden">{/* layout preserved */}</div>
-          {!dash?.projects.length ? (
-            <EmptyCard
-              title="No projects yet"
-              body="Create your first project to start tracking work for a client."
-              cta={{ label: "Create a project", onClick: () => setNewProjectOpen(true) }}
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+        {!dash?.projects.length ? (
+          <EmptyCard
+            title="No projects yet"
+            body="Create your first project to start tracking work for a client."
+            cta={{ label: "Create a project", onClick: () => setNewProjectOpen(true) }}
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {dash.projects.map((p, idx) => {
                 const allTasks = tasksByProject[p.id] ?? [];
                 const ts = allTasks.slice(0, 3);
