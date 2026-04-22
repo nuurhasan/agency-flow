@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Pencil, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
+import { Activity, Archive, ArchiveRestore, ArrowLeft, Pencil, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +22,7 @@ import { ProjectDialog } from "@/components/ProjectDialog";
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
 import { MembersTab } from "@/components/MembersTab";
+import { ActivityFeed } from "@/components/ActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -405,6 +406,9 @@ function ProjectDetailPage() {
             <TabsTrigger value="members">
               <Users className="h-3.5 w-3.5" /> Members ({memberCount})
             </TabsTrigger>
+            <TabsTrigger value="activity">
+              <Activity className="h-3.5 w-3.5" /> Activity
+            </TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
             <Button onClick={openNew} className="rounded-full">
@@ -528,6 +532,14 @@ function ProjectDetailPage() {
 
         <TabsContent value="members" className="mt-4">
           <MembersTab projectId={projectId} ownerId={project.owner_id} />
+        </TabsContent>
+
+        <TabsContent value="activity" className="mt-4">
+          <ActivityFeed
+            projectId={projectId}
+            limit={50}
+            emptyText="No activity yet for this project."
+          />
         </TabsContent>
       </Tabs>
 
