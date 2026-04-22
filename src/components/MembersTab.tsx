@@ -25,6 +25,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
 
   const { data: members = [] } = useQuery({
     queryKey: ["project-members", projectId],
+    enabled: !!user,
     queryFn: async () => {
       const { data: rows } = await supabase
         .from("project_members")
@@ -48,6 +49,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
 
   const { data: allPeople = [] } = useQuery({
     queryKey: ["all-profiles"],
+    enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
