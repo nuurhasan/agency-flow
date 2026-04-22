@@ -267,7 +267,7 @@ export function ProjectDialog({ open, onOpenChange, project }: Props) {
               <Select value={form.service_type} onValueChange={(v) => setForm((f) => ({ ...f, service_type: v as typeof form.service_type }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {SERVE_DUMMY_NEVER_USED(SERVICE_TYPES).map((s) => (
+                  {SERVICE_TYPES.map((s) => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
                 </SelectContent>
