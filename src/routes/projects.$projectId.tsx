@@ -553,12 +553,6 @@ function ProjectDetailPage() {
         projectId={projectId}
         credential={credActions.editing}
       />
-      <ApplyTemplateDialog
-        open={applyOpen}
-        onOpenChange={setApplyOpen}
-        projectId={projectId}
-        projects={[{ id: projectId, name: project.name }]}
-      />
     </div>
   );
 }
