@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Archive, ArchiveRestore, ArrowLeft, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Pencil, Plus, KeyRound, Trash2, Users, Zap } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +17,7 @@ import {
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
+import { ProjectDialog } from "@/components/ProjectDialog";
 
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 import { SprintsTab } from "@/components/SprintsTab";
@@ -67,7 +68,7 @@ function ProjectDetailPage() {
   const [viewingTask, setViewingTask] = React.useState<TaskRow | null>(null);
   const [editingTask, setEditingTask] = React.useState<TaskRow | null>(null);
   const [editingAssignees, setEditingAssignees] = React.useState<string[]>([]);
-  
+  const [editProjectOpen, setEditProjectOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
   const [assigneeFilter, setAssigneeFilter] = React.useState<string>("all");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
@@ -164,7 +165,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("projects")
-        .select("id,name,color,client_name,status,service_type,description,due_date,owner_id")
+        .select("id,name,color,icon,client_name,status,service_type,description,due_date,owner_id")
         .eq("id", projectId)
         .maybeSingle();
       return data;
@@ -331,6 +332,14 @@ function ProjectDetailPage() {
           )}
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full"
+            onClick={() => setEditProjectOpen(true)}
+          >
+            <Pencil className="h-4 w-4" /> Edit
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -552,6 +561,11 @@ function ProjectDetailPage() {
         onOpenChange={credActions.setOpen}
         projectId={projectId}
         credential={credActions.editing}
+      />
+      <ProjectDialog
+        open={editProjectOpen}
+        onOpenChange={setEditProjectOpen}
+        project={project}
       />
     </div>
   );
