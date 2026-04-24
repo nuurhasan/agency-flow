@@ -166,7 +166,7 @@
   --destructive-foreground: oklch(0.98 0.01 155);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.78 0.14 155);
+  --ring: oklch(0.86 0.27 130);
 }
 
 @layer base {
