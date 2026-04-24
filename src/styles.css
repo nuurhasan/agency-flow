@@ -93,25 +93,25 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.03 280);
 
-  /* Primary = brand green (pastel-leaning sage) */
-  --primary: oklch(0.62 0.15 155);
-  --primary-foreground: oklch(0.99 0.005 155);
+  /* Primary = brand lime #65fe08 */
+  --primary: oklch(0.86 0.27 130);
+  --primary-foreground: oklch(0.18 0.05 140);
 
-  --secondary: oklch(0.96 0.02 155);
-  --secondary-foreground: oklch(0.28 0.05 155);
+  --secondary: oklch(0.96 0.04 130);
+  --secondary-foreground: oklch(0.28 0.08 140);
 
   --muted: oklch(0.96 0.012 155);
   --muted-foreground: oklch(0.5 0.03 155);
 
-  --accent: oklch(0.93 0.06 155);
-  --accent-foreground: oklch(0.28 0.05 155);
+  --accent: oklch(0.93 0.12 130);
+  --accent-foreground: oklch(0.28 0.08 140);
 
   --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.99 0.005 155);
 
   --border: oklch(0.92 0.02 155);
   --input: oklch(0.92 0.02 155);
-  --ring: oklch(0.62 0.15 155);
+  --ring: oklch(0.86 0.27 130);
 
   /* Pastel palette: tint + ink (text on tint) */
   --mint: oklch(0.92 0.07 165);
