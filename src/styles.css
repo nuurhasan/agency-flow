@@ -55,6 +55,8 @@
   --color-blush-ink: var(--blush-ink);
   --color-coral: var(--coral);
   --color-coral-ink: var(--coral-ink);
+  --color-lime: var(--lime);
+  --color-lime-ink: var(--lime-ink);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -126,6 +128,8 @@
   --blush-ink: oklch(0.4 0.13 15);
   --coral: oklch(0.86 0.11 30);
   --coral-ink: oklch(0.42 0.18 28);
+  --lime: oklch(0.9 0.13 130);
+  --lime-ink: oklch(0.36 0.12 140);
 
   --chart-1: oklch(0.7 0.15 165);
   --chart-2: oklch(0.7 0.15 295);

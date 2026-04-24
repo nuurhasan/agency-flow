@@ -76,7 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
                     active
-                      ? "bg-lavender text-lavender-ink"
+                      ? "bg-lime text-lime-ink"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
@@ -171,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
                   active
-                    ? "bg-lavender text-lavender-ink"
+                    ? "bg-lime text-lime-ink"
                     : "text-muted-foreground hover:bg-muted",
                 )}
               >
