@@ -1,16 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import * as React from "react";
-import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import gloriaLogo from "@/assets/gloria9-logo.png";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
-  head: () => ({ meta: [{ title: "Sign in — Studio" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Gloria9" }] }),
 });
 
 function LoginPage() {
@@ -67,12 +67,14 @@ function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-lavender text-lavender-ink">
-            <Sparkles className="h-6 w-6" />
-          </div>
-          <h1 className="font-display text-3xl font-bold">Welcome to Studio</h1>
+          <img
+            src={gloriaLogo}
+            alt="Gloria9"
+            className="mx-auto mb-3 h-20 w-20 object-contain"
+          />
+          <h1 className="font-display text-3xl font-bold">Welcome to Gloria9</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Your colorful little agency operating system.
+            Project Management Internal
           </p>
         </div>
 

@@ -33,19 +33,22 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Studio — Agency PM" },
+      { title: "Gloria9 Project Management Internal" },
       {
         name: "description",
-        content: "A simple, colorful project management system for web design and SEO agencies.",
+        content: "Gloria9 Project Management Internal",
       },
-      { property: "og:title", content: "Studio — Agency PM" },
+      { property: "og:title", content: "Gloria9 Project Management Internal" },
       {
         property: "og:description",
-        content: "Dashboard, projects, tasks, and hosting reminders for small agencies.",
+        content: "Gloria9 Project Management Internal",
       },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/png", href: "/gloria9-logo.png" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

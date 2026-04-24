@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, FolderKanban, ListChecks, Globe2, Users, Settings, LogOut, Sparkles, AlertCircle, KeyRound, UserCircle } from "lucide-react";
+import { LayoutDashboard, FolderKanban, ListChecks, Globe2, Users, Settings, LogOut, AlertCircle, KeyRound, UserCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import gloriaLogo from "@/assets/gloria9-logo.png";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -56,10 +57,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-6 px-4 md:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-lavender text-lavender-ink">
-              <Sparkles className="h-5 w-5" />
-            </span>
-            <span className="font-display text-lg font-bold tracking-tight">Studio</span>
+            <img src={gloriaLogo} alt="Gloria9" className="h-9 w-9 object-contain" />
+            <span className="font-display text-lg font-bold tracking-tight">Gloria9</span>
           </Link>
 
           <nav className="ml-auto hidden items-center gap-1 md:flex">
