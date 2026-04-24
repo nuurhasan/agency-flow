@@ -139,12 +139,12 @@
 
   --sidebar: oklch(0.99 0.005 155);
   --sidebar-foreground: oklch(0.22 0.04 155);
-  --sidebar-primary: oklch(0.62 0.15 155);
-  --sidebar-primary-foreground: oklch(0.99 0.005 155);
-  --sidebar-accent: oklch(0.96 0.02 155);
-  --sidebar-accent-foreground: oklch(0.28 0.05 155);
+  --sidebar-primary: oklch(0.86 0.27 130);
+  --sidebar-primary-foreground: oklch(0.18 0.05 140);
+  --sidebar-accent: oklch(0.96 0.04 130);
+  --sidebar-accent-foreground: oklch(0.28 0.08 140);
   --sidebar-border: oklch(0.92 0.02 155);
-  --sidebar-ring: oklch(0.62 0.15 155);
+  --sidebar-ring: oklch(0.86 0.27 130);
 }
 
 .dark {
