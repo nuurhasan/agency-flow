@@ -101,27 +101,59 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <AlertCircle className="h-3.5 w-3.5" />
               {expiringCount} expiring
             </Link>
-            <Link to="/account" aria-label="Account settings" title="Account settings">
-              <Avatar className="h-9 w-9 border border-border transition-opacity hover:opacity-80">
-                {profile?.avatar_url ? (
-                  <AvatarImage src={profile.avatar_url} alt={profile.name || "Avatar"} />
-                ) : null}
-                <AvatarFallback className="bg-peach text-peach-ink text-xs font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Sign out"
-              onClick={async () => {
-                await signOut();
-                navigate({ to: "/login" });
-              }}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Account menu"
+                  className="rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <Avatar className="h-9 w-9 border border-border transition-opacity hover:opacity-80">
+                    {profile?.avatar_url ? (
+                      <AvatarImage src={profile.avatar_url} alt={profile.name || "Avatar"} />
+                    ) : null}
+                    <AvatarFallback className="bg-peach text-peach-ink text-xs font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-sm font-medium leading-none">{profile?.name || "Account"}</span>
+                    {profile?.email ? (
+                      <span className="text-xs leading-none text-muted-foreground">{profile.email}</span>
+                    ) : null}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/account">
+                    <UserCircle className="h-4 w-4" />
+                    Account settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/settings">
+                    <Settings className="h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={async (e) => {
+                    e.preventDefault();
+                    await signOut();
+                    navigate({ to: "/login" });
+                  }}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         {/* mobile nav */}
