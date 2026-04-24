@@ -56,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-6 px-4 md:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-lavender text-lavender-ink">
+            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-lime text-lime-ink">
               <Sparkles className="h-5 w-5" />
             </span>
             <span className="font-display text-lg font-bold tracking-tight">Studio</span>
@@ -76,7 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
                     active
-                      ? "bg-lavender text-lavender-ink"
+                      ? "bg-lime text-lime-ink"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
@@ -171,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
                   active
-                    ? "bg-lavender text-lavender-ink"
+                    ? "bg-lime text-lime-ink"
                     : "text-muted-foreground hover:bg-muted",
                 )}
               >
