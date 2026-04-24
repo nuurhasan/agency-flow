@@ -175,9 +175,9 @@ function Dashboard() {
       <ProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Counter to="/projects" color="mint" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
-        <Counter to="/tasks" color="sky" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} />
-        <Counter to="/tasks" color="lavender" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
+        <Counter to="/projects" color="brand" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
+        <Counter to="/tasks" color="brand" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} />
+        <Counter to="/tasks" color="brand" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
       </div>
 
       <div>
