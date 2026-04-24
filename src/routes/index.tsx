@@ -304,7 +304,7 @@ function Counter({
   value,
   to,
 }: {
-  color: "mint" | "sky" | "lavender" | "peach" | "butter" | "blush" | "coral";
+  color: "mint" | "sky" | "lavender" | "peach" | "butter" | "blush" | "coral" | "brand";
   icon: React.ReactNode;
   label: string;
   value: number;
@@ -318,6 +318,7 @@ function Counter({
     butter: "from-butter/80 to-butter/30 text-butter-ink",
     blush: "from-blush/70 to-blush/30 text-blush-ink",
     coral: "from-coral/70 to-coral/30 text-coral-ink",
+    brand: "from-[#DBFDA5] to-[#EAFEC9] text-lime-ink",
   };
   const iconBg: Record<string, string> = {
     mint: "bg-white/60 text-mint-ink",
@@ -327,6 +328,7 @@ function Counter({
     butter: "bg-white/60 text-butter-ink",
     blush: "bg-white/60 text-blush-ink",
     coral: "bg-white/60 text-coral-ink",
+    brand: "bg-white/70 text-lime-ink",
   };
   return (
     <Link
