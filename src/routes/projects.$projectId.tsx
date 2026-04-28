@@ -162,6 +162,32 @@ function ProjectDetailPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const updateStatus = useMutation({
+    mutationFn: async (vars: { task: TaskRow; nextStatus: TaskRow["status"] }) => {
+      const { task: t, nextStatus } = vars;
+      if (t.status === nextStatus) return;
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: nextStatus })
+        .eq("id", t.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          task_id: t.id,
+          project_id: t.project_id,
+          action: nextStatus === "done" ? "task.completed" : "task.updated",
+          meta: { title: t.title, status: nextStatus },
+        });
+      }
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries();
+      toast.success(`Status set to ${statusLabel(vars.nextStatus)}`);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
   const { data: project } = useQuery({
     queryKey: ["project", projectId],
     queryFn: async () => {
