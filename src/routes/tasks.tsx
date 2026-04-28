@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { pastelClasses, statusLabel, statusPillClasses, priorityClasses } from "@/lib/pastel";
+import { pastelClasses, priorityClasses } from "@/lib/pastel";
 import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { DueDatePill } from "@/components/ui/due-date-pill";
