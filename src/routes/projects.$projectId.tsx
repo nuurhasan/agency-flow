@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
+import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 
 export const Route = createFileRoute("/projects/$projectId")({
   component: () => (
