@@ -385,6 +385,7 @@ function TasksPage() {
                           .filter(Boolean) as { id: string; name: string }[]}
                         onComplete={() => toggleDone.mutate({ task: t, nextStatus: "done" })}
                         onReopen={() => toggleDone.mutate({ task: t, nextStatus: "todo" })}
+                        onChangeStatus={(next) => toggleDone.mutate({ task: t, nextStatus: next })}
                         onEdit={() => openView(t)}
                       />
                     ))}
@@ -428,6 +429,7 @@ function TaskRowItem({
   people,
   onComplete,
   onReopen,
+  onChangeStatus,
   onEdit,
 }: {
   task: TaskRow;
@@ -435,6 +437,7 @@ function TaskRowItem({
   people: { id: string; name: string }[];
   onComplete: () => void;
   onReopen: () => void;
+  onChangeStatus: (next: TaskRow["status"]) => void;
   onEdit: () => void;
 }) {
   const serverDone = task.status === "done";
@@ -503,12 +506,13 @@ function TaskRowItem({
             High
           </span>
         )}
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
-        >
-          {statusLabel(showAsDone ? "done" : task.status)}
-        </span>
       </button>
+      <TaskStatusDropdown
+        status={showAsDone ? "done" : task.status}
+        onChange={onChangeStatus}
+        disabled={completing || leaving}
+        className={showAsDone ? "opacity-80" : ""}
+      />
     </li>
   );
 }
