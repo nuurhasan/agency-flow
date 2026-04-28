@@ -617,6 +617,7 @@ function TaskList({
   assigneeMap,
   memberById,
   onToggle,
+  onChangeStatus,
   onEdit,
   emptyText = "Nothing here.",
 }: {
@@ -624,6 +625,7 @@ function TaskList({
   assigneeMap: Record<string, string[]>;
   memberById: Map<string, string>;
   onToggle: (t: TaskRow) => void;
+  onChangeStatus: (t: TaskRow, next: TaskRow["status"]) => void;
   onEdit: (t: TaskRow) => void;
   emptyText?: string;
 }) {
@@ -648,6 +650,7 @@ function TaskList({
             task={t}
             names={names}
             onToggle={() => onToggle(t)}
+            onChangeStatus={(next) => onChangeStatus(t, next)}
             onEdit={() => onEdit(t)}
           />
         );
@@ -660,11 +663,13 @@ function TaskListItem({
   task,
   names,
   onToggle,
+  onChangeStatus,
   onEdit,
 }: {
   task: TaskRow;
   names: string[];
   onToggle: () => void;
+  onChangeStatus: (next: TaskRow["status"]) => void;
   onEdit: () => void;
 }) {
   const serverDone = task.status === "done";
@@ -721,12 +726,13 @@ function TaskListItem({
             High
           </span>
         )}
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
-        >
-          {statusLabel(showAsDone ? "done" : task.status)}
-        </span>
       </button>
+      <TaskStatusDropdown
+        status={showAsDone ? "done" : task.status}
+        onChange={onChangeStatus}
+        disabled={completing || leaving}
+        className={showAsDone ? "opacity-80" : ""}
+      />
     </li>
   );
 }
