@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { pastelClasses, statusLabel, statusPillClasses, priorityClasses } from "@/lib/pastel";
+import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { DueDatePill } from "@/components/ui/due-date-pill";
 
@@ -127,8 +128,9 @@ function TasksPage() {
   );
 
   const toggleDone = useMutation({
-    mutationFn: async (vars: { task: TaskRow; nextStatus: "todo" | "done" }) => {
+    mutationFn: async (vars: { task: TaskRow; nextStatus: TaskRow["status"] }) => {
       const { task: t, nextStatus } = vars;
+      if (t.status === nextStatus) return;
       const { error } = await supabase.from("tasks").update({ status: nextStatus }).eq("id", t.id);
       if (error) throw error;
       if (user) {
@@ -137,7 +139,7 @@ function TasksPage() {
           task_id: t.id,
           project_id: t.project_id,
           action: nextStatus === "done" ? "task.completed" : "task.updated",
-          meta: { title: t.title },
+          meta: { title: t.title, status: nextStatus },
         });
       }
     },
