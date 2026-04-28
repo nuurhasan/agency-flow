@@ -499,6 +499,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
+                  onChangeStatus={(t, next) => updateStatus.mutate({ task: t, nextStatus: next })}
                   onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
@@ -513,6 +514,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
+                  onChangeStatus={(t, next) => updateStatus.mutate({ task: t, nextStatus: next })}
                   onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
