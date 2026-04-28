@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
+import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 
 export const Route = createFileRoute("/projects/$projectId")({
   component: () => (
@@ -158,6 +159,32 @@ function ProjectDetailPage() {
       }
     },
     onSuccess: () => qc.invalidateQueries(),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: async (vars: { task: TaskRow; nextStatus: TaskRow["status"] }) => {
+      const { task: t, nextStatus } = vars;
+      if (t.status === nextStatus) return;
+      const { error } = await supabase
+        .from("tasks")
+        .update({ status: nextStatus })
+        .eq("id", t.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          task_id: t.id,
+          project_id: t.project_id,
+          action: nextStatus === "done" ? "task.completed" : "task.updated",
+          meta: { title: t.title, status: nextStatus },
+        });
+      }
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries();
+      toast.success(`Status set to ${statusLabel(vars.nextStatus)}`);
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
@@ -472,6 +499,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
+                  onChangeStatus={(t, next) => updateStatus.mutate({ task: t, nextStatus: next })}
                   onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
@@ -486,6 +514,7 @@ function ProjectDetailPage() {
                   assigneeMap={assigneeMap}
                   memberById={memberById}
                   onToggle={(t) => toggleDone.mutate(t)}
+                  onChangeStatus={(t, next) => updateStatus.mutate({ task: t, nextStatus: next })}
                   onEdit={openView}
                   emptyText={
                     assigneeFilter === "all"
@@ -588,6 +617,7 @@ function TaskList({
   assigneeMap,
   memberById,
   onToggle,
+  onChangeStatus,
   onEdit,
   emptyText = "Nothing here.",
 }: {
@@ -595,6 +625,7 @@ function TaskList({
   assigneeMap: Record<string, string[]>;
   memberById: Map<string, string>;
   onToggle: (t: TaskRow) => void;
+  onChangeStatus: (t: TaskRow, next: TaskRow["status"]) => void;
   onEdit: (t: TaskRow) => void;
   emptyText?: string;
 }) {
@@ -619,6 +650,7 @@ function TaskList({
             task={t}
             names={names}
             onToggle={() => onToggle(t)}
+            onChangeStatus={(next) => onChangeStatus(t, next)}
             onEdit={() => onEdit(t)}
           />
         );
@@ -631,11 +663,13 @@ function TaskListItem({
   task,
   names,
   onToggle,
+  onChangeStatus,
   onEdit,
 }: {
   task: TaskRow;
   names: string[];
   onToggle: () => void;
+  onChangeStatus: (next: TaskRow["status"]) => void;
   onEdit: () => void;
 }) {
   const serverDone = task.status === "done";
@@ -692,12 +726,13 @@ function TaskListItem({
             High
           </span>
         )}
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
-        >
-          {statusLabel(showAsDone ? "done" : task.status)}
-        </span>
       </button>
+      <TaskStatusDropdown
+        status={showAsDone ? "done" : task.status}
+        onChange={onChangeStatus}
+        disabled={completing || leaving}
+        className={showAsDone ? "opacity-80" : ""}
+      />
     </li>
   );
 }

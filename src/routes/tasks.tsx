@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { pastelClasses, statusLabel, statusPillClasses, priorityClasses } from "@/lib/pastel";
+import { pastelClasses, priorityClasses } from "@/lib/pastel";
+import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { DueDatePill } from "@/components/ui/due-date-pill";
 
@@ -127,8 +128,9 @@ function TasksPage() {
   );
 
   const toggleDone = useMutation({
-    mutationFn: async (vars: { task: TaskRow; nextStatus: "todo" | "done" }) => {
+    mutationFn: async (vars: { task: TaskRow; nextStatus: TaskRow["status"] }) => {
       const { task: t, nextStatus } = vars;
+      if (t.status === nextStatus) return;
       const { error } = await supabase.from("tasks").update({ status: nextStatus }).eq("id", t.id);
       if (error) throw error;
       if (user) {
@@ -137,7 +139,7 @@ function TasksPage() {
           task_id: t.id,
           project_id: t.project_id,
           action: nextStatus === "done" ? "task.completed" : "task.updated",
-          meta: { title: t.title },
+          meta: { title: t.title, status: nextStatus },
         });
       }
     },
@@ -383,6 +385,7 @@ function TasksPage() {
                           .filter(Boolean) as { id: string; name: string }[]}
                         onComplete={() => toggleDone.mutate({ task: t, nextStatus: "done" })}
                         onReopen={() => toggleDone.mutate({ task: t, nextStatus: "todo" })}
+                        onChangeStatus={(next) => toggleDone.mutate({ task: t, nextStatus: next })}
                         onEdit={() => openView(t)}
                       />
                     ))}
@@ -426,6 +429,7 @@ function TaskRowItem({
   people,
   onComplete,
   onReopen,
+  onChangeStatus,
   onEdit,
 }: {
   task: TaskRow;
@@ -433,6 +437,7 @@ function TaskRowItem({
   people: { id: string; name: string }[];
   onComplete: () => void;
   onReopen: () => void;
+  onChangeStatus: (next: TaskRow["status"]) => void;
   onEdit: () => void;
 }) {
   const serverDone = task.status === "done";
@@ -501,12 +506,13 @@ function TaskRowItem({
             High
           </span>
         )}
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${statusPillClasses(showAsDone ? "done" : task.status)}`}
-        >
-          {statusLabel(showAsDone ? "done" : task.status)}
-        </span>
       </button>
+      <TaskStatusDropdown
+        status={showAsDone ? "done" : task.status}
+        onChange={onChangeStatus}
+        disabled={completing || leaving}
+        className={showAsDone ? "opacity-80" : ""}
+      />
     </li>
   );
 }

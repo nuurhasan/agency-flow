@@ -1,22 +1,45 @@
+# Make task status pills editable
 
+Right now the colored "Todo / In Progress / In Review / Done" tags on the right side of each task row are just labels. We'll turn them into a dropdown so you can change a task's status with one click — without opening the edit dialog.
 
-Account exists (`be698888-726b-42e7-8bce-233432d26f6f`). I can't reset auth passwords from the read-only plan mode, but I can do it once you approve.
+This will work in two places that share the same pattern:
+1. The project detail page (the screenshot you sent)
+2. The global Tasks page (`/tasks`), which uses the same row component
 
-## Plan
+## Behavior
 
-Run a one-off admin script using the service role key to call `supabase.auth.admin.updateUserById()` and set the password to `12345678` for `nuur.hasan@gloria9.com`.
+- Click the status pill → a small dropdown opens with the four options:
+  - Todo
+  - In Progress
+  - In Review
+  - Done
+- Selecting a status updates the task immediately, the pill re-colors, and the change is logged to the activity feed (same as today's done/undone toggle).
+- A check mark indicates the current status.
+- Clicking the pill no longer opens the task edit dialog (we'll stop the click from bubbling). The rest of the row still opens the task as before.
+- The pill keeps its current pastel color styling — only behavior changes.
+- If a task is mid-completion-animation (the strike-through transition after checking the checkbox), the pill stays disabled until the animation finishes, to avoid conflicts.
 
-```ts
-// /tmp/reset-pw.ts
-import { createClient } from "@supabase/supabase-js";
-const admin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-await admin.auth.admin.updateUserById(
-  "be698888-726b-42e7-8bce-233432d26f6f",
-  { password: "12345678" }
-);
-```
+## Technical changes
 
-No code changes, no migrations, nothing committed to the repo. Just an ephemeral script to update the password, then I'll confirm you can sign in.
+1. **`src/routes/projects.$projectId.tsx`** — `TaskListItem`
+   - Replace the static `<span>` status pill with a `DropdownMenu` (already in `@/components/ui/dropdown-menu`).
+   - The trigger keeps the existing pill classes (`statusPillClasses(...)`) and gains a tiny chevron.
+   - Add `onClick={(e) => e.stopPropagation()}` on the trigger so clicking the pill does not also fire the row's edit handler.
+   - Add a new `updateStatus` mutation in the parent component (mirroring the existing `toggleDone` mutation) that:
+     - Updates `tasks.status` to the chosen value.
+     - Inserts an `activity_log` row with `action: "task.updated"` (or `"task.completed"` when moving to `done`) and `meta: { title, status }`.
+     - Invalidates queries on success, toasts on error.
+   - Pass `onChangeStatus(nextStatus)` into `TaskListItem` alongside the existing `onToggle` / `onEdit` props.
 
-**After this works, please change it to a stronger password from Settings.**
+2. **`src/routes/tasks.tsx`** — equivalent task row (line ~505)
+   - Same dropdown swap and same `updateStatus` mutation pattern, scoped to that page's task list.
 
+3. **No DB or schema changes.** Status values already accept `todo | in_progress | in_review | done`, and the existing `toggleDone` mutation proves the update path and activity logging work.
+
+4. **No new files.** Reuses `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuCheckboxItem` from `src/components/ui/dropdown-menu.tsx` and the helpers in `src/lib/pastel.ts`.
+
+## Out of scope
+
+- The Sprint board and Kanban-style views (those already let you change status by drag/drop).
+- The status pill in the task **detail dialog** header (read-only there; the dialog already has an Edit button).
+- The project status pill at the top of the project page (already a dropdown).
