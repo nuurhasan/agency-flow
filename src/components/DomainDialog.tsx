@@ -183,25 +183,14 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="d-dexp">Domain expiry</Label>
-              <Input
-                id="d-dexp"
-                type="date"
-                value={form.domain_expiry}
-                onChange={(e) => setForm((f) => ({ ...f, domain_expiry: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="d-hexp">Hosting expiry</Label>
-              <Input
-                id="d-hexp"
-                type="date"
-                value={form.hosting_expiry}
-                onChange={(e) => setForm((f) => ({ ...f, hosting_expiry: e.target.value }))}
-              />
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="d-dexp">Domain expiry</Label>
+            <Input
+              id="d-dexp"
+              type="date"
+              value={form.domain_expiry}
+              onChange={(e) => setForm((f) => ({ ...f, domain_expiry: e.target.value }))}
+            />
           </div>
           <div className="space-y-2">
             <Label>Assigned team members</Label>
