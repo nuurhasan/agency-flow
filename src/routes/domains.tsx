@@ -106,6 +106,19 @@ function DomainsPage() {
   const [confirmDelete, setConfirmDelete] = React.useState<DomainRow | null>(null);
   const [sortKey, setSortKey] = React.useState<SortKey>("domain_expiry");
   const [sortDir, setSortDir] = React.useState<SortDir>("asc");
+  const [statusFilter, setStatusFilter] = React.useState<
+    "all" | "expired" | "urgent" | "soon" | "healthy"
+  >("all");
+
+  function bucketOf(d: DomainRow): "expired" | "urgent" | "soon" | "healthy" | "none" {
+    if (d.renewed) return "healthy";
+    const days = daysUntil(d.domain_expiry);
+    if (days === null) return "none";
+    if (days < 0) return "expired";
+    if (days < 30) return "urgent";
+    if (days < 60) return "soon";
+    return "healthy";
+  }
 
   const { data: domains = [], isLoading } = useQuery({
     queryKey: ["client_domains"],
