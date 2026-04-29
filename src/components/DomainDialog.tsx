@@ -33,6 +33,7 @@ interface DomainRow {
   hosting_expiry: string | null;
   notes: string | null;
   renewed: boolean;
+  customer_type?: "paying" | "non-paying";
 }
 
 interface Props {
