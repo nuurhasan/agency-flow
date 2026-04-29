@@ -193,14 +193,33 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="d-dexp">Domain expiry</Label>
-            <Input
-              id="d-dexp"
-              type="date"
-              value={form.domain_expiry}
-              onChange={(e) => setForm((f) => ({ ...f, domain_expiry: e.target.value }))}
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="d-dexp">Domain expiry</Label>
+              <Input
+                id="d-dexp"
+                type="date"
+                value={form.domain_expiry}
+                onChange={(e) => setForm((f) => ({ ...f, domain_expiry: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="d-ctype">Customer type</Label>
+              <Select
+                value={form.customer_type}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, customer_type: v as "paying" | "non-paying" }))
+                }
+              >
+                <SelectTrigger id="d-ctype">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paying">Paying</SelectItem>
+                  <SelectItem value="non-paying">Non-Paying / Internal / Charity</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Assigned team members</Label>
