@@ -269,5 +269,6 @@ function initial(d: Props["domain"]) {
     hosting_expiry: d?.hosting_expiry ?? "",
     notes: d?.notes ?? "",
     renewed: d?.renewed ?? false,
+    customer_type: (d?.customer_type ?? "paying") as "paying" | "non-paying",
   };
 }
