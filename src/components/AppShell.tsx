@@ -20,7 +20,7 @@ const NAV = [
   { to: "/projects", label: "Projects", icon: FolderKanban },
   { to: "/tasks", label: "Tasks", icon: ListChecks },
   { to: "/vault", label: "Vault", icon: KeyRound },
-  { to: "/hosting", label: "Hosting", icon: Globe2 },
+  { to: "/domains", label: "Domains", icon: Globe2 },
   { to: "/team", label: "Team", icon: Users },
 ] as const;
 
@@ -87,7 +87,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <Link
-              to="/hosting"
+              to="/domains"
               className={cn(
                 "hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
                 expiringCount > 0

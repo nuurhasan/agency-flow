@@ -308,7 +308,7 @@ function Counter({
   icon: React.ReactNode;
   label: string;
   value: number;
-  to: "/projects" | "/tasks" | "/hosting" | "/team" | "/settings" | "/vault" | "/";
+  to: "/projects" | "/tasks" | "/domains" | "/team" | "/settings" | "/vault" | "/";
 }) {
   const tints: Record<string, string> = {
     mint: "from-mint/70 to-mint/30 text-mint-ink",
