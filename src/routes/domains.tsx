@@ -106,6 +106,19 @@ function DomainsPage() {
   const [confirmDelete, setConfirmDelete] = React.useState<DomainRow | null>(null);
   const [sortKey, setSortKey] = React.useState<SortKey>("domain_expiry");
   const [sortDir, setSortDir] = React.useState<SortDir>("asc");
+  const [statusFilter, setStatusFilter] = React.useState<
+    "all" | "expired" | "urgent" | "soon" | "healthy"
+  >("all");
+
+  function bucketOf(d: DomainRow): "expired" | "urgent" | "soon" | "healthy" | "none" {
+    if (d.renewed) return "healthy";
+    const days = daysUntil(d.domain_expiry);
+    if (days === null) return "none";
+    if (days < 0) return "expired";
+    if (days < 30) return "urgent";
+    if (days < 60) return "soon";
+    return "healthy";
+  }
 
   const { data: domains = [], isLoading } = useQuery({
     queryKey: ["client_domains"],
@@ -189,6 +202,9 @@ function DomainsPage() {
           (d.notes ?? "").toLowerCase().includes(q),
       );
     }
+    if (statusFilter !== "all") {
+      rows = rows.filter((d) => bucketOf(d) === statusFilter);
+    }
     const sorted = [...rows].sort((a, b) => {
       let cmp = 0;
       if (sortKey === "status") {
@@ -212,7 +228,7 @@ function DomainsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [domains, search, sortKey, sortDir]);
+  }, [domains, search, sortKey, sortDir, statusFilter]);
 
   const stats = React.useMemo(() => {
     let expired = 0;
@@ -266,10 +282,34 @@ function DomainsPage() {
 
         {/* Summary pills */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <SummaryPill label="Expired" value={stats.expired} className="bg-destructive/10 text-destructive" />
-          <SummaryPill label="< 30 days" value={stats.urgent} className="bg-coral/30 text-coral-ink" />
-          <SummaryPill label="30–60 days" value={stats.soon} className="bg-butter/40 text-butter-ink" />
-          <SummaryPill label="Healthy" value={stats.healthy} className="bg-mint/40 text-mint-ink" />
+          <SummaryPill
+            label="Expired"
+            value={stats.expired}
+            className="bg-destructive/10 text-destructive"
+            active={statusFilter === "expired"}
+            onClick={() => setStatusFilter((s) => (s === "expired" ? "all" : "expired"))}
+          />
+          <SummaryPill
+            label="< 30 days"
+            value={stats.urgent}
+            className="bg-coral/30 text-coral-ink"
+            active={statusFilter === "urgent"}
+            onClick={() => setStatusFilter((s) => (s === "urgent" ? "all" : "urgent"))}
+          />
+          <SummaryPill
+            label="30–60 days"
+            value={stats.soon}
+            className="bg-butter/40 text-butter-ink"
+            active={statusFilter === "soon"}
+            onClick={() => setStatusFilter((s) => (s === "soon" ? "all" : "soon"))}
+          />
+          <SummaryPill
+            label="Healthy"
+            value={stats.healthy}
+            className="bg-mint/40 text-mint-ink"
+            active={statusFilter === "healthy"}
+            onClick={() => setStatusFilter((s) => (s === "healthy" ? "all" : "healthy"))}
+          />
         </div>
 
         <div className="flex items-center gap-3">
@@ -458,12 +498,36 @@ function SortableHead({
   );
 }
 
-function SummaryPill({ label, value, className }: { label: string; value: number; className: string }) {
+function SummaryPill({
+  label,
+  value,
+  className,
+  active,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  className: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <div className={cn("rounded-2xl px-4 py-3", className)}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-2xl px-4 py-3 text-left transition-all hover:scale-[1.02] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        className,
+        active && "ring-2 ring-foreground/40 shadow-md scale-[1.02]",
+      )}
+    >
       <p className="font-display text-2xl font-bold">{value}</p>
-      <p className="text-xs font-medium opacity-80">{label}</p>
-    </div>
+      <p className="text-xs font-medium opacity-80">
+        {label}
+        {active && " ·  clear"}
+      </p>
+    </button>
   );
 }
 
