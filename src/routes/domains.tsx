@@ -228,7 +228,7 @@ function DomainsPage() {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return sorted;
-  }, [domains, search, sortKey, sortDir]);
+  }, [domains, search, sortKey, sortDir, statusFilter]);
 
   const stats = React.useMemo(() => {
     let expired = 0;
