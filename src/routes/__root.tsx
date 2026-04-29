@@ -44,6 +44,13 @@ export const Route = createRootRoute({
         content: "Gloria9 Project Management Internal",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "Gloria9 Project Management Internal" },
+      { name: "description", content: "Agency Flow is a modern, visual project management system for agencies." },
+      { property: "og:description", content: "Agency Flow is a modern, visual project management system for agencies." },
+      { name: "twitter:description", content: "Agency Flow is a modern, visual project management system for agencies." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/267bceba-5d89-473d-bb1b-7df18e9227b2/id-preview-82eaae2b--b8984a37-ef14-4524-80d7-e03f47628d3e.lovable.app-1777480077400.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/267bceba-5d89-473d-bb1b-7df18e9227b2/id-preview-82eaae2b--b8984a37-ef14-4524-80d7-e03f47628d3e.lovable.app-1777480077400.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
