@@ -202,6 +202,9 @@ function DomainsPage() {
           (d.notes ?? "").toLowerCase().includes(q),
       );
     }
+    if (statusFilter !== "all") {
+      rows = rows.filter((d) => bucketOf(d) === statusFilter);
+    }
     const sorted = [...rows].sort((a, b) => {
       let cmp = 0;
       if (sortKey === "status") {
