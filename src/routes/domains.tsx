@@ -498,12 +498,36 @@ function SortableHead({
   );
 }
 
-function SummaryPill({ label, value, className }: { label: string; value: number; className: string }) {
+function SummaryPill({
+  label,
+  value,
+  className,
+  active,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  className: string;
+  active?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <div className={cn("rounded-2xl px-4 py-3", className)}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-2xl px-4 py-3 text-left transition-all hover:scale-[1.02] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        className,
+        active && "ring-2 ring-foreground/40 shadow-md scale-[1.02]",
+      )}
+    >
       <p className="font-display text-2xl font-bold">{value}</p>
-      <p className="text-xs font-medium opacity-80">{label}</p>
-    </div>
+      <p className="text-xs font-medium opacity-80">
+        {label}
+        {active && " ·  clear"}
+      </p>
+    </button>
   );
 }
 
