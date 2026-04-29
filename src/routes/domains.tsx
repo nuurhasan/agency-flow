@@ -45,6 +45,8 @@ export const Route = createFileRoute("/domains")({
   head: () => ({ meta: [{ title: "Domains — Studio" }] }),
 });
 
+type CustomerType = "paying" | "non-paying";
+
 type DomainRow = {
   id: string;
   client_name: string;
@@ -54,12 +56,14 @@ type DomainRow = {
   hosting_expiry: string | null;
   notes: string | null;
   renewed: boolean;
+  customer_type: CustomerType;
 };
 
 type ProfileLite = { id: string; name: string; email: string };
 
 type SortKey = "domain" | "client_name" | "provider" | "domain_expiry" | "status";
 type SortDir = "asc" | "desc";
+type StatusFilter = "all" | "expired" | "urgent" | "soon" | "healthy";
 
 function daysUntil(dateStr: string | null): number | null {
   if (!dateStr) return null;
@@ -86,7 +90,6 @@ function urgencyLabel(days: number | null, renewed: boolean): string {
   return `${days}d left`;
 }
 
-// Sort weight so urgent items float up when sorting by status
 function statusWeight(d: DomainRow): number {
   if (d.renewed) return 4;
   const days = daysUntil(d.domain_expiry);
@@ -97,6 +100,16 @@ function statusWeight(d: DomainRow): number {
   return 3;
 }
 
+function bucketOf(d: DomainRow): "expired" | "urgent" | "soon" | "healthy" | "none" {
+  if (d.renewed) return "healthy";
+  const days = daysUntil(d.domain_expiry);
+  if (days === null) return "none";
+  if (days < 0) return "expired";
+  if (days < 30) return "urgent";
+  if (days < 60) return "soon";
+  return "healthy";
+}
+
 function DomainsPage() {
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
@@ -104,21 +117,7 @@ function DomainsPage() {
   const [editing, setEditing] = React.useState<DomainRow | null>(null);
   const [open, setOpen] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState<DomainRow | null>(null);
-  const [sortKey, setSortKey] = React.useState<SortKey>("domain_expiry");
-  const [sortDir, setSortDir] = React.useState<SortDir>("asc");
-  const [statusFilter, setStatusFilter] = React.useState<
-    "all" | "expired" | "urgent" | "soon" | "healthy"
-  >("all");
-
-  function bucketOf(d: DomainRow): "expired" | "urgent" | "soon" | "healthy" | "none" {
-    if (d.renewed) return "healthy";
-    const days = daysUntil(d.domain_expiry);
-    if (days === null) return "none";
-    if (days < 0) return "expired";
-    if (days < 30) return "urgent";
-    if (days < 60) return "soon";
-    return "healthy";
-  }
+  const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("all");
 
   const { data: domains = [], isLoading } = useQuery({
     queryKey: ["client_domains"],
@@ -128,7 +127,10 @@ function DomainsPage() {
         .select("*")
         .order("domain_expiry", { ascending: true, nullsFirst: false });
       if (error) throw error;
-      return (data ?? []) as DomainRow[];
+      return (data ?? []).map((d: any) => ({
+        ...d,
+        customer_type: (d.customer_type ?? "paying") as CustomerType,
+      })) as DomainRow[];
     },
   });
 
@@ -190,45 +192,31 @@ function DomainsPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
-  const filtered = React.useMemo(() => {
-    const q = search.trim().toLowerCase();
-    let rows = domains;
-    if (q) {
-      rows = rows.filter(
-        (d) =>
-          d.domain.toLowerCase().includes(q) ||
-          d.client_name.toLowerCase().includes(q) ||
-          (d.provider ?? "").toLowerCase().includes(q) ||
-          (d.notes ?? "").toLowerCase().includes(q),
-      );
-    }
-    if (statusFilter !== "all") {
-      rows = rows.filter((d) => bucketOf(d) === statusFilter);
-    }
-    const sorted = [...rows].sort((a, b) => {
-      let cmp = 0;
-      if (sortKey === "status") {
-        cmp = statusWeight(a) - statusWeight(b);
-        if (cmp === 0) {
-          const da = daysUntil(a.domain_expiry) ?? Number.MAX_SAFE_INTEGER;
-          const db = daysUntil(b.domain_expiry) ?? Number.MAX_SAFE_INTEGER;
-          cmp = da - db;
-        }
-      } else if (sortKey === "domain_expiry") {
-        const av = a.domain_expiry ?? "";
-        const bv = b.domain_expiry ?? "";
-        if (!av && bv) cmp = 1;
-        else if (av && !bv) cmp = -1;
-        else cmp = av.localeCompare(bv);
-      } else {
-        const av = (a[sortKey] ?? "").toString().toLowerCase();
-        const bv = (b[sortKey] ?? "").toString().toLowerCase();
-        cmp = av.localeCompare(bv);
-      }
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-    return sorted;
-  }, [domains, search, sortKey, sortDir, statusFilter]);
+  const q = search.trim().toLowerCase();
+  const matchSearch = React.useCallback(
+    (d: DomainRow) =>
+      !q ||
+      d.domain.toLowerCase().includes(q) ||
+      d.client_name.toLowerCase().includes(q) ||
+      (d.provider ?? "").toLowerCase().includes(q) ||
+      (d.notes ?? "").toLowerCase().includes(q),
+    [q],
+  );
+
+  const matchStatus = React.useCallback(
+    (d: DomainRow) => statusFilter === "all" || bucketOf(d) === statusFilter,
+    [statusFilter],
+  );
+
+  const payingDomains = React.useMemo(
+    () => domains.filter((d) => d.customer_type === "paying" && matchSearch(d) && matchStatus(d)),
+    [domains, matchSearch, matchStatus],
+  );
+  const nonPayingDomains = React.useMemo(
+    () =>
+      domains.filter((d) => d.customer_type === "non-paying" && matchSearch(d) && matchStatus(d)),
+    [domains, matchSearch, matchStatus],
+  );
 
   const stats = React.useMemo(() => {
     let expired = 0;
@@ -250,14 +238,7 @@ function DomainsPage() {
     return { expired, urgent, soon, healthy };
   }, [domains]);
 
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    } else {
-      setSortKey(key);
-      setSortDir(key === "status" || key === "domain_expiry" ? "asc" : "asc");
-    }
-  }
+  const totalFiltered = payingDomains.length + nonPayingDomains.length;
 
   return (
     <AuthGate>
@@ -323,7 +304,7 @@ function DomainsPage() {
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            {filtered.length} of {domains.length}
+            {totalFiltered} of {domains.length}
           </p>
         </div>
 
@@ -331,112 +312,40 @@ function DomainsPage() {
           <div className="rounded-3xl border border-border bg-card p-12 text-center text-sm text-muted-foreground">
             Loading domains…
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-card p-12 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-lavender text-lavender-ink">
-              <Globe2 className="h-6 w-6" />
-            </div>
-            <p className="mt-4 font-display text-lg font-semibold">
-              {domains.length === 0 ? "No domains yet" : "Nothing matches your search"}
-            </p>
-            <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-              {domains.length === 0
-                ? "Add your first domain to track expiry and get reminded before it lapses."
-                : "Try a different search term."}
-            </p>
-          </div>
         ) : (
-          <div className="overflow-hidden rounded-3xl border border-border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/40 hover:bg-muted/40">
-                  <SortableHead label="Domain" k="domain" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableHead label="Client" k="client_name" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableHead label="Registrar" k="provider" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableHead label="Expiry" k="domain_expiry" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableHead label="Status" k="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <TableHead className="text-muted-foreground">Assignees</TableHead>
-                  <TableHead className="w-[1%] text-right text-muted-foreground">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((d) => {
-                  const days = daysUntil(d.domain_expiry);
-                  const assignees = assigneeMap[d.id] ?? [];
-                  return (
-                    <TableRow key={d.id} className={cn(d.renewed && "opacity-70")}>
-                      <TableCell className="py-3 font-medium">
-                        <div className="flex flex-col">
-                          <span className="truncate">{d.domain}</span>
-                          {d.notes && (
-                            <span className="truncate text-xs text-muted-foreground">{d.notes}</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="py-3 text-sm">{d.client_name}</TableCell>
-                      <TableCell className="py-3 text-sm text-muted-foreground">
-                        {d.provider || "—"}
-                      </TableCell>
-                      <TableCell className="py-3 text-sm">
-                        {d.domain_expiry ? formatDate(d.domain_expiry) : "—"}
-                      </TableCell>
-                      <TableCell className="py-3">
-                        <Badge
-                          variant="outline"
-                          className={cn("border-transparent", urgencyClasses(days, d.renewed))}
-                        >
-                          {urgencyLabel(days, d.renewed)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-3 text-xs text-muted-foreground">
-                        {assignees.length > 0
-                          ? assignees.map((a) => a.name || a.email).join(", ")
-                          : "—"}
-                      </TableCell>
-                      <TableCell className="py-3 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          {!d.renewed && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 rounded-full px-2"
-                              title="Mark renewed"
-                              onClick={() => renewMutation.mutate(d)}
-                              disabled={renewMutation.isPending}
-                            >
-                              <RefreshCw className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 rounded-full px-2"
-                            title="Edit"
-                            onClick={() => {
-                              setEditing(d);
-                              setOpen(true);
-                            }}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          {isAdmin && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 rounded-full px-2 text-destructive hover:text-destructive"
-                              title="Delete"
-                              onClick={() => setConfirmDelete(d)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+          <div className="space-y-8">
+            <DomainSection
+              title="Paying Customers"
+              accent="bg-mint text-mint-ink"
+              rows={payingDomains}
+              totalCount={domains.filter((d) => d.customer_type === "paying").length}
+              assigneeMap={assigneeMap}
+              isAdmin={isAdmin}
+              onEdit={(d) => {
+                setEditing(d);
+                setOpen(true);
+              }}
+              onRenew={(d) => renewMutation.mutate(d)}
+              onDelete={(d) => setConfirmDelete(d)}
+              renewing={renewMutation.isPending}
+              emptyMessage="No paying customer domains yet."
+            />
+            <DomainSection
+              title="Non-Paying / Internal / Charity Customers"
+              accent="bg-lavender text-lavender-ink"
+              rows={nonPayingDomains}
+              totalCount={domains.filter((d) => d.customer_type === "non-paying").length}
+              assigneeMap={assigneeMap}
+              isAdmin={isAdmin}
+              onEdit={(d) => {
+                setEditing(d);
+                setOpen(true);
+              }}
+              onRenew={(d) => renewMutation.mutate(d)}
+              onDelete={(d) => setConfirmDelete(d)}
+              renewing={renewMutation.isPending}
+              emptyMessage="No non-paying / internal / charity domains yet."
+            />
           </div>
         )}
       </div>
@@ -463,6 +372,182 @@ function DomainsPage() {
         </AlertDialogContent>
       </AlertDialog>
     </AuthGate>
+  );
+}
+
+function DomainSection({
+  title,
+  accent,
+  rows,
+  totalCount,
+  assigneeMap,
+  isAdmin,
+  onEdit,
+  onRenew,
+  onDelete,
+  renewing,
+  emptyMessage,
+}: {
+  title: string;
+  accent: string;
+  rows: DomainRow[];
+  totalCount: number;
+  assigneeMap: Record<string, ProfileLite[]>;
+  isAdmin: boolean;
+  onEdit: (d: DomainRow) => void;
+  onRenew: (d: DomainRow) => void;
+  onDelete: (d: DomainRow) => void;
+  renewing: boolean;
+  emptyMessage: string;
+}) {
+  const [sortKey, setSortKey] = React.useState<SortKey>("domain_expiry");
+  const [sortDir, setSortDir] = React.useState<SortDir>("asc");
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sorted = React.useMemo(() => {
+    const arr = [...rows].sort((a, b) => {
+      let cmp = 0;
+      if (sortKey === "status") {
+        cmp = statusWeight(a) - statusWeight(b);
+        if (cmp === 0) {
+          const da = daysUntil(a.domain_expiry) ?? Number.MAX_SAFE_INTEGER;
+          const db = daysUntil(b.domain_expiry) ?? Number.MAX_SAFE_INTEGER;
+          cmp = da - db;
+        }
+      } else if (sortKey === "domain_expiry") {
+        const av = a.domain_expiry ?? "";
+        const bv = b.domain_expiry ?? "";
+        if (!av && bv) cmp = 1;
+        else if (av && !bv) cmp = -1;
+        else cmp = av.localeCompare(bv);
+      } else {
+        const av = (a[sortKey] ?? "").toString().toLowerCase();
+        const bv = (b[sortKey] ?? "").toString().toLowerCase();
+        cmp = av.localeCompare(bv);
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return arr;
+  }, [rows, sortKey, sortDir]);
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center gap-3">
+        <span className={cn("inline-flex h-7 items-center rounded-full px-3 text-xs font-semibold", accent)}>
+          {title}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {rows.length} of {totalCount}
+        </span>
+      </div>
+
+      {sorted.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+            <Globe2 className="h-5 w-5" />
+          </div>
+          <p className="mt-3 text-sm text-muted-foreground">{emptyMessage}</p>
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-3xl border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/40 hover:bg-muted/40">
+                <SortableHead label="Domain" k="domain" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortableHead label="Client" k="client_name" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortableHead label="Registrar" k="provider" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortableHead label="Expiry" k="domain_expiry" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <SortableHead label="Status" k="status" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                <TableHead className="text-muted-foreground">Assignees</TableHead>
+                <TableHead className="w-[1%] text-right text-muted-foreground">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sorted.map((d) => {
+                const days = daysUntil(d.domain_expiry);
+                const assignees = assigneeMap[d.id] ?? [];
+                return (
+                  <TableRow key={d.id} className={cn(d.renewed && "opacity-70")}>
+                    <TableCell className="py-3 font-medium">
+                      <div className="flex flex-col">
+                        <span className="truncate">{d.domain}</span>
+                        {d.notes && (
+                          <span className="truncate text-xs text-muted-foreground">{d.notes}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-3 text-sm">{d.client_name}</TableCell>
+                    <TableCell className="py-3 text-sm text-muted-foreground">
+                      {d.provider || "—"}
+                    </TableCell>
+                    <TableCell className="py-3 text-sm">
+                      {d.domain_expiry ? formatDate(d.domain_expiry) : "—"}
+                    </TableCell>
+                    <TableCell className="py-3">
+                      <Badge
+                        variant="outline"
+                        className={cn("border-transparent", urgencyClasses(days, d.renewed))}
+                      >
+                        {urgencyLabel(days, d.renewed)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-3 text-xs text-muted-foreground">
+                      {assignees.length > 0
+                        ? assignees.map((a) => a.name || a.email).join(", ")
+                        : "—"}
+                    </TableCell>
+                    <TableCell className="py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {!d.renewed && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 rounded-full px-2"
+                            title="Mark renewed"
+                            onClick={() => onRenew(d)}
+                            disabled={renewing}
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 rounded-full px-2"
+                          title="Edit"
+                          onClick={() => onEdit(d)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 rounded-full px-2 text-destructive hover:text-destructive"
+                            title="Delete"
+                            onClick={() => onDelete(d)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </section>
   );
 }
 

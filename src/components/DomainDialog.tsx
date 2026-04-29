@@ -9,6 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -26,6 +33,7 @@ interface DomainRow {
   hosting_expiry: string | null;
   notes: string | null;
   renewed: boolean;
+  customer_type?: "paying" | "non-paying";
 }
 
 interface Props {
@@ -90,6 +98,7 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
             hosting_expiry: form.hosting_expiry || null,
             notes: form.notes || null,
             renewed: form.renewed,
+            customer_type: form.customer_type,
           })
           .eq("id", domain.id);
         if (error) throw error;
@@ -104,6 +113,7 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
             hosting_expiry: form.hosting_expiry || null,
             notes: form.notes || null,
             renewed: form.renewed,
+            customer_type: form.customer_type,
             created_by: user.id,
           })
           .select("id")
@@ -183,14 +193,33 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
               onChange={(e) => setForm((f) => ({ ...f, provider: e.target.value }))}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="d-dexp">Domain expiry</Label>
-            <Input
-              id="d-dexp"
-              type="date"
-              value={form.domain_expiry}
-              onChange={(e) => setForm((f) => ({ ...f, domain_expiry: e.target.value }))}
-            />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="d-dexp">Domain expiry</Label>
+              <Input
+                id="d-dexp"
+                type="date"
+                value={form.domain_expiry}
+                onChange={(e) => setForm((f) => ({ ...f, domain_expiry: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="d-ctype">Customer type</Label>
+              <Select
+                value={form.customer_type}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, customer_type: v as "paying" | "non-paying" }))
+                }
+              >
+                <SelectTrigger id="d-ctype">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paying">Paying</SelectItem>
+                  <SelectItem value="non-paying">Non-Paying / Internal / Charity</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Assigned team members</Label>
@@ -259,5 +288,6 @@ function initial(d: Props["domain"]) {
     hosting_expiry: d?.hosting_expiry ?? "",
     notes: d?.notes ?? "",
     renewed: d?.renewed ?? false,
+    customer_type: (d?.customer_type ?? "paying") as "paying" | "non-paying",
   };
 }

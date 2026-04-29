@@ -103,6 +103,7 @@ export type Database = {
           client_name: string
           created_at: string
           created_by: string | null
+          customer_type: string
           domain: string
           domain_expiry: string | null
           hosting_expiry: string | null
@@ -116,6 +117,7 @@ export type Database = {
           client_name: string
           created_at?: string
           created_by?: string | null
+          customer_type?: string
           domain: string
           domain_expiry?: string | null
           hosting_expiry?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           client_name?: string
           created_at?: string
           created_by?: string | null
+          customer_type?: string
           domain?: string
           domain_expiry?: string | null
           hosting_expiry?: string | null
