@@ -98,6 +98,7 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
             hosting_expiry: form.hosting_expiry || null,
             notes: form.notes || null,
             renewed: form.renewed,
+            customer_type: form.customer_type,
           })
           .eq("id", domain.id);
         if (error) throw error;
@@ -112,6 +113,7 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
             hosting_expiry: form.hosting_expiry || null,
             notes: form.notes || null,
             renewed: form.renewed,
+            customer_type: form.customer_type,
             created_by: user.id,
           })
           .select("id")
