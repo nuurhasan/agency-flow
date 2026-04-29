@@ -14,7 +14,7 @@ import { Route as TeamRouteImport } from './routes/team'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as HostingRouteImport } from './routes/hosting'
+import { Route as DomainsRouteImport } from './routes/domains'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
@@ -47,9 +47,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HostingRoute = HostingRouteImport.update({
-  id: '/hosting',
-  path: '/hosting',
+const DomainsRoute = DomainsRouteImport.update({
+  id: '/domains',
+  path: '/domains',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -87,7 +87,7 @@ const LovableEmailQueueProcessRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/hosting': typeof HostingRoute
+  '/domains': typeof DomainsRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/tasks': typeof TasksRoute
@@ -101,7 +101,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/hosting': typeof HostingRoute
+  '/domains': typeof DomainsRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/tasks': typeof TasksRoute
@@ -116,7 +116,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
-  '/hosting': typeof HostingRoute
+  '/domains': typeof DomainsRoute
   '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/tasks': typeof TasksRoute
@@ -132,7 +132,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
-    | '/hosting'
+    | '/domains'
     | '/login'
     | '/settings'
     | '/tasks'
@@ -146,7 +146,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
-    | '/hosting'
+    | '/domains'
     | '/login'
     | '/settings'
     | '/tasks'
@@ -160,7 +160,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
-    | '/hosting'
+    | '/domains'
     | '/login'
     | '/settings'
     | '/tasks'
@@ -175,7 +175,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
-  HostingRoute: typeof HostingRoute
+  DomainsRoute: typeof DomainsRoute
   LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
   TasksRoute: typeof TasksRoute
@@ -224,11 +224,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/hosting': {
-      id: '/hosting'
-      path: '/hosting'
-      fullPath: '/hosting'
-      preLoaderRoute: typeof HostingRouteImport
+    '/domains': {
+      id: '/domains'
+      path: '/domains'
+      fullPath: '/domains'
+      preLoaderRoute: typeof DomainsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -279,7 +279,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
-  HostingRoute: HostingRoute,
+  DomainsRoute: DomainsRoute,
   LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
   TasksRoute: TasksRoute,
