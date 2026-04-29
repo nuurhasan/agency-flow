@@ -282,10 +282,34 @@ function DomainsPage() {
 
         {/* Summary pills */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <SummaryPill label="Expired" value={stats.expired} className="bg-destructive/10 text-destructive" />
-          <SummaryPill label="< 30 days" value={stats.urgent} className="bg-coral/30 text-coral-ink" />
-          <SummaryPill label="30–60 days" value={stats.soon} className="bg-butter/40 text-butter-ink" />
-          <SummaryPill label="Healthy" value={stats.healthy} className="bg-mint/40 text-mint-ink" />
+          <SummaryPill
+            label="Expired"
+            value={stats.expired}
+            className="bg-destructive/10 text-destructive"
+            active={statusFilter === "expired"}
+            onClick={() => setStatusFilter((s) => (s === "expired" ? "all" : "expired"))}
+          />
+          <SummaryPill
+            label="< 30 days"
+            value={stats.urgent}
+            className="bg-coral/30 text-coral-ink"
+            active={statusFilter === "urgent"}
+            onClick={() => setStatusFilter((s) => (s === "urgent" ? "all" : "urgent"))}
+          />
+          <SummaryPill
+            label="30–60 days"
+            value={stats.soon}
+            className="bg-butter/40 text-butter-ink"
+            active={statusFilter === "soon"}
+            onClick={() => setStatusFilter((s) => (s === "soon" ? "all" : "soon"))}
+          />
+          <SummaryPill
+            label="Healthy"
+            value={stats.healthy}
+            className="bg-mint/40 text-mint-ink"
+            active={statusFilter === "healthy"}
+            onClick={() => setStatusFilter((s) => (s === "healthy" ? "all" : "healthy"))}
+          />
         </div>
 
         <div className="flex items-center gap-3">
