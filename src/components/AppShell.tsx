@@ -20,7 +20,7 @@ const NAV = [
   { to: "/projects", label: "Projects", icon: FolderKanban },
   { to: "/tasks", label: "Tasks", icon: ListChecks },
   { to: "/vault", label: "Vault", icon: KeyRound },
-  { to: "/hosting", label: "Hosting", icon: Globe2 },
+  { to: "/domains", label: "Domains", icon: Globe2 },
   { to: "/team", label: "Team", icon: Users },
 ] as const;
 
