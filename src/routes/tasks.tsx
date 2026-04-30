@@ -76,10 +76,18 @@ function TasksPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id,project_id,title,description,status,priority,due_date,updated_at")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id")
         .order("due_date", { ascending: true, nullsFirst: false })
         .order("updated_at", { ascending: false });
       return (data ?? []) as TaskRow[];
+    },
+  });
+
+  const { data: sprints = [] } = useQuery({
+    queryKey: ["sprints-min"],
+    queryFn: async () => {
+      const { data } = await supabase.from("sprints").select("id,name");
+      return (data ?? []) as { id: string; name: string }[];
     },
   });
 
