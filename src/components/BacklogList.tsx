@@ -17,14 +17,16 @@ export function BacklogList({ tasks, onEdit }: Props) {
     <div
       ref={setNodeRef}
       className={`rounded-2xl border p-3 transition-colors ${
-        isOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+        isOver
+          ? "border-peach-ink/60 bg-peach/70 ring-2 ring-peach-ink/30"
+          : "border-peach-ink/15 bg-peach/40"
       }`}
     >
       <div className="mb-2 flex items-center justify-between px-1">
-        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-peach-ink">
           <Inbox className="h-3.5 w-3.5" /> Backlog
         </p>
-        <span className="rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+        <span className="rounded-full bg-peach px-2 py-0.5 text-[11px] font-semibold text-peach-ink">
           {tasks.length}
         </span>
       </div>
@@ -33,7 +35,7 @@ export function BacklogList({ tasks, onEdit }: Props) {
           <BacklogCard key={t.id} task={t} onEdit={onEdit} />
         ))}
         {tasks.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-peach-ink/25 p-3 text-center text-xs text-peach-ink/70">
             No backlog items. Drop tasks here to send them back.
           </p>
         )}

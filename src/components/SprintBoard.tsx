@@ -27,11 +27,58 @@ export type BoardTask = {
   is_backlog: boolean;
 };
 
-const COLUMNS: Array<{ id: BoardTask["status"]; label: string }> = [
-  { id: "todo", label: "To Do" },
-  { id: "in_progress", label: "In Progress" },
-  { id: "in_review", label: "In Review" },
-  { id: "done", label: "Done" },
+const COLUMNS: Array<{
+  id: BoardTask["status"];
+  label: string;
+  // Tailwind classes for the column's idle look
+  tint: string;
+  border: string;
+  headerText: string;
+  countBg: string;
+  dropZone: string;
+  // Classes when a card is being hovered over this column
+  over: string;
+}> = [
+  {
+    id: "todo",
+    label: "To Do",
+    tint: "bg-lavender/40",
+    border: "border-lavender-ink/15",
+    headerText: "text-lavender-ink",
+    countBg: "bg-lavender text-lavender-ink",
+    dropZone: "border-lavender-ink/25 text-lavender-ink/70",
+    over: "border-lavender-ink/60 bg-lavender/70 ring-2 ring-lavender-ink/30",
+  },
+  {
+    id: "in_progress",
+    label: "In Progress",
+    tint: "bg-sky/40",
+    border: "border-sky-ink/15",
+    headerText: "text-sky-ink",
+    countBg: "bg-sky text-sky-ink",
+    dropZone: "border-sky-ink/25 text-sky-ink/70",
+    over: "border-sky-ink/60 bg-sky/70 ring-2 ring-sky-ink/30",
+  },
+  {
+    id: "in_review",
+    label: "In Review",
+    tint: "bg-butter/40",
+    border: "border-butter-ink/15",
+    headerText: "text-butter-ink",
+    countBg: "bg-butter text-butter-ink",
+    dropZone: "border-butter-ink/25 text-butter-ink/70",
+    over: "border-butter-ink/60 bg-butter/70 ring-2 ring-butter-ink/30",
+  },
+  {
+    id: "done",
+    label: "Done",
+    tint: "bg-mint/40",
+    border: "border-mint-ink/15",
+    headerText: "text-mint-ink",
+    countBg: "bg-mint text-mint-ink",
+    dropZone: "border-mint-ink/25 text-mint-ink/70",
+    over: "border-mint-ink/60 bg-mint/70 ring-2 ring-mint-ink/30",
+  },
 ];
 
 export const BACKLOG_DROP_ID = "__backlog__";
@@ -144,6 +191,12 @@ export function SprintBoard({
               label={col.label}
               tasks={grouped[col.id]}
               onEditTask={onEditTask}
+              tint={col.tint}
+              border={col.border}
+              headerText={col.headerText}
+              countBg={col.countBg}
+              dropZone={col.dropZone}
+              over={col.over}
             />
           ))}
         </div>
@@ -161,25 +214,37 @@ function Column({
   label,
   tasks,
   onEditTask,
+  tint,
+  border,
+  headerText,
+  countBg,
+  dropZone,
+  over,
 }: {
   id: BoardTask["status"];
   label: string;
   tasks: BoardTask[];
   onEditTask?: (id: string) => void;
+  tint: string;
+  border: string;
+  headerText: string;
+  countBg: string;
+  dropZone: string;
+  over: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div
       ref={setNodeRef}
       className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-colors ${
-        isOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+        isOver ? over : `${border} ${tint}`
       }`}
     >
       <div className="flex items-center justify-between px-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className={`text-xs font-semibold uppercase tracking-wide ${headerText}`}>
           {label}
         </p>
-        <span className="rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${countBg}`}>
           {tasks.length}
         </span>
       </div>
@@ -188,7 +253,7 @@ function Column({
           <DraggableCard key={t.id} task={t} onClick={() => onEditTask?.(t.id)} />
         ))}
         {tasks.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+          <p className={`rounded-xl border border-dashed p-3 text-center text-xs ${dropZone}`}>
             Drop tasks here
           </p>
         )}

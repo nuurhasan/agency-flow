@@ -515,9 +515,9 @@ function TaskRowItem({
             )}
             <DueDatePill date={task.due_date} done={showAsDone} />
             {sprintName && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-sky px-2 py-0.5 text-[10px] font-medium text-sky-ink">
+              <span className="inline-flex items-center gap-1 rounded-full border border-lavender-ink/20 bg-lavender px-2 py-0.5 text-[11px] font-semibold text-lavender-ink shadow-soft">
                 <Sparkles className="h-3 w-3" />
-                {sprintName}
+                Sprint · {sprintName}
               </span>
             )}
           </div>
