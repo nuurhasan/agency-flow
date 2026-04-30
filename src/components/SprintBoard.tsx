@@ -27,11 +27,58 @@ export type BoardTask = {
   is_backlog: boolean;
 };
 
-const COLUMNS: Array<{ id: BoardTask["status"]; label: string }> = [
-  { id: "todo", label: "To Do" },
-  { id: "in_progress", label: "In Progress" },
-  { id: "in_review", label: "In Review" },
-  { id: "done", label: "Done" },
+const COLUMNS: Array<{
+  id: BoardTask["status"];
+  label: string;
+  // Tailwind classes for the column's idle look
+  tint: string;
+  border: string;
+  headerText: string;
+  countBg: string;
+  dropZone: string;
+  // Classes when a card is being hovered over this column
+  over: string;
+}> = [
+  {
+    id: "todo",
+    label: "To Do",
+    tint: "bg-lavender/40",
+    border: "border-lavender-ink/15",
+    headerText: "text-lavender-ink",
+    countBg: "bg-lavender text-lavender-ink",
+    dropZone: "border-lavender-ink/25 text-lavender-ink/70",
+    over: "border-lavender-ink/60 bg-lavender/70 ring-2 ring-lavender-ink/30",
+  },
+  {
+    id: "in_progress",
+    label: "In Progress",
+    tint: "bg-sky/40",
+    border: "border-sky-ink/15",
+    headerText: "text-sky-ink",
+    countBg: "bg-sky text-sky-ink",
+    dropZone: "border-sky-ink/25 text-sky-ink/70",
+    over: "border-sky-ink/60 bg-sky/70 ring-2 ring-sky-ink/30",
+  },
+  {
+    id: "in_review",
+    label: "In Review",
+    tint: "bg-butter/40",
+    border: "border-butter-ink/15",
+    headerText: "text-butter-ink",
+    countBg: "bg-butter text-butter-ink",
+    dropZone: "border-butter-ink/25 text-butter-ink/70",
+    over: "border-butter-ink/60 bg-butter/70 ring-2 ring-butter-ink/30",
+  },
+  {
+    id: "done",
+    label: "Done",
+    tint: "bg-mint/40",
+    border: "border-mint-ink/15",
+    headerText: "text-mint-ink",
+    countBg: "bg-mint text-mint-ink",
+    dropZone: "border-mint-ink/25 text-mint-ink/70",
+    over: "border-mint-ink/60 bg-mint/70 ring-2 ring-mint-ink/30",
+  },
 ];
 
 export const BACKLOG_DROP_ID = "__backlog__";
