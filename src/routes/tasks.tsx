@@ -135,6 +135,10 @@ function TasksPage() {
     () => new Map(members.map((m) => [m.id, m] as const)),
     [members],
   );
+  const sprintById = React.useMemo(
+    () => new Map(sprints.map((s) => [s.id, s] as const)),
+    [sprints],
+  );
 
   const toggleDone = useMutation({
     mutationFn: async (vars: { task: TaskRow; nextStatus: TaskRow["status"] }) => {
