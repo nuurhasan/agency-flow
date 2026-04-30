@@ -191,6 +191,12 @@ export function SprintBoard({
               label={col.label}
               tasks={grouped[col.id]}
               onEditTask={onEditTask}
+              tint={col.tint}
+              border={col.border}
+              headerText={col.headerText}
+              countBg={col.countBg}
+              dropZone={col.dropZone}
+              over={col.over}
             />
           ))}
         </div>
