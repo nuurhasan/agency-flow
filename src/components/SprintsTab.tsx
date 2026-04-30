@@ -333,12 +333,18 @@ function ActiveSprintCard({
   isAdmin,
   onComplete,
   onEdit,
+  onNewTask,
+  onAddFromBacklog,
+  backlogCount,
 }: {
   sprint: Sprint;
   stats: { done: number; total: number };
   isAdmin: boolean;
   onComplete: () => void;
   onEdit: () => void;
+  onNewTask?: () => void;
+  onAddFromBacklog?: () => void;
+  backlogCount: number;
 }) {
   const pct = stats.total === 0 ? 0 : Math.round((stats.done / stats.total) * 100);
   const daysLeft = daysUntil(sprint.end_date);
@@ -366,16 +372,28 @@ function ActiveSprintCard({
             )}
           </p>
         </div>
-        {isAdmin && (
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="rounded-full" onClick={onEdit}>
-              Edit
+        <div className="flex flex-wrap gap-2">
+          {onNewTask && (
+            <Button size="sm" variant="outline" className="rounded-full" onClick={onNewTask}>
+              <Plus className="h-4 w-4" /> New task
             </Button>
-            <Button size="sm" className="rounded-full" onClick={onComplete}>
-              Complete sprint
+          )}
+          {onAddFromBacklog && (
+            <Button size="sm" variant="outline" className="rounded-full" onClick={onAddFromBacklog}>
+              From backlog ({backlogCount})
             </Button>
-          </div>
-        )}
+          )}
+          {isAdmin && (
+            <>
+              <Button variant="outline" size="sm" className="rounded-full" onClick={onEdit}>
+                Edit
+              </Button>
+              <Button size="sm" className="rounded-full" onClick={onComplete}>
+                Complete sprint
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       <div className="mt-4 space-y-1.5">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
