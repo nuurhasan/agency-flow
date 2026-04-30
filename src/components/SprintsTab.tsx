@@ -132,6 +132,7 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
       setDeleteId(null);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete sprint"),
+  });
 
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [pickerSelection, setPickerSelection] = React.useState<string[]>([]);
