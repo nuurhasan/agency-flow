@@ -170,6 +170,28 @@ export function TaskDialog({
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!task) throw new Error("No task");
+      const { error } = await supabase.from("tasks").delete().eq("id", task.id);
+      if (error) throw error;
+      if (user) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          project_id: task.project_id,
+          action: "task.deleted",
+          meta: { title: task.title },
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success("Task deleted");
+      qc.invalidateQueries();
+      onOpenChange(false);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete"),
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
