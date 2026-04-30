@@ -374,6 +374,31 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this sprint?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the sprint. Any tasks attached to it will move
+              back to the backlog. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteId) deleteSprint.mutate(deleteId);
+              }}
+              disabled={deleteSprint.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteSprint.isPending ? "Deleting…" : "Delete sprint"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
