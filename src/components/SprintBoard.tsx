@@ -233,7 +233,7 @@ export function SprintBoard({
         </div>
         <BacklogList tasks={backlogTasks} onEdit={onEditTask} />
       </div>
-      <DragOverlay dropAnimation={DROP_ANIMATION}>
+      <DragOverlay dropAnimation={null}>
         {activeTask ? <TaskCard task={activeTask} dragging /> : null}
       </DragOverlay>
     </DndContext>
