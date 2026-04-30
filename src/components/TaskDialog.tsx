@@ -49,6 +49,8 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId?: string;
+  /** When creating a new task, attach it to this sprint. */
+  sprintId?: string | null;
   task?: {
     id: string;
     project_id: string;
