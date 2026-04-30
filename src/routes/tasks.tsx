@@ -440,6 +440,7 @@ function TasksPage() {
 function TaskRowItem({
   task,
   projectColor,
+  sprintName,
   people,
   onComplete,
   onReopen,
@@ -448,6 +449,7 @@ function TaskRowItem({
 }: {
   task: TaskRow;
   projectColor: string;
+  sprintName?: string | null;
   people: { id: string; name: string }[];
   onComplete: () => void;
   onReopen: () => void;
