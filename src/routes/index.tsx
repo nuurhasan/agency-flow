@@ -76,6 +76,7 @@ function Dashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [newProjectOpen, setNewProjectOpen] = React.useState(false);
+  const quote = React.useMemo(() => LOTR_QUOTES[Math.floor(Math.random() * LOTR_QUOTES.length)], []);
 
   const toggleDone = useMutation({
     mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
