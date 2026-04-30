@@ -9,13 +9,26 @@ import {
   type DragStartEvent,
   useDroppable,
   useDraggable,
+  defaultDropAnimationSideEffects,
+  type DropAnimation,
 } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { GripVertical } from "lucide-react";
 import { priorityClasses } from "@/lib/pastel";
 import { BacklogList } from "@/components/BacklogList";
+
+const DROP_ANIMATION: DropAnimation = {
+  duration: 220,
+  easing: "cubic-bezier(0.18, 0.67, 0.3, 1.05)",
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: {
+      active: { opacity: "0.4" },
+    },
+  }),
+};
 
 export type BoardTask = {
   id: string;
