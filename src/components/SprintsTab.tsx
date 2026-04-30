@@ -111,6 +111,28 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const deleteSprint = useMutation({
+    mutationFn: async (id: string) => {
+      // Move any tasks attached to this sprint back to the backlog first
+      // (sprint_id has no FK ON DELETE behavior we can rely on)
+      const { error: tErr } = await supabase
+        .from("tasks")
+        .update({ sprint_id: null, is_backlog: true })
+        .eq("sprint_id", id);
+      if (tErr) throw tErr;
+      const { error } = await supabase.from("sprints").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Sprint deleted");
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+      qc.invalidateQueries({ queryKey: ["all-tasks"] });
+      qc.invalidateQueries({ queryKey: ["sprints-min"] });
+      setDeleteId(null);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete sprint"),
+
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [pickerSelection, setPickerSelection] = React.useState<string[]>([]);
 
