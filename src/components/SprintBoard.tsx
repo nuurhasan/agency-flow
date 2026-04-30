@@ -9,8 +9,6 @@ import {
   type DragStartEvent,
   useDroppable,
   useDraggable,
-  defaultDropAnimationSideEffects,
-  type DropAnimation,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
