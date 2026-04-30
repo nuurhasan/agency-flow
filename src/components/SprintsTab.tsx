@@ -205,6 +205,7 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
           stats={completionStats(activeSprint.id)}
           isAdmin={isAdmin}
           onComplete={() => setCompleteId(activeSprint.id)}
+          onDelete={() => setDeleteId(activeSprint.id)}
           onEdit={() => {
             setEditing(activeSprint);
             setDialogOpen(true);
