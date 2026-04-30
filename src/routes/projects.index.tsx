@@ -229,7 +229,7 @@ function ProjectsPage() {
                   <div
                     key={p.id}
                     style={{ animationDelay: `${idx * 40}ms` }}
-                    className="group animate-fade-in-up rounded-3xl border border-border bg-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:shadow-pop"
+                    className="group gradient-sheen relative animate-fade-in-up overflow-hidden rounded-3xl border border-border/60 bg-gradient-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-glow hover:border-primary/30"
                   >
                     <Link
                       to="/projects/$projectId"

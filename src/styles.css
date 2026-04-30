@@ -90,6 +90,14 @@
   --gradient-card: linear-gradient(135deg, oklch(1 0 0) 0%, oklch(0.985 0.015 130) 100%);
   --gradient-surface: linear-gradient(160deg, oklch(0.99 0.02 130) 0%, oklch(0.97 0.03 110) 100%);
 
+  /* Column / status gradients — bright, vivid pastels for board surfaces */
+  --gradient-todo: linear-gradient(140deg, oklch(0.95 0.07 295) 0%, oklch(0.9 0.12 280) 60%, oklch(0.88 0.14 260) 100%);
+  --gradient-progress: linear-gradient(140deg, oklch(0.95 0.06 220) 0%, oklch(0.88 0.13 230) 60%, oklch(0.84 0.16 240) 100%);
+  --gradient-review: linear-gradient(140deg, oklch(0.96 0.1 100) 0%, oklch(0.91 0.16 90) 60%, oklch(0.88 0.17 75) 100%);
+  --gradient-done: linear-gradient(140deg, oklch(0.95 0.09 165) 0%, oklch(0.9 0.16 150) 60%, oklch(0.88 0.2 140) 100%);
+  --gradient-backlog: linear-gradient(140deg, oklch(0.95 0.07 50) 0%, oklch(0.9 0.13 40) 60%, oklch(0.88 0.16 30) 100%);
+  --gradient-progress-bar: linear-gradient(90deg, oklch(0.86 0.27 130) 0%, oklch(0.82 0.22 150) 50%, oklch(0.78 0.18 180) 100%);
+
   --shadow-glow: 0 8px 24px -8px oklch(0.86 0.27 130 / 0.45), 0 2px 6px oklch(0.5 0.05 140 / 0.08);
   --shadow-glow-info: 0 8px 24px -8px oklch(0.74 0.17 240 / 0.45), 0 2px 6px oklch(0.5 0.05 240 / 0.08);
   --shadow-glow-cta: 0 8px 24px -8px oklch(0.82 0.18 30 / 0.45), 0 2px 6px oklch(0.5 0.1 30 / 0.08);
@@ -261,6 +269,12 @@
   .bg-gradient-accent { background-image: var(--gradient-accent); }
   .bg-gradient-card { background-image: var(--gradient-card); }
   .bg-gradient-surface { background-image: var(--gradient-surface); }
+  .bg-gradient-todo { background-image: var(--gradient-todo); }
+  .bg-gradient-progress { background-image: var(--gradient-progress); }
+  .bg-gradient-review { background-image: var(--gradient-review); }
+  .bg-gradient-done { background-image: var(--gradient-done); }
+  .bg-gradient-backlog { background-image: var(--gradient-backlog); }
+  .bg-gradient-progress-bar { background-image: var(--gradient-progress-bar); }
 
   .shadow-glow { box-shadow: var(--shadow-glow); }
   .shadow-glow-info { box-shadow: var(--shadow-glow-info); }

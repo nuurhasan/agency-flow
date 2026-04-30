@@ -17,17 +17,17 @@ export function BacklogList({ tasks, onEdit }: Props) {
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-2xl border p-3 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out ${
+      className={`gradient-sheen rounded-2xl border p-3 shadow-soft bg-gradient-backlog transition-[box-shadow,transform,border-color] duration-200 ease-out ${
         isOver
-          ? "border-peach-ink/60 bg-peach ring-2 ring-peach-ink/30 scale-[1.01] shadow-pop"
-          : "border-peach-ink/15 bg-peach"
+          ? "border-peach-ink/60 ring-2 ring-peach-ink/40 scale-[1.015] shadow-glow-cta"
+          : "border-peach-ink/20"
       }`}
     >
       <div className="mb-2 flex items-center justify-between px-1">
         <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-peach-ink">
           <Inbox className="h-3.5 w-3.5" /> Backlog
         </p>
-        <span className="rounded-full bg-peach px-2 py-0.5 text-[11px] font-semibold text-peach-ink">
+        <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-peach-ink shadow-sm">
           {tasks.length}
         </span>
       </div>

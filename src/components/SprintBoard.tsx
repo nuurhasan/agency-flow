@@ -50,42 +50,42 @@ const COLUMNS: Array<{
   {
     id: "todo",
     label: "To Do",
-    tint: "bg-lavender",
-    border: "border-lavender-ink/15",
+    tint: "bg-gradient-todo",
+    border: "border-lavender-ink/20",
     headerText: "text-lavender-ink",
-    countBg: "bg-lavender-ink/10 text-lavender-ink",
-    dropZone: "border-lavender-ink/25 text-lavender-ink/70",
-    over: "border-lavender-ink/60 bg-lavender ring-2 ring-lavender-ink/30",
+    countBg: "bg-white/70 text-lavender-ink shadow-sm",
+    dropZone: "border-lavender-ink/30 text-lavender-ink/80 bg-white/30",
+    over: "border-lavender-ink/60 ring-2 ring-lavender-ink/40 shadow-glow-accent",
   },
   {
     id: "in_progress",
     label: "In Progress",
-    tint: "bg-sky",
-    border: "border-sky-ink/15",
+    tint: "bg-gradient-progress",
+    border: "border-sky-ink/20",
     headerText: "text-sky-ink",
-    countBg: "bg-sky-ink/10 text-sky-ink",
-    dropZone: "border-sky-ink/25 text-sky-ink/70",
-    over: "border-sky-ink/60 bg-sky ring-2 ring-sky-ink/30",
+    countBg: "bg-white/70 text-sky-ink shadow-sm",
+    dropZone: "border-sky-ink/30 text-sky-ink/80 bg-white/30",
+    over: "border-sky-ink/60 ring-2 ring-sky-ink/40 shadow-glow-info",
   },
   {
     id: "in_review",
     label: "In Review",
-    tint: "bg-butter",
-    border: "border-butter-ink/15",
+    tint: "bg-gradient-review",
+    border: "border-butter-ink/25",
     headerText: "text-butter-ink",
-    countBg: "bg-butter-ink/10 text-butter-ink",
-    dropZone: "border-butter-ink/25 text-butter-ink/70",
-    over: "border-butter-ink/60 bg-butter ring-2 ring-butter-ink/30",
+    countBg: "bg-white/70 text-butter-ink shadow-sm",
+    dropZone: "border-butter-ink/30 text-butter-ink/80 bg-white/30",
+    over: "border-butter-ink/60 ring-2 ring-butter-ink/40 shadow-glow-cta",
   },
   {
     id: "done",
     label: "Done",
-    tint: "bg-mint",
-    border: "border-mint-ink/15",
+    tint: "bg-gradient-done",
+    border: "border-mint-ink/20",
     headerText: "text-mint-ink",
-    countBg: "bg-mint-ink/10 text-mint-ink",
-    dropZone: "border-mint-ink/25 text-mint-ink/70",
-    over: "border-mint-ink/60 bg-mint ring-2 ring-mint-ink/30",
+    countBg: "bg-white/70 text-mint-ink shadow-sm",
+    dropZone: "border-mint-ink/30 text-mint-ink/80 bg-white/30",
+    over: "border-mint-ink/60 ring-2 ring-mint-ink/40 shadow-glow",
   },
 ];
 
@@ -267,8 +267,8 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out ${
-        isOver ? `${over} scale-[1.01] shadow-pop` : `${border} ${tint}`
+      className={`gradient-sheen flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 shadow-soft transition-[box-shadow,transform,border-color] duration-200 ease-out ${tint} ${
+        isOver ? `${over} scale-[1.015]` : border
       }`}
     >
       <div className="flex items-center justify-between px-1">
