@@ -13,6 +13,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { GripVertical } from "lucide-react";
 import { priorityClasses } from "@/lib/pastel";
 import { BacklogList } from "@/components/BacklogList";
 
