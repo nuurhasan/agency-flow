@@ -157,7 +157,7 @@ function TasksPage() {
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => qc.invalidateQueries({ refetchType: "all" }),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 

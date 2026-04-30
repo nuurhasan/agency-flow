@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarDays, CheckCircle2, History, Play, Plus, Target } from "lucide-react";
+import { CalendarDays, CheckCircle2, History, Play, Plus, Target, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,7 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Sprint | null>(null);
   const [completeId, setCompleteId] = React.useState<string | null>(null);
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
   const { data: sprints = [] } = useQuery({
     queryKey: ["project-sprints", projectId, user?.id],
@@ -108,6 +109,29 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
       setCompleteId(null);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const deleteSprint = useMutation({
+    mutationFn: async (id: string) => {
+      // Move any tasks attached to this sprint back to the backlog first
+      // (sprint_id has no FK ON DELETE behavior we can rely on)
+      const { error: tErr } = await supabase
+        .from("tasks")
+        .update({ sprint_id: null, is_backlog: true })
+        .eq("sprint_id", id);
+      if (tErr) throw tErr;
+      const { error } = await supabase.from("sprints").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Sprint deleted");
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+      qc.invalidateQueries({ queryKey: ["all-tasks"] });
+      qc.invalidateQueries({ queryKey: ["sprints-min"] });
+      setDeleteId(null);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete sprint"),
   });
 
   const [pickerOpen, setPickerOpen] = React.useState(false);
@@ -181,6 +205,7 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
           stats={completionStats(activeSprint.id)}
           isAdmin={isAdmin}
           onComplete={() => setCompleteId(activeSprint.id)}
+          onDelete={() => setDeleteId(activeSprint.id)}
           onEdit={() => {
             setEditing(activeSprint);
             setDialogOpen(true);
@@ -240,15 +265,26 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
                   </p>
                 </div>
                 {isAdmin && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-full"
-                    onClick={() => activate.mutate(s.id)}
-                    disabled={activate.isPending}
-                  >
-                    <Play className="h-4 w-4" /> Start
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={() => activate.mutate(s.id)}
+                      disabled={activate.isPending}
+                    >
+                      <Play className="h-4 w-4" /> Start
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setDeleteId(s.id)}
+                      aria-label="Delete sprint"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </li>
             ))}
@@ -274,10 +310,23 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
                       <li key={s.id} className="py-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-medium">{s.name}</p>
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            {stats.done} of {stats.total} task{stats.total === 1 ? "" : "s"} completed
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              {stats.done} of {stats.total} task{stats.total === 1 ? "" : "s"} completed
+                            </span>
+                            {isAdmin && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => setDeleteId(s.id)}
+                                aria-label="Delete sprint"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {formatRange(s.start_date, s.end_date) || "No dates"}
@@ -320,6 +369,31 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
               disabled={complete.isPending}
             >
               {complete.isPending ? "Completing…" : "Complete sprint"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this sprint?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes the sprint. Any tasks attached to it will move
+              back to the backlog. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteId) deleteSprint.mutate(deleteId);
+              }}
+              disabled={deleteSprint.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteSprint.isPending ? "Deleting…" : "Delete sprint"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -389,6 +463,7 @@ function ActiveSprintCard({
   stats,
   isAdmin,
   onComplete,
+  onDelete,
   onEdit,
   onNewTask,
   onAddFromBacklog,
@@ -398,6 +473,7 @@ function ActiveSprintCard({
   stats: { done: number; total: number };
   isAdmin: boolean;
   onComplete: () => void;
+  onDelete: () => void;
   onEdit: () => void;
   onNewTask?: () => void;
   onAddFromBacklog?: () => void;
@@ -447,6 +523,15 @@ function ActiveSprintCard({
               </Button>
               <Button size="sm" className="rounded-full" onClick={onComplete}>
                 Complete sprint
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={onDelete}
+                aria-label="Delete sprint"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </>
           )}
