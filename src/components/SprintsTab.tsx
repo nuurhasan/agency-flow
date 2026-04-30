@@ -52,7 +52,7 @@ interface Props {
   onCreateTaskInSprint?: (sprintId: string) => void;
 }
 
-export function SprintsTab({ projectId, tasks, onEditTask }: Props) {
+export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint }: Props) {
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = React.useState(false);
