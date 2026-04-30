@@ -22,6 +22,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SprintDialog } from "@/components/SprintDialog";
 import { SprintBoard, type BoardTask } from "@/components/SprintBoard";
 
@@ -40,9 +49,10 @@ interface Props {
   projectId: string;
   tasks: BoardTask[];
   onEditTask?: (taskId: string) => void;
+  onCreateTaskInSprint?: (sprintId: string) => void;
 }
 
-export function SprintsTab({ projectId, tasks, onEditTask }: Props) {
+export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint }: Props) {
   const { isAdmin } = useAuth();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -99,6 +109,29 @@ export function SprintsTab({ projectId, tasks, onEditTask }: Props) {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [pickerSelection, setPickerSelection] = React.useState<string[]>([]);
+
+  const addFromBacklog = useMutation({
+    mutationFn: async ({ sprintId, taskIds }: { sprintId: string; taskIds: string[] }) => {
+      if (taskIds.length === 0) return 0;
+      const { error } = await supabase
+        .from("tasks")
+        .update({ sprint_id: sprintId, is_backlog: false })
+        .in("id", taskIds);
+      if (error) throw error;
+      return taskIds.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`Added ${n} task${n === 1 ? "" : "s"} to sprint`);
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      setPickerOpen(false);
+      setPickerSelection([]);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
   const activeSprint = sprints.find((s) => s.status === "active") ?? null;
   const plannedSprints = sprints.filter((s) => s.status === "planned");
   const pastSprints = sprints.filter((s) => s.status === "completed");
@@ -151,6 +184,18 @@ export function SprintsTab({ projectId, tasks, onEditTask }: Props) {
             setEditing(activeSprint);
             setDialogOpen(true);
           }}
+          onNewTask={
+            onCreateTaskInSprint ? () => onCreateTaskInSprint(activeSprint.id) : undefined
+          }
+          onAddFromBacklog={
+            backlogTasks.length > 0
+              ? () => {
+                  setPickerSelection([]);
+                  setPickerOpen(true);
+                }
+              : undefined
+          }
+          backlogCount={backlogTasks.length}
         />
       ) : (
         <div className="rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
@@ -278,6 +323,62 @@ export function SprintsTab({ projectId, tasks, onEditTask }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add tasks from backlog</DialogTitle>
+            <DialogDescription>
+              Select backlog tasks to add to{" "}
+              <span className="font-medium">{activeSprint?.name}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-72 space-y-1.5 overflow-y-auto rounded-xl border border-border p-2">
+            {backlogTasks.length === 0 && (
+              <p className="p-2 text-sm text-muted-foreground">Backlog is empty.</p>
+            )}
+            {backlogTasks.map((t) => {
+              const checked = pickerSelection.includes(t.id);
+              return (
+                <label
+                  key={t.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) =>
+                      setPickerSelection((s) =>
+                        v ? [...s, t.id] : s.filter((x) => x !== t.id)
+                      )
+                    }
+                  />
+                  <span className="truncate text-sm">{t.title}</span>
+                </label>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPickerOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="rounded-full"
+              disabled={!activeSprint || pickerSelection.length === 0 || addFromBacklog.isPending}
+              onClick={() =>
+                activeSprint &&
+                addFromBacklog.mutate({
+                  sprintId: activeSprint.id,
+                  taskIds: pickerSelection,
+                })
+              }
+            >
+              {addFromBacklog.isPending
+                ? "Adding…"
+                : `Add ${pickerSelection.length || ""} task${pickerSelection.length === 1 ? "" : "s"}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -288,12 +389,18 @@ function ActiveSprintCard({
   isAdmin,
   onComplete,
   onEdit,
+  onNewTask,
+  onAddFromBacklog,
+  backlogCount,
 }: {
   sprint: Sprint;
   stats: { done: number; total: number };
   isAdmin: boolean;
   onComplete: () => void;
   onEdit: () => void;
+  onNewTask?: () => void;
+  onAddFromBacklog?: () => void;
+  backlogCount: number;
 }) {
   const pct = stats.total === 0 ? 0 : Math.round((stats.done / stats.total) * 100);
   const daysLeft = daysUntil(sprint.end_date);
@@ -321,16 +428,28 @@ function ActiveSprintCard({
             )}
           </p>
         </div>
-        {isAdmin && (
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="rounded-full" onClick={onEdit}>
-              Edit
+        <div className="flex flex-wrap gap-2">
+          {onNewTask && (
+            <Button size="sm" variant="outline" className="rounded-full" onClick={onNewTask}>
+              <Plus className="h-4 w-4" /> New task
             </Button>
-            <Button size="sm" className="rounded-full" onClick={onComplete}>
-              Complete sprint
+          )}
+          {onAddFromBacklog && (
+            <Button size="sm" variant="outline" className="rounded-full" onClick={onAddFromBacklog}>
+              From backlog ({backlogCount})
             </Button>
-          </div>
-        )}
+          )}
+          {isAdmin && (
+            <>
+              <Button variant="outline" size="sm" className="rounded-full" onClick={onEdit}>
+                Edit
+              </Button>
+              <Button size="sm" className="rounded-full" onClick={onComplete}>
+                Complete sprint
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       <div className="mt-4 space-y-1.5">
         <div className="flex items-center justify-between text-xs text-muted-foreground">

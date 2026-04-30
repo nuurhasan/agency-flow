@@ -49,6 +49,8 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId?: string;
+  /** When creating a new task, attach it to this sprint. */
+  sprintId?: string | null;
   task?: {
     id: string;
     project_id: string;
@@ -67,6 +69,7 @@ export function TaskDialog({
   open,
   onOpenChange,
   projectId,
+  sprintId,
   task,
   members,
   projects,
@@ -117,6 +120,8 @@ export function TaskDialog({
             due_date: form.due_date || null,
             project_id: form.project_id,
             created_by: user.id,
+            sprint_id: sprintId ?? null,
+            is_backlog: !sprintId,
           })
           .select("id")
           .single();
