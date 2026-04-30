@@ -587,6 +587,7 @@ function ProjectDetailPage() {
         open={taskOpen}
         onOpenChange={setTaskOpen}
         projectId={projectId}
+        sprintId={newTaskSprintId}
         task={editingTask}
         members={members}
         initialAssignees={editingAssignees}
