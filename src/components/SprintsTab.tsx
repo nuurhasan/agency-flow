@@ -22,6 +22,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SprintDialog } from "@/components/SprintDialog";
 import { SprintBoard, type BoardTask } from "@/components/SprintBoard";
 
@@ -40,6 +49,7 @@ interface Props {
   projectId: string;
   tasks: BoardTask[];
   onEditTask?: (taskId: string) => void;
+  onCreateTaskInSprint?: (sprintId: string) => void;
 }
 
 export function SprintsTab({ projectId, tasks, onEditTask }: Props) {
