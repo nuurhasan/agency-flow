@@ -282,9 +282,19 @@ function ProjectDetailPage() {
   const doneTasks = visibleTasks.filter((t) => t.status === "done");
   const isArchived = project?.status === "archived";
 
+  const [newTaskSprintId, setNewTaskSprintId] = React.useState<string | null>(null);
+
   const openNew = () => {
     setEditingTask(null);
     setEditingAssignees([]);
+    setNewTaskSprintId(null);
+    setTaskOpen(true);
+  };
+
+  const openNewInSprint = (sprintId: string) => {
+    setEditingTask(null);
+    setEditingAssignees([]);
+    setNewTaskSprintId(sprintId);
     setTaskOpen(true);
   };
 
