@@ -42,6 +42,7 @@ type TaskRow = {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;
+  sprint_id: string | null;
 };
 
 const COLOR_BAR: Record<string, string> = {
@@ -75,10 +76,18 @@ function TasksPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id,project_id,title,description,status,priority,due_date,updated_at")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id")
         .order("due_date", { ascending: true, nullsFirst: false })
         .order("updated_at", { ascending: false });
       return (data ?? []) as TaskRow[];
+    },
+  });
+
+  const { data: sprints = [] } = useQuery({
+    queryKey: ["sprints-min"],
+    queryFn: async () => {
+      const { data } = await supabase.from("sprints").select("id,name");
+      return (data ?? []) as { id: string; name: string }[];
     },
   });
 
@@ -125,6 +134,10 @@ function TasksPage() {
   const memberById = React.useMemo(
     () => new Map(members.map((m) => [m.id, m] as const)),
     [members],
+  );
+  const sprintById = React.useMemo(
+    () => new Map(sprints.map((s) => [s.id, s] as const)),
+    [sprints],
   );
 
   const toggleDone = useMutation({
@@ -380,6 +393,7 @@ function TasksPage() {
                         key={t.id}
                         task={t}
                         projectColor={p?.color ?? "lavender"}
+                        sprintName={t.sprint_id ? sprintById.get(t.sprint_id)?.name ?? null : null}
                         people={(assigneeMap[t.id] ?? [])
                           .map((id) => memberById.get(id))
                           .filter(Boolean) as { id: string; name: string }[]}
@@ -426,6 +440,7 @@ function TasksPage() {
 function TaskRowItem({
   task,
   projectColor,
+  sprintName,
   people,
   onComplete,
   onReopen,
@@ -434,6 +449,7 @@ function TaskRowItem({
 }: {
   task: TaskRow;
   projectColor: string;
+  sprintName?: string | null;
   people: { id: string; name: string }[];
   onComplete: () => void;
   onReopen: () => void;
@@ -490,13 +506,19 @@ function TaskRowItem({
           <p className={`truncate font-medium transition-all duration-300 ${showAsDone ? "text-muted-foreground line-through" : ""}`}>
             {task.title}
           </p>
-          <div className={`mt-1 flex items-center gap-2 transition-opacity duration-300 ${showAsDone ? "opacity-60" : ""}`}>
+          <div className={`mt-1 flex flex-wrap items-center gap-2 transition-opacity duration-300 ${showAsDone ? "opacity-60" : ""}`}>
             {people.length ? (
               <AvatarStack people={people} max={3} size="xs" />
             ) : (
               <span className="text-xs italic text-muted-foreground">Unassigned</span>
             )}
             <DueDatePill date={task.due_date} done={showAsDone} />
+            {sprintName && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-sky px-2 py-0.5 text-[10px] font-medium text-sky-ink">
+                <Sparkles className="h-3 w-3" />
+                {sprintName}
+              </span>
+            )}
           </div>
         </div>
         {task.priority === "high" && (

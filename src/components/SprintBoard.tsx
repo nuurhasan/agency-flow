@@ -202,23 +202,32 @@ function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => voi
   return (
     <div
       ref={setNodeRef}
-      className={`relative ${isDragging ? "opacity-30" : ""}`}
+      className={`flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft ${
+        isDragging ? "opacity-30" : ""
+      }`}
     >
-      <button
-        type="button"
-        onClick={onClick}
-        className="block w-full text-left"
-      >
-        <TaskCard task={task} />
-      </button>
       <button
         type="button"
         {...listeners}
         {...attributes}
+        className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
         aria-label="Drag task"
-        className="absolute right-1 top-1 cursor-grab rounded p-1 text-muted-foreground opacity-60 hover:bg-muted hover:opacity-100 active:cursor-grabbing"
       >
         <GripVertical className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+      >
+        <span className="truncate text-sm font-medium">{task.title}</span>
+        {task.priority === "high" && (
+          <span
+            className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
+          >
+            High
+          </span>
+        )}
       </button>
     </div>
   );
@@ -227,25 +236,19 @@ function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => voi
 function TaskCard({ task, dragging = false }: { task: BoardTask; dragging?: boolean }) {
   return (
     <div
-      className={`rounded-xl border border-border bg-card p-3 shadow-soft ${
+      className={`flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft ${
         dragging ? "rotate-2 shadow-pop" : ""
       }`}
     >
-      <p className="text-sm font-medium leading-snug">{task.title}</p>
-      <div className="mt-2 flex items-center gap-2">
-        {task.priority === "high" && (
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
-          >
-            High
-          </span>
-        )}
-        {task.due_date && (
-          <span className="text-[11px] text-muted-foreground">
-            Due {new Date(task.due_date).toLocaleDateString()}
-          </span>
-        )}
-      </div>
+      <GripVertical className="h-4 w-4 text-muted-foreground" />
+      <span className="truncate text-sm font-medium">{task.title}</span>
+      {task.priority === "high" && (
+        <span
+          className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${priorityClasses(task.priority)}`}
+        >
+          High
+        </span>
+      )}
     </div>
   );
 }
