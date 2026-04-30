@@ -53,14 +53,15 @@ interface Props {
 }
 
 export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint }: Props) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user, loading: authLoading } = useAuth();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Sprint | null>(null);
   const [completeId, setCompleteId] = React.useState<string | null>(null);
 
   const { data: sprints = [] } = useQuery({
-    queryKey: ["project-sprints", projectId],
+    queryKey: ["project-sprints", projectId, user?.id],
+    enabled: !authLoading && !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("sprints")
