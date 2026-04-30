@@ -414,6 +414,7 @@ function ActiveSprintCard({
   stats,
   isAdmin,
   onComplete,
+  onDelete,
   onEdit,
   onNewTask,
   onAddFromBacklog,
@@ -423,6 +424,7 @@ function ActiveSprintCard({
   stats: { done: number; total: number };
   isAdmin: boolean;
   onComplete: () => void;
+  onDelete: () => void;
   onEdit: () => void;
   onNewTask?: () => void;
   onAddFromBacklog?: () => void;
@@ -472,6 +474,15 @@ function ActiveSprintCard({
               </Button>
               <Button size="sm" className="rounded-full" onClick={onComplete}>
                 Complete sprint
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={onDelete}
+                aria-label="Delete sprint"
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </>
           )}
