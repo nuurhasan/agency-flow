@@ -84,7 +84,8 @@ function TasksPage() {
   });
 
   const { data: sprints = [] } = useQuery({
-    queryKey: ["sprints-min"],
+    queryKey: ["sprints-min", user?.id],
+    enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase.from("sprints").select("id,name");
       return (data ?? []) as { id: string; name: string }[];
