@@ -109,6 +109,29 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const [pickerOpen, setPickerOpen] = React.useState(false);
+  const [pickerSelection, setPickerSelection] = React.useState<string[]>([]);
+
+  const addFromBacklog = useMutation({
+    mutationFn: async ({ sprintId, taskIds }: { sprintId: string; taskIds: string[] }) => {
+      if (taskIds.length === 0) return 0;
+      const { error } = await supabase
+        .from("tasks")
+        .update({ sprint_id: sprintId, is_backlog: false })
+        .in("id", taskIds);
+      if (error) throw error;
+      return taskIds.length;
+    },
+    onSuccess: (n) => {
+      toast.success(`Added ${n} task${n === 1 ? "" : "s"} to sprint`);
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      setPickerOpen(false);
+      setPickerSelection([]);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
   const activeSprint = sprints.find((s) => s.status === "active") ?? null;
   const plannedSprints = sprints.filter((s) => s.status === "planned");
   const pastSprints = sprints.filter((s) => s.status === "completed");
