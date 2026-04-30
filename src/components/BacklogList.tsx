@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Inbox } from "lucide-react";
 import { priorityClasses } from "@/lib/pastel";
 import type { BoardTask } from "@/components/SprintBoard";
@@ -16,9 +17,9 @@ export function BacklogList({ tasks, onEdit }: Props) {
   return (
     <div
       ref={setNodeRef}
-      className={`rounded-2xl border p-3 transition-colors ${
+      className={`rounded-2xl border p-3 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out ${
         isOver
-          ? "border-peach-ink/60 bg-peach ring-2 ring-peach-ink/30"
+          ? "border-peach-ink/60 bg-peach ring-2 ring-peach-ink/30 scale-[1.01] shadow-pop"
           : "border-peach-ink/15 bg-peach"
       }`}
     >
@@ -45,19 +46,23 @@ export function BacklogList({ tasks, onEdit }: Props) {
 }
 
 function BacklogCard({ task, onEdit }: { task: BoardTask; onEdit?: (id: string) => void }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
+  const style: React.CSSProperties = isDragging
+    ? { opacity: 0 }
+    : transform
+      ? { transform: CSS.Translate.toString(transform) }
+      : {};
   return (
     <div
       ref={setNodeRef}
-      className={`flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft ${
-        isDragging ? "opacity-30" : ""
-      }`}
+      style={style}
+      className="flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft transition-[box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-pop"
     >
       <button
         type="button"
         {...listeners}
         {...attributes}
-        className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        className="cursor-grab text-muted-foreground transition-colors hover:text-foreground active:cursor-grabbing"
         aria-label="Drag task"
       >
         <GripVertical className="h-4 w-4" />
