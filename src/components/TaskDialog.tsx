@@ -69,6 +69,7 @@ export function TaskDialog({
   open,
   onOpenChange,
   projectId,
+  sprintId,
   task,
   members,
   projects,
