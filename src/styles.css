@@ -252,4 +252,27 @@
       radial-gradient(70% 60% at 100% 0%, color-mix(in oklab, var(--mint) 45%, transparent) 0%, transparent 60%),
       radial-gradient(60% 80% at 50% 100%, color-mix(in oklab, var(--peach) 35%, transparent) 0%, transparent 70%);
   }
+
+  /* Gradient utilities */
+  .bg-gradient-primary { background-image: var(--gradient-primary); }
+  .bg-gradient-primary-hover { background-image: var(--gradient-primary-hover); }
+  .bg-gradient-info { background-image: var(--gradient-info); }
+  .bg-gradient-cta { background-image: var(--gradient-cta); }
+  .bg-gradient-accent { background-image: var(--gradient-accent); }
+  .bg-gradient-card { background-image: var(--gradient-card); }
+  .bg-gradient-surface { background-image: var(--gradient-surface); }
+
+  .shadow-glow { box-shadow: var(--shadow-glow); }
+  .shadow-glow-info { box-shadow: var(--shadow-glow-info); }
+  .shadow-glow-cta { box-shadow: var(--shadow-glow-cta); }
+  .shadow-glow-accent { box-shadow: var(--shadow-glow-accent); }
+
+  .gradient-sheen { position: relative; overflow: hidden; }
+  .gradient-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, oklch(1 0 0 / 0.18) 0%, transparent 55%);
+    pointer-events: none;
+  }
 }
