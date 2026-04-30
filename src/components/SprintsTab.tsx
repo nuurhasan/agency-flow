@@ -265,15 +265,26 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
                   </p>
                 </div>
                 {isAdmin && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-full"
-                    onClick={() => activate.mutate(s.id)}
-                    disabled={activate.isPending}
-                  >
-                    <Play className="h-4 w-4" /> Start
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={() => activate.mutate(s.id)}
+                      disabled={activate.isPending}
+                    >
+                      <Play className="h-4 w-4" /> Start
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setDeleteId(s.id)}
+                      aria-label="Delete sprint"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </li>
             ))}
