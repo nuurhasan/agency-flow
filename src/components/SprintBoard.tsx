@@ -148,11 +148,34 @@ export function SprintBoard({
         .eq("id", task.id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+    onMutate: async ({ task, target }) => {
+      // Optimistically update the cached tasks so the card appears in its
+      // new column instantly — no waiting for the server round-trip.
+      const key = ["project-tasks", projectId];
+      await qc.cancelQueries({ queryKey: key });
+      const previous = qc.getQueryData<BoardTask[]>(key);
+      qc.setQueryData<BoardTask[]>(key, (old) => {
+        if (!old) return old;
+        return old.map((t) => {
+          if (t.id !== task.id) return t;
+          if (target === BACKLOG_DROP_ID) {
+            return { ...t, sprint_id: null, is_backlog: true };
+          }
+          return { ...t, status: target, sprint_id: sprintId, is_backlog: false };
+        });
+      });
+      return { previous };
+    },
+    onError: (e, _vars, ctx) => {
+      if (ctx?.previous) {
+        qc.setQueryData(["project-tasks", projectId], ctx.previous);
+      }
+      toast.error(e instanceof Error ? e.message : "Failed to move task");
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to move task"),
   });
 
   const onDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
