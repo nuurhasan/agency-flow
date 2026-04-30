@@ -120,6 +120,8 @@ export function TaskDialog({
             due_date: form.due_date || null,
             project_id: form.project_id,
             created_by: user.id,
+            sprint_id: sprintId ?? null,
+            is_backlog: !sprintId,
           })
           .select("id")
           .single();
