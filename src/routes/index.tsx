@@ -27,14 +27,42 @@ function DashboardRoute() {
   );
 }
 
-function greeting() {
-  const h = new Date().getHours();
-  if (h < 5) return "Burning the midnight oil";
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  if (h < 21) return "Good evening";
-  return "Working late";
-}
+const LOTR_QUOTES = [
+  "All we have to decide is what to do with the time that is given us.",
+  "Faithless is he that says farewell when the road darkens.",
+  "Oft hope is born when all is forlorn.",
+  "Courage will now be your best defence against the storm that is at hand—that and such hope as I bring.",
+  "Do not then stumble at the end of the road.",
+  "Not all those who wander are lost.",
+  "The world is indeed full of peril, and in it there are many dark places; but still there is much that is fair, and though in all lands love is now mingled with grief, it grows perhaps the greater.",
+  "The praise of the praiseworthy is above all rewards.",
+  "For we put the thought of all that we love into all that we make.",
+  "Memory is not what the heart desires. That is only a mirror.",
+  "Often does hatred hurt itself!",
+  "I wished to be loved by another, but I desire no man's pity.",
+  "Few other griefs amid the ill chances of this world have more bitterness and shame for a man's heart than to behold the love of a lady so fair and brave that cannot be returned.",
+  "You can trust us to stick to you through thick and thin—to the bitter end. And you can trust us to keep any secret of yours—closer than you yourself keep it. But you cannot trust us to let you face trouble alone, and go off without a word. We are your friends.",
+  "I am going with him, if he climbs to the Moon.",
+  "Don't go where I can't follow!",
+  "For behold! the storm comes, and now all friends should gather together, lest each singly be destroyed.",
+  "He stands not alone... You would die before your stroke fell.",
+  "Come, Mr. Frodo! I can't carry it for you, but I can carry you.",
+  "I am glad you are here with me. Here at the end of all things.",
+  "The wide world is all about you: you can fence yourselves in, but you cannot forever fence it out.",
+  "You step onto the road, and if you don't keep your feet, there's no knowing where you might be swept off to.",
+  "Don't adventures ever have an end? I suppose not. Someone else always has to carry on the story.",
+  "It's a dangerous business, Frodo, going out your door.",
+  "The wise speak only of what they know.",
+  "I don't know half of you half as well as I should like; and I like less than half of you half as well as you deserve.",
+  "Yes, I am here. And you are lucky to be here too after all the absurd things you've done since you left home.",
+  "Being a cheerful hobbit, he had not needed hope, as long as despair could be postponed.",
+  "Elves and Dragons! Cabbages and potatoes are better for me and you. Don't go getting mixed up in the business of your betters, or you'll land in trouble too big for you.",
+  "Speak, or I will make a dint in your hat that even a wizard will find it hard to deal with!",
+  "It is useless to meet revenge with revenge; it will heal nothing.",
+  "Even the smallest person can change the course of the future.",
+  "Deeds will not be less valiant because they are unpraised.",
+  "The burned hand teaches best. After that advice about fire goes to the heart.",
+];
 
 function todayLabel() {
   return new Date().toLocaleDateString(undefined, {
@@ -48,6 +76,7 @@ function Dashboard() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [newProjectOpen, setNewProjectOpen] = React.useState(false);
+  const quote = React.useMemo(() => LOTR_QUOTES[Math.floor(Math.random() * LOTR_QUOTES.length)], []);
 
   const toggleDone = useMutation({
     mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
@@ -161,10 +190,10 @@ function Dashboard() {
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">{todayLabel()}</p>
             <h1 className="mt-1 font-display text-4xl font-bold tracking-tight">
-              {greeting()} ✦
+              Welcome to Turgon ✦
             </h1>
-            <p className="mt-1 text-muted-foreground">
-              Everything happening across the agency, at a glance.
+            <p className="mt-1 max-w-2xl italic text-muted-foreground">
+              "{quote}"
             </p>
           </div>
           <Button onClick={() => setNewProjectOpen(true)} className="rounded-full shadow-pop" size="lg">
