@@ -184,6 +184,18 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
             setEditing(activeSprint);
             setDialogOpen(true);
           }}
+          onNewTask={
+            onCreateTaskInSprint ? () => onCreateTaskInSprint(activeSprint.id) : undefined
+          }
+          onAddFromBacklog={
+            backlogTasks.length > 0
+              ? () => {
+                  setPickerSelection([]);
+                  setPickerOpen(true);
+                }
+              : undefined
+          }
+          backlogCount={backlogTasks.length}
         />
       ) : (
         <div className="rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
