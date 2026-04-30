@@ -249,8 +249,8 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-colors ${
-        isOver ? over : `${border} ${tint}`
+      className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out ${
+        isOver ? `${over} scale-[1.01] shadow-pop` : `${border} ${tint}`
       }`}
     >
       <div className="flex items-center justify-between px-1">
@@ -266,7 +266,7 @@ function Column({
           <DraggableCard key={t.id} task={t} onClick={() => onEditTask?.(t.id)} />
         ))}
         {tasks.length === 0 && (
-          <p className={`rounded-xl border border-dashed p-3 text-center text-xs ${dropZone}`}>
+          <p className={`rounded-xl border border-dashed p-3 text-center text-xs transition-colors duration-200 ${dropZone}`}>
             Drop tasks here
           </p>
         )}
@@ -276,19 +276,26 @@ function Column({
 }
 
 function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => void }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: task.id });
+  // While dragging, the DragOverlay shows the floating card. We hide the
+  // original by zeroing opacity (kept in layout to avoid jumpy reflow) and
+  // skip transforms so it doesn't fight the overlay.
+  const style: React.CSSProperties = isDragging
+    ? { opacity: 0 }
+    : transform
+      ? { transform: CSS.Translate.toString(transform) }
+      : {};
   return (
     <div
       ref={setNodeRef}
-      className={`flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft ${
-        isDragging ? "opacity-30" : ""
-      }`}
+      style={style}
+      className="flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft transition-[box-shadow,transform] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-pop"
     >
       <button
         type="button"
         {...listeners}
         {...attributes}
-        className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        className="cursor-grab text-muted-foreground transition-colors hover:text-foreground active:cursor-grabbing"
         aria-label="Drag task"
       >
         <GripVertical className="h-4 w-4" />
@@ -314,8 +321,8 @@ function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => voi
 function TaskCard({ task, dragging = false }: { task: BoardTask; dragging?: boolean }) {
   return (
     <div
-      className={`flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-soft ${
-        dragging ? "rotate-2 shadow-pop" : ""
+      className={`flex items-center gap-2 rounded-xl border border-border bg-card p-2.5 shadow-pop transition-transform duration-150 ${
+        dragging ? "scale-[1.04] -rotate-1 cursor-grabbing ring-2 ring-primary/30" : ""
       }`}
     >
       <GripVertical className="h-4 w-4 text-muted-foreground" />
