@@ -267,8 +267,8 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out ${
-        isOver ? `${over} scale-[1.01] shadow-pop` : `${border} ${tint}`
+      className={`gradient-sheen flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 shadow-soft transition-[box-shadow,transform,border-color] duration-200 ease-out ${tint} ${
+        isOver ? `${over} scale-[1.015]` : border
       }`}
     >
       <div className="flex items-center justify-between px-1">

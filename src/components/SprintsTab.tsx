@@ -483,12 +483,12 @@ function ActiveSprintCard({
   const daysLeft = daysUntil(sprint.end_date);
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <div className="gradient-sheen relative overflow-hidden rounded-3xl border border-mint-ink/20 bg-gradient-done p-5 shadow-glow">
+      <div className="relative flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-mint px-2 py-0.5 text-[11px] font-semibold text-mint-ink">
-              Active
+            <span className="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-semibold text-mint-ink shadow-sm backdrop-blur-sm">
+              ● Active
             </span>
             <h3 className="font-display text-xl font-bold tracking-tight">{sprint.name}</h3>
           </div>
