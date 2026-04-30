@@ -18,8 +18,8 @@ export function BacklogList({ tasks, onEdit }: Props) {
       ref={setNodeRef}
       className={`rounded-2xl border p-3 transition-colors ${
         isOver
-          ? "border-peach-ink/60 bg-peach/70 ring-2 ring-peach-ink/30"
-          : "border-peach-ink/15 bg-peach/40"
+          ? "border-peach-ink/60 bg-peach ring-2 ring-peach-ink/30"
+          : "border-peach-ink/15 bg-peach"
       }`}
     >
       <div className="mb-2 flex items-center justify-between px-1">
