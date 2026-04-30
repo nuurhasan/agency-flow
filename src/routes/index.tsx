@@ -204,9 +204,9 @@ function Dashboard() {
       <ProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Counter to="/projects" color="brand" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
-        <Counter to="/tasks" color="brand" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} />
-        <Counter to="/tasks" color="brand" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
+        <Counter to="/projects" color="vivid-green" icon={<FolderKanban />} label="Active projects" value={counters?.active ?? 0} />
+        <Counter to="/tasks" color="vivid-blue" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} />
+        <Counter to="/tasks" color="vivid-sunset" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} />
       </div>
 
       <div>
@@ -333,7 +333,7 @@ function Counter({
   value,
   to,
 }: {
-  color: "mint" | "sky" | "lavender" | "peach" | "butter" | "blush" | "coral" | "brand";
+  color: "mint" | "sky" | "lavender" | "peach" | "butter" | "blush" | "coral" | "brand" | "vivid-green" | "vivid-blue" | "vivid-sunset";
   icon: React.ReactNode;
   label: string;
   value: number;
@@ -348,6 +348,9 @@ function Counter({
     blush: "from-blush/70 to-blush/30 text-blush-ink",
     coral: "from-coral/70 to-coral/30 text-coral-ink",
     brand: "from-[#DBFDA5] to-[#EAFEC9] text-lime-ink",
+    "vivid-green": "from-[#2BD576] via-[#A8F03C] to-[#F4FB4B] text-emerald-950",
+    "vivid-blue": "from-[#1FB8FF] via-[#5AE0E8] to-[#7CF7C6] text-sky-950",
+    "vivid-sunset": "from-[#FF477E] via-[#FF8A3D] to-[#FFD23F] text-rose-950",
   };
   const iconBg: Record<string, string> = {
     mint: "bg-white/60 text-mint-ink",
@@ -358,11 +361,14 @@ function Counter({
     blush: "bg-white/60 text-blush-ink",
     coral: "bg-white/60 text-coral-ink",
     brand: "bg-white/70 text-lime-ink",
+    "vivid-green": "bg-white/80 text-emerald-700",
+    "vivid-blue": "bg-white/80 text-sky-700",
+    "vivid-sunset": "bg-white/80 text-rose-600",
   };
   return (
     <Link
       to={to}
-      className={`group block rounded-3xl border border-border/50 bg-gradient-to-br p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-pop ${tints[color]}`}
+      className={`group relative block overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br p-5 shadow-glow transition-all duration-300 hover:-translate-y-1 hover:shadow-pop ${tints[color]}`}
     >
       <div className="flex items-start justify-between">
         <span className={`flex h-10 w-10 items-center justify-center rounded-2xl backdrop-blur-sm ${iconBg[color]}`}>
