@@ -42,6 +42,7 @@ type TaskRow = {
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;
+  sprint_id: string | null;
 };
 
 const COLOR_BAR: Record<string, string> = {
