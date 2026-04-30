@@ -190,10 +190,10 @@ function Dashboard() {
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">{todayLabel()}</p>
             <h1 className="mt-1 font-display text-4xl font-bold tracking-tight">
-              {greeting()} ✦
+              Welcome to Turgon ✦
             </h1>
-            <p className="mt-1 text-muted-foreground">
-              Everything happening across the agency, at a glance.
+            <p className="mt-1 max-w-2xl italic text-muted-foreground">
+              "{quote}"
             </p>
           </div>
           <Button onClick={() => setNewProjectOpen(true)} className="rounded-full shadow-pop" size="lg">
