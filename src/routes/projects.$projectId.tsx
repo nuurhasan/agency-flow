@@ -553,6 +553,7 @@ function ProjectDetailPage() {
               const t = tasks.find((x) => x.id === id);
               if (t) openView(t);
             }}
+            onCreateTaskInSprint={openNewInSprint}
           />
         </TabsContent>
 
