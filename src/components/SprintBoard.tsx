@@ -214,25 +214,37 @@ function Column({
   label,
   tasks,
   onEditTask,
+  tint,
+  border,
+  headerText,
+  countBg,
+  dropZone,
+  over,
 }: {
   id: BoardTask["status"];
   label: string;
   tasks: BoardTask[];
   onEditTask?: (id: string) => void;
+  tint: string;
+  border: string;
+  headerText: string;
+  countBg: string;
+  dropZone: string;
+  over: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div
       ref={setNodeRef}
       className={`flex min-h-[160px] flex-col gap-2 rounded-2xl border p-3 transition-colors ${
-        isOver ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+        isOver ? over : `${border} ${tint}`
       }`}
     >
       <div className="flex items-center justify-between px-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className={`text-xs font-semibold uppercase tracking-wide ${headerText}`}>
           {label}
         </p>
-        <span className="rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${countBg}`}>
           {tasks.length}
         </span>
       </div>
@@ -241,7 +253,7 @@ function Column({
           <DraggableCard key={t.id} task={t} onClick={() => onEditTask?.(t.id)} />
         ))}
         {tasks.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+          <p className={`rounded-xl border border-dashed p-3 text-center text-xs ${dropZone}`}>
             Drop tasks here
           </p>
         )}
