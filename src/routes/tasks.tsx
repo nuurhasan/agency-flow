@@ -506,13 +506,19 @@ function TaskRowItem({
           <p className={`truncate font-medium transition-all duration-300 ${showAsDone ? "text-muted-foreground line-through" : ""}`}>
             {task.title}
           </p>
-          <div className={`mt-1 flex items-center gap-2 transition-opacity duration-300 ${showAsDone ? "opacity-60" : ""}`}>
+          <div className={`mt-1 flex flex-wrap items-center gap-2 transition-opacity duration-300 ${showAsDone ? "opacity-60" : ""}`}>
             {people.length ? (
               <AvatarStack people={people} max={3} size="xs" />
             ) : (
               <span className="text-xs italic text-muted-foreground">Unassigned</span>
             )}
             <DueDatePill date={task.due_date} done={showAsDone} />
+            {sprintName && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-sky px-2 py-0.5 text-[10px] font-medium text-sky-ink">
+                <Sparkles className="h-3 w-3" />
+                {sprintName}
+              </span>
+            )}
           </div>
         </div>
         {task.priority === "high" && (
