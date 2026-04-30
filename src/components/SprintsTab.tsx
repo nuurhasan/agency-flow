@@ -310,10 +310,23 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
                       <li key={s.id} className="py-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-medium">{s.name}</p>
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            {stats.done} of {stats.total} task{stats.total === 1 ? "" : "s"} completed
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              {stats.done} of {stats.total} task{stats.total === 1 ? "" : "s"} completed
+                            </span>
+                            {isAdmin && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => setDeleteId(s.id)}
+                                aria-label="Delete sprint"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {formatRange(s.start_date, s.end_date) || "No dates"}
