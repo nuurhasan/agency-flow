@@ -323,6 +323,62 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add tasks from backlog</DialogTitle>
+            <DialogDescription>
+              Select backlog tasks to add to{" "}
+              <span className="font-medium">{activeSprint?.name}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-72 space-y-1.5 overflow-y-auto rounded-xl border border-border p-2">
+            {backlogTasks.length === 0 && (
+              <p className="p-2 text-sm text-muted-foreground">Backlog is empty.</p>
+            )}
+            {backlogTasks.map((t) => {
+              const checked = pickerSelection.includes(t.id);
+              return (
+                <label
+                  key={t.id}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+                >
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) =>
+                      setPickerSelection((s) =>
+                        v ? [...s, t.id] : s.filter((x) => x !== t.id)
+                      )
+                    }
+                  />
+                  <span className="truncate text-sm">{t.title}</span>
+                </label>
+              );
+            })}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPickerOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="rounded-full"
+              disabled={!activeSprint || pickerSelection.length === 0 || addFromBacklog.isPending}
+              onClick={() =>
+                activeSprint &&
+                addFromBacklog.mutate({
+                  sprintId: activeSprint.id,
+                  taskIds: pickerSelection,
+                })
+              }
+            >
+              {addFromBacklog.isPending
+                ? "Adding…"
+                : `Add ${pickerSelection.length || ""} task${pickerSelection.length === 1 ? "" : "s"}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
