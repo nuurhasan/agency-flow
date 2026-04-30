@@ -18,15 +18,12 @@ import { GripVertical } from "lucide-react";
 import { priorityClasses } from "@/lib/pastel";
 import { BacklogList } from "@/components/BacklogList";
 
-const DROP_ANIMATION: DropAnimation = {
-  duration: 220,
-  easing: "cubic-bezier(0.18, 0.67, 0.3, 1.05)",
-  sideEffects: defaultDropAnimationSideEffects({
-    styles: {
-      active: { opacity: "0.4" },
-    },
-  }),
-};
+// No drop animation: dnd-kit's default animates the overlay back to the
+// source draggable's position before React re-renders it in the destination
+// column, which causes a "snap-back then reappear" flash. Setting this to
+// null makes the overlay disappear instantly; combined with the optimistic
+// update below, the card appears in its new column without flicker.
+
 
 export type BoardTask = {
   id: string;
