@@ -13,6 +13,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { GripVertical } from "lucide-react";
 import { priorityClasses } from "@/lib/pastel";
 import { BacklogList } from "@/components/BacklogList";
 
@@ -201,12 +202,24 @@ function DraggableCard({ task, onClick }: { task: BoardTask; onClick?: () => voi
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      onDoubleClick={onClick}
-      className={`cursor-grab active:cursor-grabbing ${isDragging ? "opacity-30" : ""}`}
+      className={`relative ${isDragging ? "opacity-30" : ""}`}
     >
-      <TaskCard task={task} />
+      <button
+        type="button"
+        onClick={onClick}
+        className="block w-full text-left"
+      >
+        <TaskCard task={task} />
+      </button>
+      <button
+        type="button"
+        {...listeners}
+        {...attributes}
+        aria-label="Drag task"
+        className="absolute right-1 top-1 cursor-grab rounded p-1 text-muted-foreground opacity-60 hover:bg-muted hover:opacity-100 active:cursor-grabbing"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
     </div>
   );
 }
