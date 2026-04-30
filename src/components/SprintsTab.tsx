@@ -58,6 +58,7 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Sprint | null>(null);
   const [completeId, setCompleteId] = React.useState<string | null>(null);
+  const [deleteId, setDeleteId] = React.useState<string | null>(null);
 
   const { data: sprints = [] } = useQuery({
     queryKey: ["project-sprints", projectId, user?.id],
