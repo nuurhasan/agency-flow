@@ -393,6 +393,7 @@ function TasksPage() {
                         key={t.id}
                         task={t}
                         projectColor={p?.color ?? "lavender"}
+                        sprintName={t.sprint_id ? sprintById.get(t.sprint_id)?.name ?? null : null}
                         people={(assigneeMap[t.id] ?? [])
                           .map((id) => memberById.get(id))
                           .filter(Boolean) as { id: string; name: string }[]}
