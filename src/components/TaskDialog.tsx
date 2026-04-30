@@ -297,13 +297,48 @@ export function TaskDialog({
               })}
             </div>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={mutation.isPending || !form.project_id} className="rounded-full">
-              {mutation.isPending ? "Saving…" : task ? "Save" : "Create task"}
-            </Button>
+          <DialogFooter className="gap-2 sm:justify-between">
+            {task ? (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={deleteMutation.isPending}
+                    className="rounded-full sm:mr-auto"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This permanently removes "{task.title}" and its assignees and comments. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteMutation.mutate()}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete task
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            ) : (
+              <span className="hidden sm:block" />
+            )}
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={mutation.isPending || !form.project_id} className="rounded-full">
+                {mutation.isPending ? "Saving…" : task ? "Save" : "Create task"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>
