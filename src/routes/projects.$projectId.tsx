@@ -14,7 +14,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { ProjectDialog } from "@/components/ProjectDialog";
@@ -39,11 +38,7 @@ import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 
 export const Route = createFileRoute("/projects/$projectId")({
-  component: () => (
-    <AuthGate>
-      <ProjectDetailPage />
-    </AuthGate>
-  ),
+  component: ProjectDetailPage,
   head: () => ({ meta: [{ title: "Project — Studio" }] }),
 });
 
