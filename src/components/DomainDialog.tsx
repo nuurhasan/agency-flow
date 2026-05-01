@@ -23,6 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { invalidateDomainData } from "@/lib/queryInvalidation";
 
 interface DomainRow {
   id: string;
@@ -141,7 +142,7 @@ export function DomainDialog({ open, onOpenChange, domain }: Props) {
     },
     onSuccess: () => {
       toast.success(domain ? "Domain updated" : "Domain added");
-      qc.invalidateQueries();
+      invalidateDomainData(qc);
       onOpenChange(false);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
