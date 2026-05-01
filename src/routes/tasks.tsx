@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Search, ListChecks, Sparkles, X } from "lucide-react";
+import { Plus, Search, ListChecks, Sparkles, X, CheckSquare } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
@@ -265,11 +265,16 @@ function TasksPage() {
       {/* Hero */}
       <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">Tasks</h1>
-            <p className="text-sm text-muted-foreground">
-              Everything across the agency, in one place.
-            </p>
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-coral text-coral-ink">
+              <CheckSquare className="h-6 w-6" />
+            </span>
+            <div>
+              <h1 className="font-display text-3xl font-bold tracking-tight">Tasks</h1>
+              <p className="text-sm text-muted-foreground">
+                Everything across the agency, in one place.
+              </p>
+            </div>
           </div>
           <Button onClick={openNew} disabled={projects.length === 0} className="rounded-full shadow-pop">
             <Plus className="h-4 w-4" /> New task
