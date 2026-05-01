@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as React from "react";
 import { Settings as SettingsIcon } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Switch } from "@/components/ui/switch";
@@ -12,11 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/settings")({
-  component: () => (
-    <AuthGate>
-      <SettingsPage />
-    </AuthGate>
-  ),
+  component: SettingsPage,
   head: () => ({ meta: [{ title: "Settings — Studio" }] }),
 });
 

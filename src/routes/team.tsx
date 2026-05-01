@@ -1,17 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Users } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { pickColorFromString, pastelClasses } from "@/lib/pastel";
 
 export const Route = createFileRoute("/team")({
-  component: () => (
-    <AuthGate>
-      <TeamPage />
-    </AuthGate>
-  ),
+  component: TeamPage,
   head: () => ({ meta: [{ title: "Team — Studio" }] }),
 });
 

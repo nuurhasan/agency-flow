@@ -3,7 +3,6 @@ import * as React from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { UserCircle } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Input } from "@/components/ui/input";
@@ -12,11 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Route = createFileRoute("/account")({
-  component: () => (
-    <AuthGate>
-      <AccountPage />
-    </AuthGate>
-  ),
+  component: AccountPage,
   head: () => ({ meta: [{ title: "Account — Studio" }] }),
 });
 
