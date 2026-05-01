@@ -25,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { invalidateCredentialData } from "@/lib/queryInvalidation";
 
 type Cred = CredentialRow & {
   created_by: string | null;
@@ -338,9 +339,9 @@ export function useCredentialActions() {
       const { error } = await supabase.from("project_credentials").delete().eq("id", c.id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, c) => {
       toast.success("Credential deleted");
-      qc.invalidateQueries();
+      invalidateCredentialData(qc, c.project_id);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });

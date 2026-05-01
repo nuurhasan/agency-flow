@@ -14,7 +14,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { ProjectDialog } from "@/components/ProjectDialog";
@@ -37,13 +36,10 @@ import {
 } from "@/components/ui/select";
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
+import { invalidateProjectData, invalidateTaskData } from "@/lib/queryInvalidation";
 
 export const Route = createFileRoute("/projects/$projectId")({
-  component: () => (
-    <AuthGate>
-      <ProjectDetailPage />
-    </AuthGate>
-  ),
+  component: ProjectDetailPage,
   head: () => ({ meta: [{ title: "Project — Studio" }] }),
 });
 
@@ -85,7 +81,7 @@ function ProjectDetailPage() {
     },
     onSuccess: () => {
       toast.success("Project deleted");
-      qc.invalidateQueries({ queryKey: ["projects"] });
+      invalidateProjectData(qc, projectId);
       navigate({ to: "/projects" });
     },
     onError: (e) =>
@@ -113,7 +109,7 @@ function ProjectDetailPage() {
     },
     onSuccess: (_d, next) => {
       toast.success(next === "archived" ? "Project archived" : `Status set to ${statusLabel(next)}`);
-      qc.invalidateQueries();
+      invalidateProjectData(qc, projectId);
       if (next === "archived") navigate({ to: "/projects/archived" });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
@@ -158,7 +154,7 @@ function ProjectDetailPage() {
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => invalidateTaskData(qc, projectId),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
@@ -182,7 +178,7 @@ function ProjectDetailPage() {
       }
     },
     onSuccess: (_data, vars) => {
-      qc.invalidateQueries();
+      invalidateTaskData(qc, vars.task.project_id);
       toast.success(`Status set to ${statusLabel(vars.nextStatus)}`);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),

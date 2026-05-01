@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as React from "react";
 import { Activity, Archive, FolderKanban, Plus, Search, Zap } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,11 +23,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/projects/")({
-  component: () => (
-    <AuthGate>
-      <ProjectsPage />
-    </AuthGate>
-  ),
+  component: ProjectsPage,
   head: () => ({ meta: [{ title: "Projects — Studio" }] }),
 });
 

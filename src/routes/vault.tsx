@@ -2,7 +2,6 @@ import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Search, KeyRound } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +15,7 @@ import {
 import { CredentialList, useCredentialActions, type Cred } from "@/components/CredentialList";
 
 export const Route = createFileRoute("/vault")({
-  component: () => (
-    <AuthGate>
-      <VaultPage />
-    </AuthGate>
-  ),
+  component: VaultPage,
   head: () => ({ meta: [{ title: "Credentials Vault — Studio" }] }),
 });
 

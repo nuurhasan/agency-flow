@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Search, ListChecks, Sparkles, X, CheckSquare } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,13 +22,10 @@ import { pastelClasses, priorityClasses } from "@/lib/pastel";
 import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { DueDatePill } from "@/components/ui/due-date-pill";
+import { invalidateTaskData } from "@/lib/queryInvalidation";
 
 export const Route = createFileRoute("/tasks")({
-  component: () => (
-    <AuthGate>
-      <TasksPage />
-    </AuthGate>
-  ),
+  component: TasksPage,
   head: () => ({ meta: [{ title: "Tasks — Studio" }] }),
 });
 
@@ -157,7 +153,7 @@ function TasksPage() {
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ refetchType: "all" }),
+    onSuccess: (_data, vars) => invalidateTaskData(qc, vars.task.project_id),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 

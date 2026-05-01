@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 import { useAuth } from "@/lib/auth";
 import { AppShell } from "./AppShell";
@@ -6,7 +6,9 @@ import { AppShell } from "./AppShell";
 /** Shows a loader while auth is hydrating, redirects to /login if signed out, otherwise renders the app shell. */
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { loading, user } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
+  const isLoginRoute = location.pathname === "/login";
   // Track whether we've ever seen an authenticated user. Once true, we keep the
   // shell mounted even if `user` momentarily flickers (e.g., token refresh),
   // which prevents a full-screen loader from flashing during route navigation.
@@ -14,10 +16,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (user) hasAuthedRef.current = true;
 
   React.useEffect(() => {
-    if (!loading && !user && !hasAuthedRef.current) {
+    if (!isLoginRoute && !loading && !user && !hasAuthedRef.current) {
       navigate({ to: "/login" });
     }
-  }, [loading, user, navigate]);
+  }, [isLoginRoute, loading, user, navigate]);
+
+  if (isLoginRoute) {
+    return <>{children}</>;
+  }
 
   if (loading && !hasAuthedRef.current) {
     return (

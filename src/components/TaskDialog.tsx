@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { invalidateTaskData } from "@/lib/queryInvalidation";
 
 const STATUSES = ["todo", "in_progress", "in_review", "done"] as const;
 const STATUS_LABELS: Record<(typeof STATUSES)[number], string> = {
@@ -169,7 +170,7 @@ export function TaskDialog({
     },
     onSuccess: () => {
       toast.success(task ? "Task updated" : "Task created");
-      qc.invalidateQueries();
+      invalidateTaskData(qc, form.project_id);
       onOpenChange(false);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
@@ -191,7 +192,7 @@ export function TaskDialog({
     },
     onSuccess: () => {
       toast.success("Task deleted");
-      qc.invalidateQueries();
+      invalidateTaskData(qc, task?.project_id);
       onOpenChange(false);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete"),

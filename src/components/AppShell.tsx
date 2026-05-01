@@ -73,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         .eq("renewed", false);
       return count ?? 0;
     },
-    refetchInterval: 60_000,
+    staleTime: 5 * 60_000,
   });
 
   const initials = (profile?.name || profile?.email || "?")
