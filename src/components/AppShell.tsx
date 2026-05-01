@@ -192,6 +192,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <PanelLeftOpen className="h-4 w-4" />
           </button>
 
+          <p className="hidden text-xs uppercase tracking-wider text-muted-foreground sm:block">
+            {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+          </p>
+
           <div className="ml-auto flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -188,8 +188,7 @@ function Dashboard() {
       <div className="hero-gradient relative overflow-hidden rounded-3xl border border-border p-6 sm:p-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">{todayLabel()}</p>
-            <h1 className="mt-1 font-display text-4xl font-bold tracking-tight">
+            <h1 className="font-display text-4xl font-bold tracking-tight">
               Welcome to Turgon ✦
             </h1>
             <p className="mt-1 max-w-2xl italic text-muted-foreground">
