@@ -339,39 +339,40 @@ function Counter({
   value: number;
   to: "/projects" | "/tasks" | "/domains" | "/team" | "/settings" | "/vault" | "/";
 }) {
+  // Soft pastel surfaces — flat, low-saturation, brand-friendly
   const tints: Record<string, string> = {
-    mint: "from-mint/70 to-mint/30 text-mint-ink",
-    sky: "from-sky/70 to-sky/30 text-sky-ink",
-    lavender: "from-lavender/70 to-lavender/30 text-lavender-ink",
-    peach: "from-peach/70 to-peach/30 text-peach-ink",
-    butter: "from-butter/80 to-butter/30 text-butter-ink",
-    blush: "from-blush/70 to-blush/30 text-blush-ink",
-    coral: "from-coral/70 to-coral/30 text-coral-ink",
-    brand: "from-[#DBFDA5] to-[#EAFEC9] text-lime-ink",
-    "vivid-green": "from-[#2BD576] via-[#A8F03C] to-[#F4FB4B] text-emerald-950",
-    "vivid-blue": "from-[#1FB8FF] via-[#5AE0E8] to-[#7CF7C6] text-sky-950",
-    "vivid-sunset": "from-[#FF477E] via-[#FF8A3D] to-[#FFD23F] text-rose-950",
+    mint: "bg-mint text-mint-ink",
+    sky: "bg-sky text-sky-ink",
+    lavender: "bg-lavender text-lavender-ink",
+    peach: "bg-peach text-peach-ink",
+    butter: "bg-butter text-butter-ink",
+    blush: "bg-blush text-blush-ink",
+    coral: "bg-coral text-coral-ink",
+    brand: "bg-primary/20 text-foreground",
+    "vivid-green": "bg-mint text-mint-ink",
+    "vivid-blue": "bg-sky text-sky-ink",
+    "vivid-sunset": "bg-primary/25 text-foreground",
   };
   const iconBg: Record<string, string> = {
-    mint: "bg-white/60 text-mint-ink",
-    sky: "bg-white/60 text-sky-ink",
-    lavender: "bg-white/60 text-lavender-ink",
-    peach: "bg-white/60 text-peach-ink",
-    butter: "bg-white/60 text-butter-ink",
-    blush: "bg-white/60 text-blush-ink",
-    coral: "bg-white/60 text-coral-ink",
-    brand: "bg-white/70 text-lime-ink",
-    "vivid-green": "bg-white/80 text-emerald-700",
-    "vivid-blue": "bg-white/80 text-sky-700",
-    "vivid-sunset": "bg-white/80 text-rose-600",
+    mint: "bg-white/70 text-mint-ink",
+    sky: "bg-white/70 text-sky-ink",
+    lavender: "bg-white/70 text-lavender-ink",
+    peach: "bg-white/70 text-peach-ink",
+    butter: "bg-white/70 text-butter-ink",
+    blush: "bg-white/70 text-blush-ink",
+    coral: "bg-white/70 text-coral-ink",
+    brand: "bg-white/80 text-foreground",
+    "vivid-green": "bg-white/70 text-mint-ink",
+    "vivid-blue": "bg-white/70 text-sky-ink",
+    "vivid-sunset": "bg-white/80 text-foreground",
   };
   return (
     <Link
       to={to}
-      className={`group relative block overflow-hidden rounded-3xl border border-white/30 bg-gradient-to-br p-5 shadow-glow transition-all duration-300 hover:-translate-y-1 hover:shadow-pop ${tints[color]}`}
+      className={`group relative block overflow-hidden rounded-xl border border-border p-5 shadow-soft transition-all duration-150 hover:-translate-y-0.5 hover:shadow-pop ${tints[color]}`}
     >
       <div className="flex items-start justify-between">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-2xl backdrop-blur-sm ${iconBg[color]}`}>
+        <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg[color]}`}>
           {icon}
         </span>
         <span className="font-display text-3xl font-bold">{value}</span>
