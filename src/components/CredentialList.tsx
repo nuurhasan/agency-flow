@@ -25,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { invalidateCredentialData } from "@/lib/queryInvalidation";
 
 type Cred = CredentialRow & {
   created_by: string | null;
@@ -340,7 +341,7 @@ export function useCredentialActions() {
     },
     onSuccess: () => {
       toast.success("Credential deleted");
-      qc.invalidateQueries();
+      invalidateCredentialData(qc, editing?.project_id);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
