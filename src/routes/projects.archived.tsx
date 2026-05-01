@@ -2,17 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArchiveRestore, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { pastelClasses } from "@/lib/pastel";
 
 export const Route = createFileRoute("/projects/archived")({
-  component: () => (
-    <AuthGate>
-      <ArchivedProjectsPage />
-    </AuthGate>
-  ),
+  component: ArchivedProjectsPage,
   head: () => ({ meta: [{ title: "Archived Projects — Studio" }] }),
 });
 
