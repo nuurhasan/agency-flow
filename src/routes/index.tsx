@@ -327,52 +327,27 @@ function Dashboard() {
 }
 
 function Counter({
-  color,
   icon,
   label,
   value,
   to,
 }: {
-  color: "mint" | "sky" | "lavender" | "peach" | "butter" | "blush" | "coral" | "brand" | "vivid-green" | "vivid-blue" | "vivid-sunset";
   icon: React.ReactNode;
   label: string;
   value: number;
   to: "/projects" | "/tasks" | "/domains" | "/team" | "/settings" | "/vault" | "/";
 }) {
-  // Soft pastel surfaces — flat, low-saturation, brand-friendly
-  const tints: Record<string, string> = {
-    mint: "bg-mint text-mint-ink",
-    sky: "bg-sky text-sky-ink",
-    lavender: "bg-lavender text-lavender-ink",
-    peach: "bg-peach text-peach-ink",
-    butter: "bg-butter text-butter-ink",
-    blush: "bg-blush text-blush-ink",
-    coral: "bg-coral text-coral-ink",
-    brand: "bg-primary/20 text-foreground",
-    "vivid-green": "bg-mint text-mint-ink",
-    "vivid-blue": "bg-sky text-sky-ink",
-    "vivid-sunset": "bg-primary/25 text-foreground",
-  };
-  const iconBg: Record<string, string> = {
-    mint: "bg-white/70 text-mint-ink",
-    sky: "bg-white/70 text-sky-ink",
-    lavender: "bg-white/70 text-lavender-ink",
-    peach: "bg-white/70 text-peach-ink",
-    butter: "bg-white/70 text-butter-ink",
-    blush: "bg-white/70 text-blush-ink",
-    coral: "bg-white/70 text-coral-ink",
-    brand: "bg-white/80 text-foreground",
-    "vivid-green": "bg-white/70 text-mint-ink",
-    "vivid-blue": "bg-white/70 text-sky-ink",
-    "vivid-sunset": "bg-white/80 text-foreground",
-  };
   return (
     <Link
       to={to}
-      className={`group relative block overflow-hidden rounded-xl border border-border p-5 shadow-soft transition-all duration-150 hover:-translate-y-0.5 hover:shadow-pop ${tints[color]}`}
+      style={{
+        background:
+          "linear-gradient(135deg, color-mix(in oklab, var(--primary) 22%, white), color-mix(in oklab, var(--primary) 10%, white) 60%, #fff)",
+      }}
+      className="group relative block overflow-hidden rounded-xl border border-border p-5 text-foreground shadow-soft transition-all duration-150 hover:-translate-y-0.5 hover:shadow-pop"
     >
       <div className="flex items-start justify-between">
-        <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${iconBg[color]}`}>
+        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/80 text-foreground">
           {icon}
         </span>
         <span className="font-display text-3xl font-bold">{value}</span>
