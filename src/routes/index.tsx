@@ -324,18 +324,29 @@ function Counter({
   label,
   value,
   to,
+  tone = "mint",
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
   to: "/projects" | "/tasks" | "/domains" | "/team" | "/settings" | "/vault" | "/";
+  tone?: "mint" | "sky" | "blush" | "lavender" | "peach" | "butter" | "coral";
 }) {
+  const toneVar: Record<string, string> = {
+    mint: "var(--mint)",
+    sky: "var(--sky)",
+    blush: "var(--blush)",
+    lavender: "var(--lavender)",
+    peach: "var(--peach)",
+    butter: "var(--butter)",
+    coral: "var(--coral)",
+  };
+  const c = toneVar[tone];
   return (
     <Link
       to={to}
       style={{
-        background:
-          "linear-gradient(135deg, color-mix(in oklab, var(--primary) 22%, white), color-mix(in oklab, var(--primary) 10%, white) 60%, #fff)",
+        background: `linear-gradient(135deg, ${c}, color-mix(in oklab, ${c} 40%, white) 60%, #fff)`,
       }}
       className="group relative block overflow-hidden rounded-xl border border-border p-5 text-foreground shadow-soft transition-all duration-150 hover:-translate-y-0.5 hover:shadow-pop"
     >
