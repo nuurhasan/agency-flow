@@ -252,6 +252,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+          </div>
         </header>
 
         <main key={location.pathname} className="mx-auto w-full max-w-7xl flex-1 animate-in fade-in duration-200 px-4 pt-8 pb-24 md:px-8 md:pb-32">
