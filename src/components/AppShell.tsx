@@ -108,9 +108,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex h-16 items-center gap-2 border-b border-border px-3">
           <Link to="/" className="flex items-center gap-2 overflow-hidden" aria-label="Gloria9 home">
             <img src={gloriaLogo} alt="" className="h-9 w-9 shrink-0 object-contain" />
-            {!collapsed && (
-              <span className="font-display text-lg font-semibold tracking-tight">Turgon</span>
-            )}
           </Link>
           <button
             type="button"
