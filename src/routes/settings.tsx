@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as React from "react";
+import { Settings as SettingsIcon } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -68,9 +69,16 @@ function SettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="mt-1 text-muted-foreground">Agency-wide configuration.</p>
+      <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-butter text-butter-ink">
+            <SettingsIcon className="h-6 w-6" />
+          </span>
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">Settings</h1>
+            <p className="text-sm text-muted-foreground">Agency-wide configuration.</p>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-soft">
