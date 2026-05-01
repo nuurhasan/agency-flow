@@ -22,6 +22,7 @@ import { pastelClasses, priorityClasses } from "@/lib/pastel";
 import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { DueDatePill } from "@/components/ui/due-date-pill";
+import { invalidateTaskData } from "@/lib/queryInvalidation";
 
 export const Route = createFileRoute("/tasks")({
   component: TasksPage,
@@ -152,7 +153,7 @@ function TasksPage() {
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ refetchType: "all" }),
+    onSuccess: (_data, vars) => invalidateTaskData(qc, vars.task.project_id),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
