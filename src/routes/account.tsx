@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
+import { UserCircle } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -85,11 +86,18 @@ function AccountPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Account</h1>
-        <p className="mt-1 text-muted-foreground">
-          Manage your profile, email, and password.
-        </p>
+      <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-peach text-peach-ink">
+            <UserCircle className="h-6 w-6" />
+          </span>
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">Account</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your profile, email, and password.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Profile */}

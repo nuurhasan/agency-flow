@@ -182,21 +182,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }}
       >
         {/* Top bar */}
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/85 px-4 backdrop-blur md:px-8">
-          <button
-            type="button"
-            onClick={() => setMobileOpen(true)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
-            aria-label="Open menu"
-          >
-            <PanelLeftOpen className="h-4 w-4" />
-          </button>
+        <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
+          <div className="mx-auto flex h-16 w-full max-w-7xl items-center gap-3 px-4 md:px-8">
+            <button
+              type="button"
+              onClick={() => setMobileOpen(true)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+              aria-label="Open menu"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
 
-          <p className="hidden text-xs uppercase tracking-wider text-muted-foreground sm:block">
-            {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
-          </p>
+            <p className="hidden text-xs uppercase tracking-wider text-muted-foreground sm:block">
+              {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+            </p>
 
-          <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -250,6 +251,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
           </div>
         </header>
 

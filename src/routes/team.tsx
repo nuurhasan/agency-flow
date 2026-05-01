@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { Users } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -32,9 +33,16 @@ function TeamPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold tracking-tight">Team</h1>
-        <p className="mt-1 text-muted-foreground">Everyone with access to Studio.</p>
+      <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
+        <div className="flex items-center gap-3">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky text-sky-ink">
+            <Users className="h-6 w-6" />
+          </span>
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">Team</h1>
+            <p className="text-sm text-muted-foreground">Everyone with access to Studio.</p>
+          </div>
+        </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(members ?? []).map((m) => {

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as React from "react";
-import { Activity, Archive, Plus, Search, Zap } from "lucide-react";
+import { Activity, Archive, FolderKanban, Plus, Search, Zap } from "lucide-react";
 import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { ActivityFeed } from "@/components/ActivityFeed";
@@ -152,20 +152,27 @@ function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="mt-1 text-muted-foreground">All client work, in one colorful place.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild variant="outline" className="rounded-full" size="lg">
-            <Link to="/projects/archived">
-              <Archive className="h-4 w-4" /> Archived
-            </Link>
-          </Button>
-          <Button onClick={() => setOpen(true)} className="rounded-full" size="lg">
-            <Plus className="h-4 w-4" /> New project
-          </Button>
+      <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-mint text-mint-ink">
+              <FolderKanban className="h-6 w-6" />
+            </span>
+            <div>
+              <h1 className="font-display text-3xl font-bold tracking-tight">Projects</h1>
+              <p className="text-sm text-muted-foreground">All client work, in one colorful place.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" className="rounded-full">
+              <Link to="/projects/archived">
+                <Archive className="h-4 w-4" /> Archived
+              </Link>
+            </Button>
+            <Button onClick={() => setOpen(true)} className="rounded-full shadow-pop">
+              <Plus className="h-4 w-4" /> New project
+            </Button>
+          </div>
         </div>
       </div>
 
