@@ -74,7 +74,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
     },
     onSuccess: () => {
       toast.success("Member added");
-      qc.invalidateQueries({ queryKey: ["project-members", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-members", projectId], refetchType: "all" });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
@@ -90,7 +90,7 @@ export function MembersTab({ projectId, ownerId }: Props) {
     },
     onSuccess: () => {
       toast.success("Member removed");
-      qc.invalidateQueries({ queryKey: ["project-members", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-members", projectId], refetchType: "all" });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });

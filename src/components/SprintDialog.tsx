@@ -68,7 +68,7 @@ export function SprintDialog({ open, onOpenChange, projectId, sprint }: Props) {
     },
     onSuccess: () => {
       toast.success(sprint ? "Sprint updated" : "Sprint created");
-      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId], refetchType: "all" });
       onOpenChange(false);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),

@@ -48,7 +48,7 @@ function SettingsPage() {
     },
     onSuccess: () => {
       toast.success("Settings saved");
-      qc.invalidateQueries({ queryKey: ["app-settings"] });
+      qc.invalidateQueries({ queryKey: ["app-settings"], refetchType: "all" });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });

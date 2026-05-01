@@ -54,8 +54,12 @@ function ProjectsPage() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["projects-list"] });
-      qc.invalidateQueries({ queryKey: ["active-sprints"] });
+      qc.invalidateQueries({ queryKey: ["projects-list"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["projects-list-tasks"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["active-sprints"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["all-tasks"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["dash-projects"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["dash-counters"], refetchType: "all" });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });

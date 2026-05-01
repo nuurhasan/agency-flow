@@ -173,8 +173,8 @@ export function SprintBoard({
       toast.error(e instanceof Error ? e.message : "Failed to move task");
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
-      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId], refetchType: "all" });
     },
   });
 

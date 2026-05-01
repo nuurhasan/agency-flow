@@ -80,7 +80,7 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
     },
     onSuccess: () => {
       toast.success("Sprint started");
-      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId], refetchType: "all" });
     },
     onError: (e) => {
       const msg = e instanceof Error ? e.message : "Failed";
@@ -104,8 +104,8 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
           ? `Sprint completed. ${moved} task${moved === 1 ? "" : "s"} returned to backlog.`
           : "Sprint completed"
       );
-      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
-      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId], refetchType: "all" });
       setCompleteId(null);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
@@ -125,10 +125,10 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
     },
     onSuccess: () => {
       toast.success("Sprint deleted");
-      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
-      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
-      qc.invalidateQueries({ queryKey: ["all-tasks"] });
-      qc.invalidateQueries({ queryKey: ["sprints-min"] });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["all-tasks"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["sprints-min"], refetchType: "all" });
       setDeleteId(null);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete sprint"),
@@ -149,8 +149,8 @@ export function SprintsTab({ projectId, tasks, onEditTask, onCreateTaskInSprint 
     },
     onSuccess: (n) => {
       toast.success(`Added ${n} task${n === 1 ? "" : "s"} to sprint`);
-      qc.invalidateQueries({ queryKey: ["project-tasks", projectId] });
-      qc.invalidateQueries({ queryKey: ["project-sprints", projectId] });
+      qc.invalidateQueries({ queryKey: ["project-tasks", projectId], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["project-sprints", projectId], refetchType: "all" });
       setPickerOpen(false);
       setPickerSelection([]);
     },

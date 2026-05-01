@@ -104,7 +104,7 @@ function CredentialRowItem({
     },
     onSuccess: (val) => {
       setRevealed(val ?? "");
-      qc.invalidateQueries({ queryKey: ["credential-log", credential.id] });
+      qc.invalidateQueries({ queryKey: ["credential-log", credential.id], refetchType: "all" });
     },
     onError: (e) => {
       const msg = e instanceof Error ? e.message : "Failed";
@@ -155,7 +155,7 @@ function CredentialRowItem({
           .from("credential_reveal_log")
           .insert({ credential_id: credential.id, actor_id: user.id });
       }
-      qc.invalidateQueries({ queryKey: ["credential-log", credential.id] });
+      qc.invalidateQueries({ queryKey: ["credential-log", credential.id], refetchType: "all" });
       await copyValue((data as string) ?? "", "Password");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to copy");

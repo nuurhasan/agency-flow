@@ -169,8 +169,8 @@ function DomainsPage() {
     },
     onSuccess: () => {
       toast.success("Marked as renewed");
-      qc.invalidateQueries({ queryKey: ["client_domains"] });
-      qc.invalidateQueries({ queryKey: ["nav-domains-expiring"] });
+      qc.invalidateQueries({ queryKey: ["client_domains"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["nav-domains-expiring"], refetchType: "all" });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
@@ -184,8 +184,8 @@ function DomainsPage() {
     },
     onSuccess: () => {
       toast.success("Domain deleted");
-      qc.invalidateQueries({ queryKey: ["client_domains"] });
-      qc.invalidateQueries({ queryKey: ["nav-domains-expiring"] });
+      qc.invalidateQueries({ queryKey: ["client_domains"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["nav-domains-expiring"], refetchType: "all" });
       setConfirmDelete(null);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
