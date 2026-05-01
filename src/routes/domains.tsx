@@ -13,7 +13,6 @@ import {
   Search,
 } from "lucide-react";
 import { toast } from "sonner";
-import { AuthGate } from "@/components/AuthGate";
 import { DomainDialog } from "@/components/DomainDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -241,7 +240,7 @@ function DomainsPage() {
   const totalFiltered = payingDomains.length + nonPayingDomains.length;
 
   return (
-    <AuthGate>
+    <>
       <div className="space-y-6">
         <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -378,7 +377,7 @@ function DomainsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AuthGate>
+    </>
   );
 }
 
