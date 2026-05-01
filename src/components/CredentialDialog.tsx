@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { invalidateCredentialData } from "@/lib/queryInvalidation";
 
 export type CredentialRow = {
   id: string;
@@ -96,7 +97,7 @@ export function CredentialDialog({ open, onOpenChange, projectId, credential, pr
     },
     onSuccess: () => {
       toast.success(credential ? "Credential updated" : "Credential added");
-      qc.invalidateQueries();
+      invalidateCredentialData(qc, form.project_id);
       onOpenChange(false);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
