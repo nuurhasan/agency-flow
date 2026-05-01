@@ -3,7 +3,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Search, ListChecks, Sparkles, X, CheckSquare } from "lucide-react";
-import { AuthGate } from "@/components/AuthGate";
 import { TaskDialog } from "@/components/TaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,11 +24,7 @@ import { AvatarStack } from "@/components/ui/avatar-stack";
 import { DueDatePill } from "@/components/ui/due-date-pill";
 
 export const Route = createFileRoute("/tasks")({
-  component: () => (
-    <AuthGate>
-      <TasksPage />
-    </AuthGate>
-  ),
+  component: TasksPage,
   head: () => ({ meta: [{ title: "Tasks — Studio" }] }),
 });
 
