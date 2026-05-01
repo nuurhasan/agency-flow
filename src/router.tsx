@@ -63,11 +63,6 @@ export const getRouter = () => {
     defaultPreloadDelay: 50,
     // Let TanStack Query control freshness (see __root.tsx)
     defaultPreloadStaleTime: 0,
-    // Show the new route immediately on click; don't wait for any pending state.
-    defaultPendingMs: 0,
-    defaultPendingMinMs: 0,
-    // Keep showing the previous route while the new one's data loads — avoids blank flashes.
-    defaultPendingComponent: () => null,
     defaultErrorComponent: DefaultErrorComponent,
   });
 
