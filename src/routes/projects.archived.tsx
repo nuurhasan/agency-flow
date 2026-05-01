@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { pastelClasses } from "@/lib/pastel";
+import { invalidateProjectData } from "@/lib/queryInvalidation";
 
 export const Route = createFileRoute("/projects/archived")({
   component: ArchivedProjectsPage,
@@ -37,7 +38,7 @@ function ArchivedProjectsPage() {
     },
     onSuccess: () => {
       toast.success("Project restored");
-      qc.invalidateQueries();
+      invalidateProjectData(qc);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to restore"),
   });
