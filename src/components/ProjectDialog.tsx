@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PASTEL_COLORS, pastelClasses } from "@/lib/pastel";
+import { invalidateProjectData } from "@/lib/queryInvalidation";
 
 const SERVICE_TYPES = ["website", "seo", "hosting", "maintenance", "branding", "other"] as const;
 const STATUSES = ["planning", "active", "on_hold", "completed", "archived"] as const;
@@ -198,7 +199,7 @@ export function ProjectDialog({ open, onOpenChange, project }: Props) {
     },
     onSuccess: () => {
       toast.success(project ? "Project updated" : "Project created");
-      qc.invalidateQueries();
+      invalidateProjectData(qc, project?.id);
       onOpenChange(false);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
