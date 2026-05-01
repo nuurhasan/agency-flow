@@ -339,9 +339,9 @@ export function useCredentialActions() {
       const { error } = await supabase.from("project_credentials").delete().eq("id", c.id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, c) => {
       toast.success("Credential deleted");
-      invalidateCredentialData(qc, editing?.project_id);
+      invalidateCredentialData(qc, c.project_id);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
