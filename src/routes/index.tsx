@@ -96,7 +96,10 @@ function Dashboard() {
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["dash-projects"] });
+      qc.invalidateQueries({ queryKey: ["dash-counters"] });
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 

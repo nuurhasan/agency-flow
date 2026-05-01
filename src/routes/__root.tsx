@@ -81,7 +81,14 @@ function RootComponent() {
     () =>
       new QueryClient({
         defaultOptions: {
-          queries: { staleTime: 30_000, refetchOnWindowFocus: false },
+          queries: {
+            // Generous cache so route switches feel instant; data still refreshes in background when stale.
+            staleTime: 5 * 60_000,
+            gcTime: 30 * 60_000,
+            refetchOnWindowFocus: false,
+            refetchOnMount: false,
+            retry: 1,
+          },
         },
       }),
   );

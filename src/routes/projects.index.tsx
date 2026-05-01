@@ -58,7 +58,10 @@ function ProjectsPage() {
         });
       }
     },
-    onSuccess: () => qc.invalidateQueries(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["projects-list"] });
+      qc.invalidateQueries({ queryKey: ["active-sprints"] });
+    },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
