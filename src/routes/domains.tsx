@@ -243,22 +243,29 @@ function DomainsPage() {
   return (
     <AuthGate>
       <div className="space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">Domains</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Track every client domain renewal. Assignees get a reminder email when expiry gets close.
-            </p>
+        <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-lavender text-lavender-ink">
+                <Globe2 className="h-6 w-6" />
+              </span>
+              <div>
+                <h1 className="font-display text-3xl font-bold tracking-tight">Domains</h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Track every client domain renewal. Assignees get a reminder email when expiry gets close.
+                </p>
+              </div>
+            </div>
+            <Button
+              className="rounded-full shadow-pop"
+              onClick={() => {
+                setEditing(null);
+                setOpen(true);
+              }}
+            >
+              <Plus className="h-4 w-4" /> Add domain
+            </Button>
           </div>
-          <Button
-            className="rounded-full"
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-          >
-            <Plus className="h-4 w-4" /> Add domain
-          </Button>
         </div>
 
         {/* Summary pills */}
