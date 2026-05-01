@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import { CheckCircle2, FolderKanban, Plus, TrendingUp } from "lucide-react";
 import * as React from "react";
-import { AuthGate } from "@/components/AuthGate";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -15,17 +14,9 @@ import { Progress } from "@/components/ui/progress";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 
 export const Route = createFileRoute("/")({
-  component: DashboardRoute,
+  component: Dashboard,
   head: () => ({ meta: [{ title: "Dashboard — Studio" }] }),
 });
-
-function DashboardRoute() {
-  return (
-    <AuthGate>
-      <Dashboard />
-    </AuthGate>
-  );
-}
 
 const LOTR_QUOTES = [
   "All we have to decide is what to do with the time that is given us.",
