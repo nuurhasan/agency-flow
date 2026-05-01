@@ -5,8 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Agency PM — Playful Pastel design system.
- * Mint, peach, lavender, sky, butter, blush — soft tints, friendly tags.
+ * Turgon — Clean SaaS design system.
+ * Off-white base, brand yellow #FFF100 accent, soft pastel surfaces.
+ * Inspired by Linear / Notion / Stripe Dashboard. No gradients.
  * All colors in oklch.
  */
 
@@ -40,7 +41,7 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
 
-  /* Pastel palette */
+  /* Pastel palette — soft, low saturation */
   --color-mint: var(--mint);
   --color-mint-ink: var(--mint-ink);
   --color-peach: var(--peach);
@@ -78,117 +79,102 @@
     sans-serif;
   --font-display: "Cabinet Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  --shadow-soft: 0 1px 2px oklch(0.5 0.05 280 / 0.04), 0 6px 24px oklch(0.5 0.05 280 / 0.06);
-  --shadow-pop: 0 2px 4px oklch(0.5 0.08 280 / 0.06), 0 12px 40px oklch(0.5 0.1 280 / 0.1);
-
-  /* Gradient system — bright, modern SaaS feel anchored on brand lime */
-  --gradient-primary: linear-gradient(135deg, oklch(0.88 0.24 145) 0%, oklch(0.86 0.27 130) 45%, oklch(0.92 0.19 105) 100%);
-  --gradient-primary-hover: linear-gradient(135deg, oklch(0.91 0.24 145) 0%, oklch(0.89 0.27 130) 45%, oklch(0.94 0.19 105) 100%);
-  --gradient-info: linear-gradient(135deg, oklch(0.82 0.18 160) 0%, oklch(0.78 0.15 200) 50%, oklch(0.74 0.17 240) 100%);
-  --gradient-cta: linear-gradient(135deg, oklch(0.78 0.18 10) 0%, oklch(0.82 0.18 50) 50%, oklch(0.9 0.17 90) 100%);
-  --gradient-accent: linear-gradient(135deg, oklch(0.7 0.2 300) 0%, oklch(0.7 0.2 250) 50%, oklch(0.82 0.15 210) 100%);
-  --gradient-card: linear-gradient(135deg, oklch(1 0 0) 0%, oklch(0.985 0.015 130) 100%);
-  --gradient-surface: linear-gradient(160deg, oklch(0.99 0.02 130) 0%, oklch(0.97 0.03 110) 100%);
-
-  /* Column / status gradients — bright, vivid pastels for board surfaces */
-  --gradient-todo: linear-gradient(140deg, oklch(0.95 0.07 295) 0%, oklch(0.9 0.12 280) 60%, oklch(0.88 0.14 260) 100%);
-  --gradient-progress: linear-gradient(140deg, oklch(0.95 0.06 220) 0%, oklch(0.88 0.13 230) 60%, oklch(0.84 0.16 240) 100%);
-  --gradient-review: linear-gradient(140deg, oklch(0.96 0.1 100) 0%, oklch(0.91 0.16 90) 60%, oklch(0.88 0.17 75) 100%);
-  --gradient-done: linear-gradient(140deg, oklch(0.95 0.09 165) 0%, oklch(0.9 0.16 150) 60%, oklch(0.88 0.2 140) 100%);
-  --gradient-backlog: linear-gradient(140deg, oklch(0.95 0.07 50) 0%, oklch(0.9 0.13 40) 60%, oklch(0.88 0.16 30) 100%);
-  --gradient-progress-bar: linear-gradient(90deg, oklch(0.86 0.27 130) 0%, oklch(0.82 0.22 150) 50%, oklch(0.78 0.18 180) 100%);
-
-  --shadow-glow: 0 8px 24px -8px oklch(0.86 0.27 130 / 0.45), 0 2px 6px oklch(0.5 0.05 140 / 0.08);
-  --shadow-glow-info: 0 8px 24px -8px oklch(0.74 0.17 240 / 0.45), 0 2px 6px oklch(0.5 0.05 240 / 0.08);
-  --shadow-glow-cta: 0 8px 24px -8px oklch(0.82 0.18 30 / 0.45), 0 2px 6px oklch(0.5 0.1 30 / 0.08);
-  --shadow-glow-accent: 0 8px 24px -8px oklch(0.7 0.2 280 / 0.45), 0 2px 6px oklch(0.5 0.1 280 / 0.08);
+  /* Subtle shadows — clean SaaS depth, no heavy glows */
+  --shadow-soft: 0 1px 2px oklch(0.2 0.02 95 / 0.04), 0 4px 12px oklch(0.2 0.02 95 / 0.04);
+  --shadow-pop: 0 2px 4px oklch(0.2 0.02 95 / 0.05), 0 8px 24px oklch(0.2 0.02 95 / 0.06);
+  --shadow-glow: 0 1px 2px oklch(0.2 0.02 95 / 0.04), 0 4px 12px oklch(0.2 0.02 95 / 0.04);
+  --shadow-glow-info: 0 1px 2px oklch(0.2 0.02 95 / 0.04), 0 4px 12px oklch(0.2 0.02 95 / 0.04);
+  --shadow-glow-cta: 0 1px 2px oklch(0.2 0.02 95 / 0.04), 0 4px 12px oklch(0.2 0.02 95 / 0.04);
+  --shadow-glow-accent: 0 1px 2px oklch(0.2 0.02 95 / 0.04), 0 4px 12px oklch(0.2 0.02 95 / 0.04);
 }
 
 :root {
-  --radius: 0.875rem;
+  --radius: 0.75rem;
 
-  --background: oklch(0.984 0.035 95);
-  --foreground: oklch(0.22 0.03 280);
+  /* Subtle off-white page background */
+  --background: oklch(0.99 0.005 95);
+  --foreground: oklch(0.2 0.02 260);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.03 280);
+  --card-foreground: oklch(0.2 0.02 260);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.03 280);
+  --popover-foreground: oklch(0.2 0.02 260);
 
-  /* Primary = brand lime #65fe08 */
-  --primary: oklch(0.86 0.27 130);
-  --primary-foreground: oklch(0.18 0.05 140);
+  /* Primary = brand yellow #FFF100 */
+  --primary: oklch(0.96 0.21 105);
+  --primary-foreground: oklch(0.2 0.02 95);
 
-  --secondary: oklch(0.96 0.04 130);
-  --secondary-foreground: oklch(0.28 0.08 140);
+  --secondary: oklch(0.97 0.01 240);
+  --secondary-foreground: oklch(0.25 0.03 260);
 
-  --muted: oklch(0.96 0.012 155);
-  --muted-foreground: oklch(0.5 0.03 155);
+  --muted: oklch(0.965 0.005 240);
+  --muted-foreground: oklch(0.5 0.02 260);
 
-  --accent: oklch(0.93 0.12 130);
-  --accent-foreground: oklch(0.28 0.08 140);
+  --accent: oklch(0.96 0.05 105);
+  --accent-foreground: oklch(0.25 0.05 95);
 
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.99 0.005 155);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.99 0.005 240);
 
-  --border: oklch(0.92 0.02 155);
-  --input: oklch(0.92 0.02 155);
-  --ring: oklch(0.86 0.27 130);
+  --border: oklch(0.92 0.005 240);
+  --input: oklch(0.92 0.005 240);
+  --ring: oklch(0.85 0.18 100);
 
-  /* Pastel palette: tint + ink (text on tint) */
-  --mint: oklch(0.92 0.07 165);
-  --mint-ink: oklch(0.36 0.09 165);
-  --peach: oklch(0.91 0.07 50);
-  --peach-ink: oklch(0.4 0.12 40);
-  --lavender: oklch(0.9 0.06 295);
-  --lavender-ink: oklch(0.36 0.12 295);
-  --sky: oklch(0.91 0.06 230);
-  --sky-ink: oklch(0.36 0.1 240);
-  --butter: oklch(0.94 0.08 100);
-  --butter-ink: oklch(0.42 0.1 90);
-  --blush: oklch(0.91 0.06 15);
-  --blush-ink: oklch(0.4 0.13 15);
-  --coral: oklch(0.86 0.11 30);
-  --coral-ink: oklch(0.42 0.18 28);
-  --lime: oklch(0.86 0.27 130);
-  --lime-ink: oklch(0.22 0.06 140);
+  /* Pastel palette: soft tint + readable ink */
+  --mint: oklch(0.95 0.04 165);
+  --mint-ink: oklch(0.4 0.09 165);
+  --peach: oklch(0.95 0.04 50);
+  --peach-ink: oklch(0.45 0.12 40);
+  --lavender: oklch(0.95 0.035 295);
+  --lavender-ink: oklch(0.42 0.12 295);
+  --sky: oklch(0.95 0.035 230);
+  --sky-ink: oklch(0.4 0.1 240);
+  --butter: oklch(0.97 0.06 100);
+  --butter-ink: oklch(0.45 0.1 90);
+  --blush: oklch(0.95 0.035 15);
+  --blush-ink: oklch(0.45 0.13 15);
+  --coral: oklch(0.93 0.06 30);
+  --coral-ink: oklch(0.48 0.18 28);
+  /* lime now refers to our brand yellow */
+  --lime: oklch(0.96 0.21 105);
+  --lime-ink: oklch(0.22 0.04 95);
 
-  --chart-1: oklch(0.7 0.15 165);
-  --chart-2: oklch(0.7 0.15 295);
-  --chart-3: oklch(0.7 0.15 50);
-  --chart-4: oklch(0.7 0.15 230);
-  --chart-5: oklch(0.7 0.15 100);
+  --chart-1: oklch(0.85 0.18 100);
+  --chart-2: oklch(0.7 0.12 165);
+  --chart-3: oklch(0.7 0.12 230);
+  --chart-4: oklch(0.7 0.12 295);
+  --chart-5: oklch(0.75 0.12 50);
 
-  --sidebar: oklch(0.99 0.005 155);
-  --sidebar-foreground: oklch(0.22 0.04 155);
-  --sidebar-primary: oklch(0.86 0.27 130);
-  --sidebar-primary-foreground: oklch(0.18 0.05 140);
-  --sidebar-accent: oklch(0.96 0.04 130);
-  --sidebar-accent-foreground: oklch(0.28 0.08 140);
-  --sidebar-border: oklch(0.92 0.02 155);
-  --sidebar-ring: oklch(0.86 0.27 130);
+  --sidebar: oklch(0.985 0.003 95);
+  --sidebar-foreground: oklch(0.25 0.02 260);
+  --sidebar-primary: oklch(0.96 0.21 105);
+  --sidebar-primary-foreground: oklch(0.2 0.04 95);
+  --sidebar-accent: oklch(0.97 0.05 100);
+  --sidebar-accent-foreground: oklch(0.25 0.05 95);
+  --sidebar-border: oklch(0.92 0.005 240);
+  --sidebar-ring: oklch(0.85 0.18 100);
 }
 
 .dark {
-  --background: oklch(0.18 0.02 155);
-  --foreground: oklch(0.96 0.01 155);
-  --card: oklch(0.22 0.025 155);
-  --card-foreground: oklch(0.96 0.01 155);
-  --popover: oklch(0.22 0.025 155);
-  --popover-foreground: oklch(0.96 0.01 155);
-  --primary: oklch(0.86 0.27 130);
-  --primary-foreground: oklch(0.18 0.05 140);
-  --secondary: oklch(0.28 0.04 155);
-  --secondary-foreground: oklch(0.96 0.01 155);
-  --muted: oklch(0.28 0.04 155);
-  --muted-foreground: oklch(0.72 0.02 155);
-  --accent: oklch(0.32 0.06 155);
-  --accent-foreground: oklch(0.96 0.01 155);
-  --destructive: oklch(0.7 0.2 25);
-  --destructive-foreground: oklch(0.98 0.01 155);
+  --background: oklch(0.18 0.01 260);
+  --foreground: oklch(0.96 0.005 95);
+  --card: oklch(0.22 0.015 260);
+  --card-foreground: oklch(0.96 0.005 95);
+  --popover: oklch(0.22 0.015 260);
+  --popover-foreground: oklch(0.96 0.005 95);
+  --primary: oklch(0.96 0.21 105);
+  --primary-foreground: oklch(0.2 0.04 95);
+  --secondary: oklch(0.28 0.02 260);
+  --secondary-foreground: oklch(0.96 0.005 95);
+  --muted: oklch(0.28 0.02 260);
+  --muted-foreground: oklch(0.72 0.01 260);
+  --accent: oklch(0.32 0.04 100);
+  --accent-foreground: oklch(0.96 0.005 95);
+  --destructive: oklch(0.65 0.2 25);
+  --destructive-foreground: oklch(0.98 0.005 95);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.86 0.27 130);
+  --ring: oklch(0.85 0.18 100);
 }
 
 @layer base {
@@ -253,40 +239,38 @@
     overflow: hidden;
   }
 
-  /* Soft pastel hero gradient banner */
+  /* Soft yellow-tinted hero banner — brand accent surface */
   .hero-gradient {
-    background:
-      radial-gradient(80% 60% at 0% 0%, color-mix(in oklab, var(--lavender) 55%, transparent) 0%, transparent 60%),
-      radial-gradient(70% 60% at 100% 0%, color-mix(in oklab, var(--mint) 45%, transparent) 0%, transparent 60%),
-      radial-gradient(60% 80% at 50% 100%, color-mix(in oklab, var(--peach) 35%, transparent) 0%, transparent 70%);
+    background: linear-gradient(135deg,
+      color-mix(in oklab, var(--primary) 22%, white) 0%,
+      color-mix(in oklab, var(--primary) 10%, white) 60%,
+      white 100%);
   }
 
-  /* Gradient utilities */
-  .bg-gradient-primary { background-image: var(--gradient-primary); }
-  .bg-gradient-primary-hover { background-image: var(--gradient-primary-hover); }
-  .bg-gradient-info { background-image: var(--gradient-info); }
-  .bg-gradient-cta { background-image: var(--gradient-cta); }
-  .bg-gradient-accent { background-image: var(--gradient-accent); }
-  .bg-gradient-card { background-image: var(--gradient-card); }
-  .bg-gradient-surface { background-image: var(--gradient-surface); }
-  .bg-gradient-todo { background-image: var(--gradient-todo); }
-  .bg-gradient-progress { background-image: var(--gradient-progress); }
-  .bg-gradient-review { background-image: var(--gradient-review); }
-  .bg-gradient-done { background-image: var(--gradient-done); }
-  .bg-gradient-backlog { background-image: var(--gradient-backlog); }
-  .bg-gradient-progress-bar { background-image: var(--gradient-progress-bar); }
+  /*
+   * Backwards-compatible utility classes: these used to be vivid gradients;
+   * they now resolve to soft, flat pastel surfaces so every existing usage
+   * stays on-brand without per-file edits.
+   */
+  .bg-gradient-primary { background-color: var(--primary); }
+  .bg-gradient-primary-hover { background-color: color-mix(in oklab, var(--primary) 88%, black); }
+  .bg-gradient-info { background-color: var(--sky); }
+  .bg-gradient-cta { background-color: var(--primary); }
+  .bg-gradient-accent { background-color: var(--lavender); }
+  .bg-gradient-card { background-color: var(--card); }
+  .bg-gradient-surface { background-color: var(--muted); }
+  .bg-gradient-todo { background-color: var(--lavender); }
+  .bg-gradient-progress { background-color: var(--sky); }
+  .bg-gradient-review { background-color: var(--butter); }
+  .bg-gradient-done { background-color: var(--mint); }
+  .bg-gradient-backlog { background-color: var(--peach); }
+  .bg-gradient-progress-bar { background-color: var(--primary); }
 
   .shadow-glow { box-shadow: var(--shadow-glow); }
   .shadow-glow-info { box-shadow: var(--shadow-glow-info); }
   .shadow-glow-cta { box-shadow: var(--shadow-glow-cta); }
   .shadow-glow-accent { box-shadow: var(--shadow-glow-accent); }
 
-  .gradient-sheen { position: relative; overflow: hidden; }
-  .gradient-sheen::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, oklch(1 0 0 / 0.18) 0%, transparent 55%);
-    pointer-events: none;
-  }
+  /* No-op sheen — kept for compat, zero visual impact */
+  .gradient-sheen { position: relative; }
 }
