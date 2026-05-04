@@ -308,6 +308,140 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          meta: Json
+          project_id: string | null
+          task_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          meta?: Json
+          project_id?: string | null
+          task_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          meta?: Json
+          project_id?: string | null
+          task_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_outbox: {
+        Row: {
+          created_at: string
+          dedup_key: string
+          email_message_id: string | null
+          error_message: string | null
+          event_id: string | null
+          event_type: string
+          id: string
+          payload: Json
+          project_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dedup_key: string
+          email_message_id?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          event_type: string
+          id?: string
+          payload?: Json
+          project_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dedup_key?: string
+          email_message_id?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          project_id?: string | null
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_outbox_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "notification_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          digest_frequency: Database["public"]["Enums"]["notification_digest_frequency"]
+          digest_hour: number
+          event_client_approval: boolean
+          event_project_update: boolean
+          event_task_assigned: boolean
+          event_task_comment: boolean
+          event_task_due_soon: boolean
+          event_task_mention: boolean
+          event_task_status_changed: boolean
+          mode: Database["public"]["Enums"]["notification_mode"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          digest_frequency?: Database["public"]["Enums"]["notification_digest_frequency"]
+          digest_hour?: number
+          event_client_approval?: boolean
+          event_project_update?: boolean
+          event_task_assigned?: boolean
+          event_task_comment?: boolean
+          event_task_due_soon?: boolean
+          event_task_mention?: boolean
+          event_task_status_changed?: boolean
+          mode?: Database["public"]["Enums"]["notification_mode"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          digest_frequency?: Database["public"]["Enums"]["notification_digest_frequency"]
+          digest_hour?: number
+          event_client_approval?: boolean
+          event_project_update?: boolean
+          event_task_assigned?: boolean
+          event_task_comment?: boolean
+          event_task_due_soon?: boolean
+          event_task_mention?: boolean
+          event_task_status_changed?: boolean
+          mode?: Database["public"]["Enums"]["notification_mode"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -846,6 +980,19 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      enqueue_notification: {
+        Args: {
+          _dedup_key: string
+          _event_id: string
+          _event_type: string
+          _payload: Json
+          _project_id: string
+          _task_id: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      generate_due_date_reminders: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -890,6 +1037,9 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "member"
+      notification_digest_frequency: "hourly" | "daily"
+      notification_mode: "instant" | "digest" | "off"
+      notification_status: "pending" | "sent" | "skipped" | "failed"
       project_status:
         | "planning"
         | "active"
@@ -1039,6 +1189,9 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "member"],
+      notification_digest_frequency: ["hourly", "daily"],
+      notification_mode: ["instant", "digest", "off"],
+      notification_status: ["pending", "sent", "skipped", "failed"],
       project_status: [
         "planning",
         "active",
