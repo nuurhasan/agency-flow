@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as React from "react";
-import { Activity, Archive, FolderKanban, Plus, Search, Zap } from "lucide-react";
+import { Activity, Archive, FolderKanban, LayoutGrid, Plus, Search, Users2, Zap } from "lucide-react";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,15 @@ function ProjectsPage() {
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<string>("all");
   const [service, setService] = React.useState<string>("all");
+  const [groupByClient, setGroupByClient] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("turgon.projects.groupByClient") === "1";
+  });
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("turgon.projects.groupByClient", groupByClient ? "1" : "0");
+    }
+  }, [groupByClient]);
 
   const toggleDone = useMutation({
     mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
