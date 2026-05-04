@@ -54,6 +54,8 @@ type TaskRow = {
   updated_at: string;
   sprint_id: string | null;
   is_backlog: boolean;
+  revision_count?: number | null;
+  approved_at?: string | null;
 };
 
 function ProjectDetailPage() {
