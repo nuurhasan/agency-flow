@@ -205,13 +205,13 @@ export const Route = createFileRoute('/api/public/hooks/process-notifications')(
         if (sentIds.length) {
           await supabase
             .from('notification_outbox')
-            .update({ status: 'sent', sent_at: new Date().toISOString() })
+            .update({ status: 'sent' })
             .in('id', sentIds)
         }
         if (failedIds.length) {
           await supabase
             .from('notification_outbox')
-            .update({ status: 'failed', error_message: 'send failed' })
+            .update({ status: 'failed', error_message: 'send failed', sent_at: null })
             .in('id', failedIds)
         }
 
