@@ -246,6 +246,17 @@ export function TaskDetailDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Close
           </Button>
+          {task.status === "awaiting_client" && !task.approved_at && (
+            <Button
+              variant="accent"
+              onClick={() => approveMutation.mutate()}
+              disabled={approveMutation.isPending}
+              className="rounded-full"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {approveMutation.isPending ? "Approving…" : "Approve"}
+            </Button>
+          )}
           <Button
             onClick={() => {
               onOpenChange(false);
