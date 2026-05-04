@@ -148,6 +148,21 @@ export function TaskDetailDialog({
               <Flag className="h-3 w-3" />
               {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} priority
             </span>
+            {revision > 0 && (
+              <span
+                title={`This task has been revised ${revision} time${revision > 1 ? "s" : ""}`}
+                className="inline-flex items-center gap-1 rounded-full bg-coral/20 px-2.5 py-1 text-xs font-semibold text-coral-ink"
+              >
+                <RefreshCw className="h-3 w-3" />
+                R{revision}
+              </span>
+            )}
+            {task.approved_at && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-mint/40 px-2.5 py-1 text-xs font-medium text-mint-ink">
+                <CheckCircle2 className="h-3 w-3" />
+                Approved
+              </span>
+            )}
           </div>
 
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
