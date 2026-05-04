@@ -9,8 +9,8 @@ import { createClient } from '@supabase/supabase-js'
 
 const MAX_PER_RUN = 200
 const SITE_NAME = 'sparkle-work-flow'
-const SENDER_DOMAIN = 'notify.gloria9.com'
-const FROM_DOMAIN = 'notify.gloria9.com'
+const SENDER_DOMAIN = 'turgon.gloria9.co.uk'
+const FROM_DOMAIN = 'turgon.gloria9.co.uk'
 const APP_URL = 'https://sparkle-work-flow.lovable.app'
 
 const TEMPLATE_FOR: Record<string, string> = {
