@@ -13,6 +13,8 @@ import {
 import { priorityClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { TaskComments } from "@/components/TaskComments";
+import { TaskChecklist } from "@/components/TaskChecklist";
+import { TaskLinks } from "@/components/TaskLinks";
 
 export interface TaskDetail {
   id: string;
