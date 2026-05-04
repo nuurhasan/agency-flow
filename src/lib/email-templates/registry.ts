@@ -14,6 +14,7 @@ import { template as taskComment } from './task-comment'
 import { template as taskMention } from './task-mention'
 import { template as taskDueReminder } from './task-due-reminder'
 import { template as digest } from './digest'
+import { template as testNotification } from './test-notification'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'task-assigned': taskAssigned,
@@ -22,4 +23,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'task-mention': taskMention,
   'task-due-reminder': taskDueReminder,
   digest,
+  'test-notification': testNotification,
 }
