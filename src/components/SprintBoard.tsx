@@ -225,7 +225,7 @@ export function SprintBoard({
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {COLUMNS.map((col) => (
             <Column
               key={col.id}
