@@ -151,36 +151,53 @@ function AccountPage() {
       {/* Profile */}
       <section className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-soft">
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 border border-border">
+          <Avatar className="h-20 w-20 border border-border">
             {avatarUrl ? <AvatarImage src={avatarUrl} alt={name || "Avatar"} /> : null}
             <AvatarFallback className="bg-peach text-peach-ink text-base font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div>
+          <div className="flex-1">
             <p className="font-display text-lg font-semibold">{profile?.name || "—"}</p>
             <p className="text-sm text-muted-foreground">
               {role ? role.charAt(0).toUpperCase() + role.slice(1) : "No role"}
             </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadAvatar.mutate(file);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadAvatar.isPending}
+              >
+                {uploadAvatar.isPending ? (
+                  <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> Uploading…</>
+                ) : (
+                  <><Upload className="mr-2 h-3.5 w-3.5" /> Upload picture</>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                JPG, PNG or WebP • min 200×200px • max 2 MB
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="name">Display name</Label>
           <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="avatar">Avatar URL</Label>
-          <Input
-            id="avatar"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://…"
-          />
-          <p className="text-xs text-muted-foreground">
-            Paste a link to an image. Leave empty to use your initials.
-          </p>
         </div>
 
         <div className="flex justify-end">
