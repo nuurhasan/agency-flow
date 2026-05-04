@@ -72,7 +72,7 @@ function TasksPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id,revision_count,approved_at")
         .order("due_date", { ascending: true, nullsFirst: false })
         .order("updated_at", { ascending: false });
       return (data ?? []) as TaskRow[];
