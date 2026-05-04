@@ -564,6 +564,7 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          mentions: string[]
           task_id: string
           user_id: string
         }
@@ -571,6 +572,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          mentions?: string[]
           task_id: string
           user_id: string
         }
@@ -578,6 +580,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          mentions?: string[]
           task_id?: string
           user_id?: string
         }
