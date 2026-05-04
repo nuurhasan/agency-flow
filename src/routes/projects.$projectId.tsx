@@ -480,6 +480,7 @@ function ProjectDetailPage() {
                       <SelectItem value="todo">To Do</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
                       <SelectItem value="in_review">In Review</SelectItem>
+                      <SelectItem value="awaiting_client">Awaiting Client</SelectItem>
                       <SelectItem value="done">Done</SelectItem>
                     </SelectContent>
                   </Select>
