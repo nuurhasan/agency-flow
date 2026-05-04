@@ -27,6 +27,8 @@ export interface TaskDetail {
   status: "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
+  revision_count?: number | null;
+  approved_at?: string | null;
 }
 
 interface Props {
