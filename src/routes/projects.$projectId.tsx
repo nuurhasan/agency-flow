@@ -37,6 +37,7 @@ import {
 import { pastelClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { TaskStatusDropdown } from "@/components/TaskStatusDropdown";
 import { invalidateProjectData, invalidateTaskData } from "@/lib/queryInvalidation";
+import { ApplyTemplateButton } from "@/components/ApplyTemplateButton";
 
 export const Route = createFileRoute("/projects/$projectId")({
   component: ProjectDetailPage,
@@ -446,6 +447,7 @@ function ProjectDetailPage() {
             </TabsTrigger>
           </TabsList>
           <div className="flex gap-2">
+            <ApplyTemplateButton projectId={projectId} />
             <Button onClick={openNew} className="rounded-full">
               <Plus className="h-4 w-4" /> New task
             </Button>
