@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationPreferences } from "@/components/NotificationPreferences";
 
 export const Route = createFileRoute("/account")({
   component: AccountPage,
@@ -278,6 +279,8 @@ function AccountPage() {
           </Button>
         </div>
       </section>
+
+      <NotificationPreferences />
     </div>
   );
 }
