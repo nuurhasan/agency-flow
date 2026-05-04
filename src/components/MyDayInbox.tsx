@@ -199,14 +199,10 @@ function Group({
 
   return (
     <div>
-      <div className={cn("mb-2 flex items-center gap-2", headerTone)}>
+      <div className={cn("mb-2 flex items-center gap-1.5", headerTone)}>
         <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]">
           {icon}
-          {label}
-        </span>
-        <span className="h-px flex-1 bg-border/60" />
-        <span className="text-[11px] font-medium tabular-nums text-muted-foreground">
-          {tasks.length}
+          {label} <span className="tabular-nums">({tasks.length})</span>
         </span>
       </div>
       <ul className="space-y-1">
