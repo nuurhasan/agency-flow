@@ -28,7 +28,7 @@ import { BacklogList } from "@/components/BacklogList";
 export type BoardTask = {
   id: string;
   title: string;
-  status: "todo" | "in_progress" | "in_review" | "done";
+  status: "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
   sprint_id: string | null;
@@ -76,6 +76,16 @@ const COLUMNS: Array<{
     countBg: "bg-white/70 text-butter-ink shadow-sm",
     dropZone: "border-butter-ink/30 text-butter-ink/80 bg-white/30",
     over: "border-butter-ink/60 ring-2 ring-butter-ink/40 shadow-glow-cta",
+  },
+  {
+    id: "awaiting_client",
+    label: "Awaiting Client",
+    tint: "bg-blush/30",
+    border: "border-blush-ink/25",
+    headerText: "text-blush-ink",
+    countBg: "bg-white/70 text-blush-ink shadow-sm",
+    dropZone: "border-blush-ink/30 text-blush-ink/80 bg-white/30",
+    over: "border-blush-ink/60 ring-2 ring-blush-ink/40 shadow-glow-cta",
   },
   {
     id: "done",
@@ -203,6 +213,7 @@ export function SprintBoard({
       todo: [],
       in_progress: [],
       in_review: [],
+      awaiting_client: [],
       done: [],
     };
     for (const t of sprintTasks) {
@@ -214,7 +225,7 @@ export function SprintBoard({
   return (
     <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {COLUMNS.map((col) => (
             <Column
               key={col.id}

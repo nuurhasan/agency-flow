@@ -1,7 +1,9 @@
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Calendar, Flag, FolderKanban, Pencil, User2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Calendar, CheckCircle2, Flag, FolderKanban, Pencil, RefreshCw, User2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,15 +17,18 @@ import { AvatarStack } from "@/components/ui/avatar-stack";
 import { TaskComments } from "@/components/TaskComments";
 import { TaskChecklist } from "@/components/TaskChecklist";
 import { TaskLinks } from "@/components/TaskLinks";
+import { invalidateTaskData } from "@/lib/queryInvalidation";
 
 export interface TaskDetail {
   id: string;
   project_id: string;
   title: string;
   description: string | null;
-  status: "todo" | "in_progress" | "in_review" | "done";
+  status: "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
+  revision_count?: number | null;
+  approved_at?: string | null;
 }
 
 interface Props {
@@ -87,8 +92,41 @@ export function TaskDetailDialog({
 
   const people = assignees ?? fetchedAssignees;
   const mentionMembers = members ?? fetchedMembers;
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const approveMutation = useMutation({
+    mutationFn: async () => {
+      if (!task) return;
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          status: "done",
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id ?? null,
+        })
+        .eq("id", task.id);
+      if (error) throw error;
+      if (user?.id) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          project_id: task.project_id,
+          task_id: task.id,
+          action: "task.approved",
+          meta: { title: task.title },
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success("Task approved");
+      invalidateTaskData(qc, task?.project_id);
+      onOpenChange(false);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to approve"),
+  });
 
   if (!task) return null;
+  const revision = task.revision_count ?? 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -110,6 +148,21 @@ export function TaskDetailDialog({
               <Flag className="h-3 w-3" />
               {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} priority
             </span>
+            {revision > 0 && (
+              <span
+                title={`This task has been revised ${revision} time${revision > 1 ? "s" : ""}`}
+                className="inline-flex items-center gap-1 rounded-full bg-coral/20 px-2.5 py-1 text-xs font-semibold text-coral-ink"
+              >
+                <RefreshCw className="h-3 w-3" />
+                R{revision}
+              </span>
+            )}
+            {task.approved_at && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-mint/40 px-2.5 py-1 text-xs font-medium text-mint-ink">
+                <CheckCircle2 className="h-3 w-3" />
+                Approved
+              </span>
+            )}
           </div>
 
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
@@ -193,6 +246,17 @@ export function TaskDetailDialog({
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Close
           </Button>
+          {task.status === "awaiting_client" && !task.approved_at && (
+            <Button
+              variant="accent"
+              onClick={() => approveMutation.mutate()}
+              disabled={approveMutation.isPending}
+              className="rounded-full"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              {approveMutation.isPending ? "Approving…" : "Approve"}
+            </Button>
+          )}
           <Button
             onClick={() => {
               onOpenChange(false);

@@ -34,11 +34,13 @@ type TaskRow = {
   project_id: string;
   title: string;
   description: string | null;
-  status: "todo" | "in_progress" | "in_review" | "done";
+  status: "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;
   sprint_id: string | null;
+  revision_count?: number | null;
+  approved_at?: string | null;
 };
 
 const COLOR_BAR: Record<string, string> = {
@@ -72,7 +74,7 @@ function TasksPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id,revision_count,approved_at")
         .order("due_date", { ascending: true, nullsFirst: false })
         .order("updated_at", { ascending: false });
       return (data ?? []) as TaskRow[];

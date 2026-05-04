@@ -733,6 +733,8 @@ export type Database = {
       }
       tasks: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
           board_position: number
           completed_at: string | null
           created_at: string
@@ -743,12 +745,15 @@ export type Database = {
           is_backlog: boolean
           priority: Database["public"]["Enums"]["task_priority"]
           project_id: string
+          revision_count: number
           sprint_id: string | null
           status: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
           board_position?: number
           completed_at?: string | null
           created_at?: string
@@ -759,12 +764,15 @@ export type Database = {
           is_backlog?: boolean
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id: string
+          revision_count?: number
           sprint_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title: string
           updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
           board_position?: number
           completed_at?: string | null
           created_at?: string
@@ -775,6 +783,7 @@ export type Database = {
           is_backlog?: boolean
           priority?: Database["public"]["Enums"]["task_priority"]
           project_id?: string
+          revision_count?: number
           sprint_id?: string | null
           status?: Database["public"]["Enums"]["task_status"]
           title?: string
@@ -896,7 +905,12 @@ export type Database = {
         | "other"
       sprint_status: "planned" | "active" | "completed"
       task_priority: "low" | "medium" | "high"
-      task_status: "todo" | "in_progress" | "in_review" | "done"
+      task_status:
+        | "todo"
+        | "in_progress"
+        | "in_review"
+        | "awaiting_client"
+        | "done"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1042,7 +1056,13 @@ export const Constants = {
       ],
       sprint_status: ["planned", "active", "completed"],
       task_priority: ["low", "medium", "high"],
-      task_status: ["todo", "in_progress", "in_review", "done"],
+      task_status: [
+        "todo",
+        "in_progress",
+        "in_review",
+        "awaiting_client",
+        "done",
+      ],
     },
   },
 } as const

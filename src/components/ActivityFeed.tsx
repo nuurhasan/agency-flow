@@ -14,6 +14,8 @@ export function humanAction(action: string, meta: Record<string, unknown> | null
       return `assigned a task`;
     case "task.commented":
       return `commented on a task`;
+    case "task.approved":
+      return `approved task "${meta?.title ?? ""}"`;
     case "project.created":
       return `created project "${meta?.name ?? ""}"`;
     case "project.updated":

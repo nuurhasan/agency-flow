@@ -48,12 +48,14 @@ type TaskRow = {
   project_id: string;
   title: string;
   description: string | null;
-  status: "todo" | "in_progress" | "in_review" | "done";
+  status: "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
   updated_at: string;
   sprint_id: string | null;
   is_backlog: boolean;
+  revision_count?: number | null;
+  approved_at?: string | null;
 };
 
 function ProjectDetailPage() {
@@ -201,7 +203,7 @@ function ProjectDetailPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tasks")
-        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id,is_backlog")
+        .select("id,project_id,title,description,status,priority,due_date,updated_at,sprint_id,is_backlog,revision_count,approved_at")
         .eq("project_id", projectId)
         .order("updated_at", { ascending: false });
       return (data ?? []) as TaskRow[];
@@ -480,6 +482,7 @@ function ProjectDetailPage() {
                       <SelectItem value="todo">To Do</SelectItem>
                       <SelectItem value="in_progress">In Progress</SelectItem>
                       <SelectItem value="in_review">In Review</SelectItem>
+                      <SelectItem value="awaiting_client">Awaiting Client</SelectItem>
                       <SelectItem value="done">Done</SelectItem>
                     </SelectContent>
                   </Select>
