@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { TaskTemplatesManager } from "@/components/TaskTemplatesManager";
+import { EmailActivityLog } from "@/components/EmailActivityLog";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -113,6 +114,8 @@ function SettingsPage() {
       </div>
 
       <TaskTemplatesManager />
+
+      <EmailActivityLog />
     </div>
   );
 }
