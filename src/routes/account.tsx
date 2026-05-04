@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Upload, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Input } from "@/components/ui/input";
