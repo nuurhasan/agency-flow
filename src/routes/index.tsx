@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { AvatarStack } from "@/components/ui/avatar-stack";
+import { MyDayInbox } from "@/components/MyDayInbox";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
@@ -203,6 +204,8 @@ function Dashboard() {
         <Counter to="/tasks" icon={<TrendingUp />} label="Tasks in progress" value={counters?.inProgress ?? 0} tone="sky" />
         <Counter to="/tasks" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} tone="blush" />
       </div>
+
+      <MyDayInbox />
 
       <div>
         <div className="mb-3 flex items-center justify-between">
