@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { statusLabel, statusPillClasses } from "@/lib/pastel";
 
-export type TaskStatus = "todo" | "in_progress" | "in_review" | "done";
+export type TaskStatus = "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
 
-const STATUS_OPTIONS: TaskStatus[] = ["todo", "in_progress", "in_review", "done"];
+const STATUS_OPTIONS: TaskStatus[] = ["todo", "in_progress", "in_review", "awaiting_client", "done"];
 
 interface Props {
   status: TaskStatus;
