@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { priorityClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { AvatarStack } from "@/components/ui/avatar-stack";
+import { TaskComments } from "@/components/TaskComments";
 
 export interface TaskDetail {
   id: string;
@@ -31,6 +32,11 @@ interface Props {
   assignees?: { id: string; name: string }[];
   /** Optional project name for display */
   projectName?: string;
+  /**
+   * All teammates available for @mention autocomplete in the comments
+   * composer. When omitted, the dialog falls back to fetching profiles itself.
+   */
+  members?: { id: string; name: string }[];
   onEdit: () => void;
 }
 
@@ -40,6 +46,7 @@ export function TaskDetailDialog({
   task,
   assignees,
   projectName,
+  members,
   onEdit,
 }: Props) {
   // Fetch assignees if not provided
@@ -62,13 +69,28 @@ export function TaskDetailDialog({
     },
   });
 
+  // Fallback fetch of all profiles for @mention autocomplete when the caller
+  // didn't supply a members list. Only fires when the dialog is open.
+  const { data: fetchedMembers = [] } = useQuery({
+    queryKey: ["task-detail-members"],
+    enabled: open && !members,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id,name")
+        .order("name");
+      return data ?? [];
+    },
+  });
+
   const people = assignees ?? fetchedAssignees;
+  const mentionMembers = members ?? fetchedMembers;
 
   if (!task) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="pr-8 text-xl leading-snug">{task.title}</DialogTitle>
         </DialogHeader>
@@ -145,6 +167,15 @@ export function TaskDetailDialog({
             ) : (
               <p className="text-sm italic text-muted-foreground">No description provided.</p>
             )}
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <TaskComments
+              taskId={task.id}
+              projectId={task.project_id}
+              taskTitle={task.title}
+              members={mentionMembers}
+            />
           </div>
         </div>
 
