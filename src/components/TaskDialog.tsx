@@ -37,11 +37,12 @@ import {
 } from "@/components/ui/select";
 import { invalidateTaskData } from "@/lib/queryInvalidation";
 
-const STATUSES = ["todo", "in_progress", "in_review", "done"] as const;
+const STATUSES = ["todo", "in_progress", "in_review", "awaiting_client", "done"] as const;
 const STATUS_LABELS: Record<(typeof STATUSES)[number], string> = {
   todo: "To Do",
   in_progress: "In Progress",
   in_review: "In Review",
+  awaiting_client: "Awaiting Client",
   done: "Done",
 };
 const PRIORITIES = ["low", "medium", "high"] as const;
