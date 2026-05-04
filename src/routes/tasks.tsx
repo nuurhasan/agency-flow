@@ -39,6 +39,8 @@ type TaskRow = {
   due_date: string | null;
   updated_at: string;
   sprint_id: string | null;
+  revision_count?: number | null;
+  approved_at?: string | null;
 };
 
 const COLOR_BAR: Record<string, string> = {
