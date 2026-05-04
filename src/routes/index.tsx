@@ -205,6 +205,8 @@ function Dashboard() {
         <Counter to="/tasks" icon={<CheckCircle2 />} label="Completed (7d)" value={counters?.completed ?? 0} tone="blush" />
       </div>
 
+      <MyDayInbox />
+
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-xl font-semibold">Projects</h2>
