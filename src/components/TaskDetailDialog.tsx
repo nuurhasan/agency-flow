@@ -21,7 +21,7 @@ export interface TaskDetail {
   project_id: string;
   title: string;
   description: string | null;
-  status: "todo" | "in_progress" | "in_review" | "done";
+  status: "todo" | "in_progress" | "in_review" | "awaiting_client" | "done";
   priority: "low" | "medium" | "high";
   due_date: string | null;
 }
