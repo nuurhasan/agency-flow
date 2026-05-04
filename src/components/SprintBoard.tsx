@@ -213,6 +213,7 @@ export function SprintBoard({
       todo: [],
       in_progress: [],
       in_review: [],
+      awaiting_client: [],
       done: [],
     };
     for (const t of sprintTasks) {
