@@ -224,6 +224,17 @@ function ProjectsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              type="button"
+              variant={groupByClient ? "default" : "outline"}
+              size="sm"
+              onClick={() => setGroupByClient((v) => !v)}
+              className="rounded-full"
+              title="Group by client"
+            >
+              {groupByClient ? <Users2 className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+              {groupByClient ? "By client" : "Grid"}
+            </Button>
           </div>
 
           {filtered.length === 0 ? (
@@ -233,7 +244,49 @@ function ProjectsPage() {
                 Try clearing filters, or create a new project to get started.
               </p>
             </div>
+          ) : groupByClient ? (
+            <div className="space-y-6">
+              {Array.from(
+                filtered.reduce<Map<string, typeof filtered>>((acc, p) => {
+                  const key = p.client_name?.trim() || "No client";
+                  const arr = acc.get(key) ?? [];
+                  arr.push(p);
+                  acc.set(key, arr);
+                  return acc;
+                }, new Map()),
+              )
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([client, group]) => {
+                  const allTasksInGroup = group.flatMap((p) => tasksByProject[p.id] ?? []);
+                  const totalG = allTasksInGroup.length;
+                  const doneG = allTasksInGroup.filter((t) => t.status === "done").length;
+                  const pctG = totalG ? Math.round((doneG / totalG) * 100) : 0;
+                  return (
+                    <section key={client} className="space-y-3">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+                        <h2 className="font-display text-lg font-semibold tracking-tight">
+                          {client}
+                          <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
+                            ({group.length} project{group.length === 1 ? "" : "s"})
+                          </span>
+                        </h2>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {doneG}/{totalG} tasks · {pctG}%
+                        </span>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {group.map((p, idx) => renderCard(p, idx))}
+                      </div>
+                    </section>
+                  );
+                })}
+            </div>
           ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((p, idx) => renderCard(p, idx))}
+            </div>
+          )}
+        </TabsContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((p, idx) => {
                 const allTasks = tasksByProject[p.id] ?? [];
