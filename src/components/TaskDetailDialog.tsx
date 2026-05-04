@@ -92,8 +92,41 @@ export function TaskDetailDialog({
 
   const people = assignees ?? fetchedAssignees;
   const mentionMembers = members ?? fetchedMembers;
+  const { user } = useAuth();
+  const qc = useQueryClient();
+
+  const approveMutation = useMutation({
+    mutationFn: async () => {
+      if (!task) return;
+      const { error } = await supabase
+        .from("tasks")
+        .update({
+          status: "done",
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id ?? null,
+        })
+        .eq("id", task.id);
+      if (error) throw error;
+      if (user?.id) {
+        await supabase.from("activity_log").insert({
+          actor_id: user.id,
+          project_id: task.project_id,
+          task_id: task.id,
+          action: "task.approved",
+          meta: { title: task.title },
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success("Task approved");
+      invalidateTaskData(qc, task?.project_id);
+      onOpenChange(false);
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to approve"),
+  });
 
   if (!task) return null;
+  const revision = task.revision_count ?? 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
