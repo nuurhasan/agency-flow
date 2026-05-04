@@ -68,13 +68,16 @@ export const Route = createFileRoute('/api/public/hooks/process-notifications')(
           return Response.json({ processed: 0 })
         }
 
-        // 2. Atomically claim them
+        // 2. Atomically claim them by stamping sent_at as a claim marker.
+        // Concurrent runs will only see rows where sent_at IS NULL.
         const ids = pending.map((r) => r.id)
+        const claimStamp = new Date().toISOString()
         const { data: claimed, error: claimErr } = await supabase
           .from('notification_outbox')
-          .update({ status: 'processing' })
+          .update({ sent_at: claimStamp })
           .in('id', ids)
           .eq('status', 'pending')
+          .is('sent_at', null)
           .select('id, user_id, event_type, payload, dedup_key')
 
         if (claimErr) {
