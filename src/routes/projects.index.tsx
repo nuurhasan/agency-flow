@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as React from "react";
-import { Activity, Archive, FolderKanban, Plus, Search, Zap } from "lucide-react";
+import { Activity, Archive, FolderKanban, LayoutGrid, Plus, Search, Users2, Zap } from "lucide-react";
 import { ProjectDialog } from "@/components/ProjectDialog";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +34,15 @@ function ProjectsPage() {
   const [q, setQ] = React.useState("");
   const [status, setStatus] = React.useState<string>("all");
   const [service, setService] = React.useState<string>("all");
+  const [groupByClient, setGroupByClient] = React.useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("turgon.projects.groupByClient") === "1";
+  });
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("turgon.projects.groupByClient", groupByClient ? "1" : "0");
+    }
+  }, [groupByClient]);
 
   const toggleDone = useMutation({
     mutationFn: async (t: { id: string; project_id: string; title: string; status: string }) => {
@@ -152,6 +161,81 @@ function ProjectsPage() {
     return true;
   });
 
+  type ProjectItem = NonNullable<typeof projects>[number];
+  const renderCard = (p: ProjectItem, idx: number) => {
+    const allTasks = tasksByProject[p.id] ?? [];
+    const ts = allTasks.slice(0, 3);
+    const total = allTasks.length;
+    const done = allTasks.filter((t) => t.status === "done").length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const people = taskData?.projectPeopleByProject?.[p.id] ?? [];
+    const sprint = activeSprintByProject.get(p.id);
+    return (
+      <div
+        key={p.id}
+        style={{ animationDelay: `${idx * 40}ms` }}
+        className="group gradient-sheen relative animate-fade-in-up overflow-hidden rounded-3xl border border-border/60 bg-gradient-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-glow hover:border-primary/30"
+      >
+        <Link to="/projects/$projectId" params={{ projectId: p.id }} className="flex items-start gap-3">
+          <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold ring-0 transition-all group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-offset-card ${pastelClasses(p.color)} ring-current/30`}>
+            {p.name.charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="truncate font-semibold">{p.name}</p>
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">{p.service_type}</span>
+            </div>
+            <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+              <p className="truncate text-xs text-muted-foreground">{p.client_name || "No client"}</p>
+              {p.status !== "active" && (
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${statusPillClasses(p.status)}`}>{statusLabel(p.status)}</span>
+              )}
+              {sprint && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-mint px-1.5 py-0.5 text-[10px] font-medium text-mint-ink">
+                  <Zap className="h-2.5 w-2.5" /> {sprint.name}
+                </span>
+              )}
+            </div>
+          </div>
+        </Link>
+        <div className="mt-4 flex items-center gap-3">
+          <Progress value={pct} className="h-1.5 flex-1" />
+          <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground">{done}/{total}</span>
+          <AvatarStack people={people} max={3} size="xs" />
+        </div>
+        <div className="mt-3 space-y-0.5">
+          {ts.length === 0 ? (
+            <p className="px-1.5 py-1 text-xs italic text-muted-foreground">No tasks yet</p>
+          ) : (
+            ts.map((t) => {
+              const tdone = t.status === "done";
+              return (
+                <div key={t.id} className={`group/task relative flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm transition-all ${tdone ? "opacity-60" : ""}`}>
+                  <span className="pointer-events-none absolute inset-0 -z-10 rounded-lg bg-muted/50 opacity-0 transition-all duration-200 group-hover/task:opacity-100" />
+                  <Checkbox
+                    checked={tdone}
+                    onCheckedChange={() => toggleDone.mutate({ id: t.id, project_id: t.project_id, title: t.title, status: t.status })}
+                    aria-label={tdone ? "Mark as not done" : "Mark as done"}
+                    className="h-4 w-4 rounded"
+                  />
+                  <span className={`min-w-0 flex-1 truncate ${tdone ? "text-muted-foreground line-through" : ""}`}>{t.title}</span>
+                  {taskData?.assigneesByTask[t.id]?.[0] && (
+                    <span className="hidden shrink-0 text-[11px] text-muted-foreground sm:inline">
+                      {taskData.assigneesByTask[t.id][0].split(" ")[0]}
+                    </span>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+        {p.due_date && (
+          <p className="mt-3 text-[11px] text-muted-foreground">Due {new Date(p.due_date).toLocaleDateString()}</p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="hero-gradient rounded-3xl border border-border p-6 sm:p-8">
@@ -215,6 +299,17 @@ function ProjectsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              type="button"
+              variant={groupByClient ? "default" : "outline"}
+              size="sm"
+              onClick={() => setGroupByClient((v) => !v)}
+              className="rounded-full"
+              title="Group by client"
+            >
+              {groupByClient ? <Users2 className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+              {groupByClient ? "By client" : "Grid"}
+            </Button>
           </div>
 
           {filtered.length === 0 ? (
@@ -224,115 +319,46 @@ function ProjectsPage() {
                 Try clearing filters, or create a new project to get started.
               </p>
             </div>
+          ) : groupByClient ? (
+            <div className="space-y-6">
+              {Array.from(
+                filtered.reduce<Map<string, typeof filtered>>((acc, p) => {
+                  const key = p.client_name?.trim() || "No client";
+                  const arr = acc.get(key) ?? [];
+                  arr.push(p);
+                  acc.set(key, arr);
+                  return acc;
+                }, new Map()),
+              )
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([client, group]) => {
+                  const allTasksInGroup = group.flatMap((p) => tasksByProject[p.id] ?? []);
+                  const totalG = allTasksInGroup.length;
+                  const doneG = allTasksInGroup.filter((t) => t.status === "done").length;
+                  const pctG = totalG ? Math.round((doneG / totalG) * 100) : 0;
+                  return (
+                    <section key={client} className="space-y-3">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+                        <h2 className="font-display text-lg font-semibold tracking-tight">
+                          {client}
+                          <span className="ml-2 text-sm font-normal text-muted-foreground tabular-nums">
+                            ({group.length} project{group.length === 1 ? "" : "s"})
+                          </span>
+                        </h2>
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {doneG}/{totalG} tasks · {pctG}%
+                        </span>
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {group.map((p, idx) => renderCard(p, idx))}
+                      </div>
+                    </section>
+                  );
+                })}
+            </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((p, idx) => {
-                const allTasks = tasksByProject[p.id] ?? [];
-                const ts = allTasks.slice(0, 3);
-                const total = allTasks.length;
-                const done = allTasks.filter((t) => t.status === "done").length;
-                const pct = total ? Math.round((done / total) * 100) : 0;
-                const people = taskData?.projectPeopleByProject?.[p.id] ?? [];
-                const sprint = activeSprintByProject.get(p.id);
-                return (
-                  <div
-                    key={p.id}
-                    style={{ animationDelay: `${idx * 40}ms` }}
-                    className="group gradient-sheen relative animate-fade-in-up overflow-hidden rounded-3xl border border-border/60 bg-gradient-card p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:shadow-glow hover:border-primary/30"
-                  >
-                    <Link
-                      to="/projects/$projectId"
-                      params={{ projectId: p.id }}
-                      className="flex items-start gap-3"
-                    >
-                      <span
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl font-bold ring-0 transition-all group-hover:ring-2 group-hover:ring-offset-2 group-hover:ring-offset-card ${pastelClasses(p.color)} ring-current/30`}
-                      >
-                        {p.name.charAt(0).toUpperCase()}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="truncate font-semibold">{p.name}</p>
-                          <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                            {p.service_type}
-                          </span>
-                        </div>
-                        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                          <p className="truncate text-xs text-muted-foreground">
-                            {p.client_name || "No client"}
-                          </p>
-                          {p.status !== "active" && (
-                            <span
-                              className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${statusPillClasses(p.status)}`}
-                            >
-                              {statusLabel(p.status)}
-                            </span>
-                          )}
-                          {sprint && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-mint px-1.5 py-0.5 text-[10px] font-medium text-mint-ink">
-                              <Zap className="h-2.5 w-2.5" /> {sprint.name}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </Link>
-
-                    {/* Progress */}
-                    <div className="mt-4 flex items-center gap-3">
-                      <Progress value={pct} className="h-1.5 flex-1" />
-                      <span className="shrink-0 text-[11px] font-medium tabular-nums text-muted-foreground">
-                        {done}/{total}
-                      </span>
-                      <AvatarStack people={people} max={3} size="xs" />
-                    </div>
-
-                    <div className="mt-3 space-y-0.5">
-                      {ts.length === 0 ? (
-                        <p className="px-1.5 py-1 text-xs italic text-muted-foreground">No tasks yet</p>
-                      ) : (
-                        ts.map((t) => {
-                          const tdone = t.status === "done";
-                          return (
-                            <div
-                              key={t.id}
-                              className={`group/task relative flex items-center gap-2 rounded-lg px-1.5 py-1 text-sm transition-all ${tdone ? "opacity-60" : ""}`}
-                            >
-                              <span className="pointer-events-none absolute inset-0 -z-10 rounded-lg bg-muted/50 opacity-0 transition-all duration-200 group-hover/task:opacity-100" />
-                              <Checkbox
-                                checked={tdone}
-                                onCheckedChange={() =>
-                                  toggleDone.mutate({
-                                    id: t.id,
-                                    project_id: t.project_id,
-                                    title: t.title,
-                                    status: t.status,
-                                  })
-                                }
-                                aria-label={tdone ? "Mark as not done" : "Mark as done"}
-                                className="h-4 w-4 rounded"
-                              />
-                              <span className={`min-w-0 flex-1 truncate ${tdone ? "text-muted-foreground line-through" : ""}`}>
-                                {t.title}
-                              </span>
-                              {taskData?.assigneesByTask[t.id]?.[0] && (
-                                <span className="hidden shrink-0 text-[11px] text-muted-foreground sm:inline">
-                                  {taskData.assigneesByTask[t.id][0].split(" ")[0]}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-
-                    {p.due_date && (
-                      <p className="mt-3 text-[11px] text-muted-foreground">
-                        Due {new Date(p.due_date).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
+              {filtered.map((p, idx) => renderCard(p, idx))}
             </div>
           )}
         </TabsContent>

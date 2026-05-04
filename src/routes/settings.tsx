@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { TaskTemplatesManager } from "@/components/TaskTemplatesManager";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsPage,
@@ -110,6 +111,8 @@ function SettingsPage() {
           </Button>
         </div>
       </div>
+
+      <TaskTemplatesManager />
     </div>
   );
 }
