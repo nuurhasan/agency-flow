@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { AvatarStack } from "@/components/ui/avatar-stack";
+import { MyDayInbox } from "@/components/MyDayInbox";
 
 export const Route = createFileRoute("/")({
   component: Dashboard,
