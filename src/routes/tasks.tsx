@@ -426,6 +426,7 @@ function TasksPage() {
         onOpenChange={setViewOpen}
         task={viewingTask}
         projectName={viewingTask ? projectById.get(viewingTask.project_id)?.name : undefined}
+        members={members}
         assignees={
           viewingTask
             ? (assigneeMap[viewingTask.id] ?? [])
