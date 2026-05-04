@@ -13,6 +13,8 @@ import {
 import { priorityClasses, statusLabel, statusPillClasses } from "@/lib/pastel";
 import { AvatarStack } from "@/components/ui/avatar-stack";
 import { TaskComments } from "@/components/TaskComments";
+import { TaskChecklist } from "@/components/TaskChecklist";
+import { TaskLinks } from "@/components/TaskLinks";
 
 export interface TaskDetail {
   id: string;
@@ -167,6 +169,14 @@ export function TaskDetailDialog({
             ) : (
               <p className="text-sm italic text-muted-foreground">No description provided.</p>
             )}
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <TaskChecklist taskId={task.id} />
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <TaskLinks taskId={task.id} />
           </div>
 
           <div className="border-t border-border pt-4">
