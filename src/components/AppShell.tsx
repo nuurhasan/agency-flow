@@ -259,6 +259,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 pt-8 pb-24 md:px-8 md:pb-32">
           {children}
         </main>
+        <QuickAddTask />
       </div>
     </div>
   );
