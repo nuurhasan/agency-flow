@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import gloriaLogo from "@/assets/gloria9-logo.png";
+import { QuickAddTask } from "@/components/QuickAddTask";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
