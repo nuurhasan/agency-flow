@@ -172,6 +172,14 @@ export function TaskDetailDialog({
           </div>
 
           <div className="border-t border-border pt-4">
+            <TaskChecklist taskId={task.id} />
+          </div>
+
+          <div className="border-t border-border pt-4">
+            <TaskLinks taskId={task.id} />
+          </div>
+
+          <div className="border-t border-border pt-4">
             <TaskComments
               taskId={task.id}
               projectId={task.project_id}
