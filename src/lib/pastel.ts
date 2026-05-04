@@ -52,6 +52,8 @@ export function statusPillClasses(status: string): string {
     case "on_hold":
     case "in_review":
       return "bg-butter text-butter-ink";
+    case "awaiting_client":
+      return "bg-blush text-blush-ink";
     case "completed":
     case "done":
       return "bg-mint text-mint-ink";
