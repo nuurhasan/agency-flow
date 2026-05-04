@@ -48,6 +48,59 @@ function AccountPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
   });
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const MIN_DIM = 200;
+  const MAX_BYTES = 2 * 1024 * 1024;
+  const ACCEPT = ["image/jpeg", "image/png", "image/webp"];
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user) throw new Error("Not signed in");
+      if (!ACCEPT.includes(file.type)) throw new Error("Use a JPG, PNG, or WebP image");
+      if (file.size > MAX_BYTES) throw new Error("Image must be under 2 MB");
+
+      const dims = await new Promise<{ w: number; h: number }>((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new window.Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Could not read image"));
+        };
+        img.src = url;
+      });
+      if (dims.w < MIN_DIM || dims.h < MIN_DIM) {
+        throw new Error(`Image must be at least ${MIN_DIM}×${MIN_DIM}px`);
+      }
+
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
+      if (upErr) throw upErr;
+
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = `${pub.publicUrl}?v=${Date.now()}`;
+
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+      if (updErr) throw updErr;
+      return publicUrl;
+    },
+    onSuccess: async (url) => {
+      setAvatarUrl(url);
+      toast.success("Profile picture updated");
+      await refresh();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Upload failed"),
+  });
+
   const updateEmail = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.auth.updateUser({ email: email.trim() });
