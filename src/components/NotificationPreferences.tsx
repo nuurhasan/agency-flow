@@ -197,7 +197,44 @@ export function NotificationPreferences() {
         </div>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-full"
+          disabled={!user?.email}
+          onClick={async () => {
+            try {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session) throw new Error("Please sign in again");
+              const res = await fetch("/lovable/email/transactional/send", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({
+                  templateName: "test-notification",
+                  recipientEmail: user!.email,
+                  idempotencyKey: `test-${user!.id}-${Date.now()}`,
+                  templateData: {
+                    recipient_name: (user!.user_metadata as any)?.name,
+                    sent_at: new Date().toISOString(),
+                  },
+                }),
+              });
+              const json = await res.json().catch(() => ({}));
+              if (!res.ok || json.success === false) {
+                throw new Error(json.error || json.reason || "Failed to send");
+              }
+              toast.success(`Test email queued to ${user!.email}`);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Failed to send test email");
+            }
+          }}
+        >
+          Send test email
+        </Button>
         <Button
           onClick={() => save.mutate()}
           disabled={save.isPending}
