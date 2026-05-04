@@ -78,6 +78,16 @@ const COLUMNS: Array<{
     over: "border-butter-ink/60 ring-2 ring-butter-ink/40 shadow-glow-cta",
   },
   {
+    id: "awaiting_client",
+    label: "Awaiting Client",
+    tint: "bg-blush/30",
+    border: "border-blush-ink/25",
+    headerText: "text-blush-ink",
+    countBg: "bg-white/70 text-blush-ink shadow-sm",
+    dropZone: "border-blush-ink/30 text-blush-ink/80 bg-white/30",
+    over: "border-blush-ink/60 ring-2 ring-blush-ink/40 shadow-glow-cta",
+  },
+  {
     id: "done",
     label: "Done",
     tint: "bg-gradient-done",
