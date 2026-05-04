@@ -8,7 +8,7 @@ interface Props { task_title?: string; old_status?: string; new_status?: string;
 const TaskStatusEmail = ({ task_title = 'A task', old_status, new_status, project_id }: Props) => (
   <Html lang="en">
     <Head />
-    <Preview>{task_title} → {new_status}</Preview>
+    <Preview>{`${task_title} → ${new_status ?? 'updated'}`}</Preview>
     <Body style={styles.main}>
       <Container style={styles.container}>
         <Text style={styles.brand}>{APP_NAME}</Text>
