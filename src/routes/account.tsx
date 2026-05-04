@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import * as React from "react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Upload, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,59 @@ function AccountPage() {
       await refresh();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const MIN_DIM = 200;
+  const MAX_BYTES = 2 * 1024 * 1024;
+  const ACCEPT = ["image/jpeg", "image/png", "image/webp"];
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (!user) throw new Error("Not signed in");
+      if (!ACCEPT.includes(file.type)) throw new Error("Use a JPG, PNG, or WebP image");
+      if (file.size > MAX_BYTES) throw new Error("Image must be under 2 MB");
+
+      const dims = await new Promise<{ w: number; h: number }>((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new window.Image();
+        img.onload = () => {
+          URL.revokeObjectURL(url);
+          resolve({ w: img.naturalWidth, h: img.naturalHeight });
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Could not read image"));
+        };
+        img.src = url;
+      });
+      if (dims.w < MIN_DIM || dims.h < MIN_DIM) {
+        throw new Error(`Image must be at least ${MIN_DIM}×${MIN_DIM}px`);
+      }
+
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
+      if (upErr) throw upErr;
+
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = `${pub.publicUrl}?v=${Date.now()}`;
+
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+      if (updErr) throw updErr;
+      return publicUrl;
+    },
+    onSuccess: async (url) => {
+      setAvatarUrl(url);
+      toast.success("Profile picture updated");
+      await refresh();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Upload failed"),
   });
 
   const updateEmail = useMutation({
@@ -98,36 +151,53 @@ function AccountPage() {
       {/* Profile */}
       <section className="space-y-5 rounded-3xl border border-border bg-card p-6 shadow-soft">
         <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16 border border-border">
+          <Avatar className="h-20 w-20 border border-border">
             {avatarUrl ? <AvatarImage src={avatarUrl} alt={name || "Avatar"} /> : null}
             <AvatarFallback className="bg-peach text-peach-ink text-base font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div>
+          <div className="flex-1">
             <p className="font-display text-lg font-semibold">{profile?.name || "—"}</p>
             <p className="text-sm text-muted-foreground">
               {role ? role.charAt(0).toUpperCase() + role.slice(1) : "No role"}
             </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadAvatar.mutate(file);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadAvatar.isPending}
+              >
+                {uploadAvatar.isPending ? (
+                  <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> Uploading…</>
+                ) : (
+                  <><Upload className="mr-2 h-3.5 w-3.5" /> Upload picture</>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                JPG, PNG or WebP • min 200×200px • max 2 MB
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="name">Display name</Label>
           <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="avatar">Avatar URL</Label>
-          <Input
-            id="avatar"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://…"
-          />
-          <p className="text-xs text-muted-foreground">
-            Paste a link to an image. Leave empty to use your initials.
-          </p>
         </div>
 
         <div className="flex justify-end">
