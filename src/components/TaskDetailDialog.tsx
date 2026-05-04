@@ -1,7 +1,9 @@
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Calendar, Flag, FolderKanban, Pencil, User2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Calendar, CheckCircle2, Flag, FolderKanban, Pencil, RefreshCw, User2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +17,7 @@ import { AvatarStack } from "@/components/ui/avatar-stack";
 import { TaskComments } from "@/components/TaskComments";
 import { TaskChecklist } from "@/components/TaskChecklist";
 import { TaskLinks } from "@/components/TaskLinks";
+import { invalidateTaskData } from "@/lib/queryInvalidation";
 
 export interface TaskDetail {
   id: string;
