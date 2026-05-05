@@ -84,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     .slice(0, 2)
     .toUpperCase();
 
-  const sidebarWidth = collapsed ? "4.5rem" : "16rem";
+  const sidebarWidth = collapsed ? "4.5rem" : "12rem";
 
   return (
     <div className="min-h-screen bg-background">
