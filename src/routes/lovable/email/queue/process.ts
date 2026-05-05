@@ -6,7 +6,7 @@ const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
-const APP_URL = 'https://sparkle-work-flow.lovable.app'
+const APP_URL = 'https://turgon.gloria9.co.uk'
 
 interface BrevoError {
   status: number
@@ -14,7 +14,6 @@ interface BrevoError {
   retryAfterSeconds: number | null
 }
 
-// Parse a "Name <email@x>" string into Brevo's { name, email } format.
 function parseFrom(from: string): { name?: string; email: string } {
   const m = from.match(/^\s*(.*?)\s*<([^>]+)>\s*$/)
   if (m) return { name: m[1] || undefined, email: m[2] }
@@ -23,7 +22,7 @@ function parseFrom(from: string): { name?: string; email: string } {
 
 async function sendBrevoEmail(
   apiKey: string,
-  payload: Record<string, any>,
+  payload: any,
   unsubscribeUrl: string
 ): Promise<void> {
   const fromParsed = parseFrom(payload.from as string)
@@ -86,7 +85,7 @@ function getRetryAfterSeconds(error: unknown): number {
 async function moveToDlq(
   supabase: any,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
+  msg: { msg_id: number; message: any },
   reason: string
 ): Promise<void> {
   const payload = msg.message
@@ -96,13 +95,13 @@ async function moveToDlq(
     recipient_email: payload.to,
     status: 'dlq',
     error_message: reason,
-  })
-  const { error } = await supabase.rpc('move_to_dlq', {
+  } as any)
+  const { error } = await supabase.rpc('move_to_dlq' as any, {
     source_queue: queue,
     dlq_name: `${queue}_dlq`,
     message_id: msg.msg_id,
     payload,
-  })
+  } as any)
   if (error) {
     console.error('Failed to move message to DLQ', { queue, msg_id: msg.msg_id, reason, error })
   }
@@ -117,7 +116,11 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
         if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
-          console.error('Missing required environment variables')
+          console.error('Missing required environment variables', {
+            hasApiKey: !!apiKey,
+            hasUrl: !!supabaseUrl,
+            hasServiceKey: !!supabaseServiceKey,
+          })
           return Response.json({ error: 'Server configuration error' }, { status: 500 })
         }
 
@@ -163,39 +166,10 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
           }
           if (!messages?.length) continue
 
-          const messageIds = Array.from(
-            new Set(
-              messages
-                .map((msg: any) =>
-                  msg?.message?.message_id && typeof msg.message.message_id === 'string'
-                    ? msg.message.message_id
-                    : null
-                )
-                .filter((id: string | null): id is string => Boolean(id))
-            )
-          )
-          const failedAttemptsByMessageId = new Map<string, number>()
-          if (messageIds.length > 0) {
-            const { data: failedRows } = await supabase
-              .from('email_send_log')
-              .select('message_id')
-              .in('message_id', messageIds)
-              .eq('status', 'failed')
-            for (const row of failedRows ?? []) {
-              const id = row?.message_id
-              if (typeof id === 'string' && id) {
-                failedAttemptsByMessageId.set(id, (failedAttemptsByMessageId.get(id) ?? 0) + 1)
-              }
-            }
-          }
-
           for (let i = 0; i < messages.length; i++) {
             const msg = messages[i]
             const payload = msg.message
-            const failedAttempts =
-              payload?.message_id && typeof payload.message_id === 'string'
-                ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
-                : msg.read_ct ?? 0
+            const failedAttempts = msg.read_ct ?? 0
 
             const queuedAt = payload.queued_at ?? msg.enqueued_at
             if (queuedAt) {
@@ -203,12 +177,14 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
               const maxAgeMs = ttlMinutes[queue] * 60 * 1000
               if (ageMs > maxAgeMs) {
                 await moveToDlq(supabase, queue, msg, `TTL exceeded (${ttlMinutes[queue]} minutes)`)
+                await supabase.rpc('delete_email', { queue_name: queue, message_id: msg.msg_id })
                 continue
               }
             }
 
             if (failedAttempts >= MAX_RETRIES) {
               await moveToDlq(supabase, queue, msg, `Max retries (${MAX_RETRIES}) exceeded`)
+              await supabase.rpc('delete_email', { queue_name: queue, message_id: msg.msg_id })
               continue
             }
 
@@ -228,8 +204,8 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
 
             try {
               const unsubscribeUrl = payload.unsubscribe_token
-                ? `${APP_URL}/unsubscribe?token=${payload.unsubscribe_token}`
-                : `${APP_URL}/unsubscribe`
+                ? `${APP_URL}/email/unsubscribe?token=${payload.unsubscribe_token}`
+                : `${APP_URL}/email/unsubscribe`
 
               await sendBrevoEmail(apiKey, payload, unsubscribeUrl)
 
@@ -238,15 +214,12 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
                 template_name: payload.label || queue,
                 recipient_email: payload.to,
                 status: 'sent',
-              })
+              } as any)
 
-              const { error: delError } = await supabase.rpc('delete_email', {
+              await supabase.rpc('delete_email', {
                 queue_name: queue,
                 message_id: msg.msg_id,
               })
-              if (delError) {
-                console.error('Failed to delete sent message', { queue, msg_id: msg.msg_id, error: delError })
-              }
               totalProcessed++
             } catch (error) {
               const errorMsg = error instanceof Error ? error.message : (error as any)?.message ?? String(error)
@@ -264,20 +237,21 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
                   recipient_email: payload.to,
                   status: 'failed',
                   error_message: String(errorMsg).slice(0, 1000),
-                })
+                } as any)
                 const retryAfterSecs = getRetryAfterSeconds(error)
                 await supabase
                   .from('email_send_state')
                   .update({
                     retry_after_until: new Date(Date.now() + retryAfterSecs * 1000).toISOString(),
                     updated_at: new Date().toISOString(),
-                  })
+                  } as any)
                   .eq('id', 1)
                 return Response.json({ processed: totalProcessed, stopped: 'rate_limited' })
               }
 
               if (isForbidden(error)) {
                 await moveToDlq(supabase, queue, msg, 'Brevo auth failed (check BREVO_API_KEY)')
+                await supabase.rpc('delete_email', { queue_name: queue, message_id: msg.msg_id })
                 return Response.json({ processed: totalProcessed, stopped: 'auth_failed' })
               }
 
@@ -287,10 +261,7 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
                 recipient_email: payload.to,
                 status: 'failed',
                 error_message: String(errorMsg).slice(0, 1000),
-              })
-              if (payload?.message_id && typeof payload.message_id === 'string') {
-                failedAttemptsByMessageId.set(payload.message_id, failedAttempts + 1)
-              }
+              } as any)
             }
 
             if (i < messages.length - 1) {
