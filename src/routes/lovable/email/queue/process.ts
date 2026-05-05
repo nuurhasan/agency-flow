@@ -14,6 +14,10 @@ interface BrevoError {
   retryAfterSeconds: number | null
 }
 
+interface BrevoSuccess {
+  messageId?: string
+}
+
 function parseFrom(from: string): { name?: string; email: string } {
   const m = from.match(/^\s*(.*?)\s*<([^>]+)>\s*$/)
   if (m) return { name: m[1] || undefined, email: m[2] }
@@ -24,7 +28,7 @@ async function sendBrevoEmail(
   apiKey: string,
   payload: any,
   unsubscribeUrl: string
-): Promise<void> {
+): Promise<BrevoSuccess | null> {
   const fromParsed = parseFrom(payload.from as string)
   const body: Record<string, any> = {
     sender: fromParsed,
@@ -62,6 +66,14 @@ async function sendBrevoEmail(
       retryAfterSeconds,
     }
     throw err
+  }
+
+  const text = await res.text().catch(() => '')
+  if (!text) return null
+  try {
+    return JSON.parse(text) as BrevoSuccess
+  } catch {
+    return null
   }
 }
 
@@ -207,13 +219,18 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
                 ? `${APP_URL}/email/unsubscribe?token=${payload.unsubscribe_token}`
                 : `${APP_URL}/email/unsubscribe`
 
-              await sendBrevoEmail(apiKey, payload, unsubscribeUrl)
+              const brevoResponse = await sendBrevoEmail(apiKey, payload, unsubscribeUrl)
 
               await supabase.from('email_send_log').insert({
                 message_id: payload.message_id,
                 template_name: payload.label || queue,
                 recipient_email: payload.to,
                 status: 'sent',
+                metadata: {
+                  provider: 'brevo',
+                  provider_message_id: brevoResponse?.messageId ?? null,
+                  accepted_at: new Date().toISOString(),
+                },
               } as any)
 
               await supabase.rpc('delete_email', {
