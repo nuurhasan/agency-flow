@@ -15,7 +15,7 @@ interface EmailLogRow {
   recipient_email: string;
   status: string;
   error_message: string | null;
-  metadata: { provider_message_id?: string | null } | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -51,7 +51,7 @@ export function EmailActivityLog() {
     if (user?.email && !recipient) setRecipient(user.email);
   }, [recipient, user?.email]);
 
-  const { data, isLoading } = useQuery<EmailLogRow[]>({
+  const { data = [], isLoading } = useQuery<EmailLogRow[], Error>({
     queryKey: ["email-send-log"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,7 +62,7 @@ export function EmailActivityLog() {
       if (error) throw error;
       // Dedup by message_id, keep latest row
       const seen = new Set<string>();
-      return (data ?? []).filter((r) => {
+      return ((data ?? []) as EmailLogRow[]).filter((r) => {
         if (!r.message_id) return true;
         if (seen.has(r.message_id)) return false;
         seen.add(r.message_id);
