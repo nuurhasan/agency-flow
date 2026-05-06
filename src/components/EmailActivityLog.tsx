@@ -125,9 +125,87 @@ export function EmailActivityLog() {
         </div>
       </div>
 
+      <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Input
+            value={recipient}
+            onChange={(event) => setRecipient(event.target.value)}
+            placeholder="name@example.com"
+            className="sm:flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full"
+            onClick={() => diagnostics.refetch()}
+            disabled={diagnostics.isFetching}
+          >
+            {diagnostics.isFetching ? "Checking…" : "Run diagnostics"}
+          </Button>
+          <Button
+            type="button"
+            className="rounded-full"
+            onClick={() => sendDiagnostic.mutate()}
+            disabled={sendDiagnostic.isPending}
+          >
+            {sendDiagnostic.isPending ? "Sending…" : "Send diagnostic email"}
+          </Button>
+        </div>
+
+        {trackedMessageId && (
+          <p className="font-mono text-xs text-muted-foreground">Tracking message: {trackedMessageId}</p>
+        )}
+
+        {diagnostics.data && (
+          <div className="grid gap-3 text-sm md:grid-cols-2">
+            <div className="space-y-1 rounded-2xl bg-card p-3">
+              <p className="font-medium">Queue status</p>
+              <p className="text-xs text-muted-foreground">
+                Sent {diagnostics.data.summary.sent} · Pending {diagnostics.data.summary.pending} · Failed {diagnostics.data.summary.failed} · Suppressed {diagnostics.data.summary.suppressed}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Rate limit: {diagnostics.data.state?.retry_after_until ? new Date(diagnostics.data.state.retry_after_until).toLocaleString() : "clear"}
+              </p>
+            </div>
+            <div className="space-y-1 rounded-2xl bg-card p-3">
+              <p className="font-medium">Provider trace</p>
+              {diagnostics.data.provider.error ? (
+                <p className="text-xs text-muted-foreground">{diagnostics.data.provider.error}</p>
+              ) : diagnostics.data.provider.events.length > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {diagnostics.data.provider.events.length} provider event(s) found for this recipient.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">No provider events found yet.</p>
+              )}
+            </div>
+            {diagnostics.data.suppressed.length > 0 && (
+              <div className="rounded-2xl bg-card p-3 md:col-span-2">
+                <p className="font-medium">Suppression found</p>
+                <p className="text-xs text-muted-foreground">
+                  Latest reason: {diagnostics.data.suppressed[0]?.reason ?? "Unknown"}
+                </p>
+              </div>
+            )}
+            {diagnostics.data.provider.events.length > 0 && (
+              <div className="rounded-2xl bg-card p-3 md:col-span-2">
+                <p className="font-medium">Latest provider events</p>
+                <div className="mt-2 space-y-1 font-mono text-xs text-muted-foreground">
+                  {diagnostics.data.provider.events.slice(0, 5).map((event, index) => (
+                    <p key={`${String(event.messageId ?? event.event ?? index)}-${index}`}>
+                      {String(event.date ?? event.ts ?? "")} {String(event.event ?? event.type ?? "event")} {String(event.reason ?? event.subject ?? "")}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : !data || data.length === 0 ? (
+      ) : data.length === 0 ? (
         <p className="text-sm text-muted-foreground">No emails sent yet.</p>
       ) : (
         <div className="overflow-x-auto">
