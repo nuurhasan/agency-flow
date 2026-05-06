@@ -1,8 +1,46 @@
 import * as React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth";
+
+interface EmailLogRow {
+  id: string;
+  message_id: string | null;
+  template_name: string;
+  recipient_email: string;
+  status: string;
+  error_message: string | null;
+  metadata: { provider_message_id?: string | null } | null;
+  created_at: string;
+}
+
+interface EmailDiagnostics {
+  checkedAt: string;
+  sender: { senderDomain: string; fromDomain: string };
+  state: {
+    retry_after_until: string | null;
+    batch_size: number;
+    send_delay_ms: number;
+    auth_email_ttl_minutes: number;
+    transactional_email_ttl_minutes: number;
+    updated_at: string;
+  } | null;
+  suppressed: Array<{ reason: string | null; source: string | null; created_at: string }>;
+  summary: { total: number; sent: number; failed: number; suppressed: number; pending: number };
+  logs: EmailLogRow[];
+  provider: { available: boolean; events: Array<Record<string, unknown>>; error: string | null };
+}
+
+async function getSessionToken() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Please sign in again");
+  return session.access_token;
+}
 
 export function EmailActivityLog() {
   const { data, isLoading } = useQuery({
