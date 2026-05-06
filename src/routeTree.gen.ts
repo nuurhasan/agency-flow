@@ -21,6 +21,7 @@ import { Route as ProjectsIndexRouteImport } from './routes/projects.index'
 import { Route as ProjectsArchivedRouteImport } from './routes/projects.archived'
 import { Route as ProjectsProjectIdRouteImport } from './routes/projects.$projectId'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
+import { Route as ApiEmailDebugRouteImport } from './routes/api/email-debug'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
@@ -87,6 +88,11 @@ const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
   path: '/email/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEmailDebugRoute = ApiEmailDebugRouteImport.update({
+  id: '/api/email-debug',
+  path: '/api/email-debug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   id: '/lovable/email/suppression',
   path: '/lovable/email/suppression',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
   '/vault': typeof VaultRoute
+  '/api/email-debug': typeof ApiEmailDebugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/projects/archived': typeof ProjectsArchivedRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
   '/vault': typeof VaultRoute
+  '/api/email-debug': typeof ApiEmailDebugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/projects/archived': typeof ProjectsArchivedRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
   '/vault': typeof VaultRoute
+  '/api/email-debug': typeof ApiEmailDebugRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/projects/$projectId': typeof ProjectsProjectIdRoute
   '/projects/archived': typeof ProjectsArchivedRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/vault'
+    | '/api/email-debug'
     | '/email/unsubscribe'
     | '/projects/$projectId'
     | '/projects/archived'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/vault'
+    | '/api/email-debug'
     | '/email/unsubscribe'
     | '/projects/$projectId'
     | '/projects/archived'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/vault'
+    | '/api/email-debug'
     | '/email/unsubscribe'
     | '/projects/$projectId'
     | '/projects/archived'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   TasksRoute: typeof TasksRoute
   TeamRoute: typeof TeamRoute
   VaultRoute: typeof VaultRoute
+  ApiEmailDebugRoute: typeof ApiEmailDebugRoute
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProjectsProjectIdRoute: typeof ProjectsProjectIdRoute
   ProjectsArchivedRoute: typeof ProjectsArchivedRoute
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/email-debug': {
+      id: '/api/email-debug'
+      path: '/api/email-debug'
+      fullPath: '/api/email-debug'
+      preLoaderRoute: typeof ApiEmailDebugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/suppression': {
       id: '/lovable/email/suppression'
       path: '/lovable/email/suppression'
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   TasksRoute: TasksRoute,
   TeamRoute: TeamRoute,
   VaultRoute: VaultRoute,
+  ApiEmailDebugRoute: ApiEmailDebugRoute,
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProjectsProjectIdRoute: ProjectsProjectIdRoute,
   ProjectsArchivedRoute: ProjectsArchivedRoute,
