@@ -163,7 +163,8 @@ export const Route = createFileRoute('/api/email-debug')({
 
         try {
           const diagnostics = await readDiagnostics(auth.supabase, recipientEmail, messageId)
-          const providerMessageId = diagnostics.logs[0]?.metadata?.provider_message_id ?? null
+          const rawProviderMessageId = diagnostics.logs[0]?.metadata?.provider_message_id
+          const providerMessageId = typeof rawProviderMessageId === 'string' ? rawProviderMessageId : null
           const provider = await getProviderEvents(process.env.BREVO_API_KEY, recipientEmail, providerMessageId)
           return Response.json({ ...diagnostics, provider })
         } catch (error) {
