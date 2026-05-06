@@ -43,12 +43,20 @@ async function getSessionToken() {
 }
 
 export function EmailActivityLog() {
-  const { data, isLoading } = useQuery({
+  const { user } = useAuth();
+  const [recipient, setRecipient] = React.useState(user?.email ?? "");
+  const [trackedMessageId, setTrackedMessageId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (user?.email && !recipient) setRecipient(user.email);
+  }, [recipient, user?.email]);
+
+  const { data, isLoading } = useQuery<EmailLogRow[]>({
     queryKey: ["email-send-log"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("email_send_log")
-        .select("id, message_id, template_name, recipient_email, status, error_message, created_at")
+        .select("id, message_id, template_name, recipient_email, status, error_message, metadata, created_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -62,6 +70,45 @@ export function EmailActivityLog() {
       });
     },
     refetchInterval: 30_000,
+  });
+
+  const diagnostics = useQuery<EmailDiagnostics>({
+    queryKey: ["email-diagnostics", recipient, trackedMessageId],
+    queryFn: async () => {
+      const token = await getSessionToken();
+      const params = new URLSearchParams();
+      if (recipient.trim()) params.set("recipient", recipient.trim());
+      if (trackedMessageId) params.set("messageId", trackedMessageId);
+      const res = await fetch(`/api/email-debug?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || "Failed to load diagnostics");
+      return json as EmailDiagnostics;
+    },
+    enabled: false,
+  });
+
+  const sendDiagnostic = useMutation({
+    mutationFn: async () => {
+      const token = await getSessionToken();
+      const res = await fetch("/api/email-debug", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ recipientEmail: recipient.trim() || user?.email }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) {
+        throw new Error(json.error || json.reason || "Failed to queue diagnostic email");
+      }
+      return json as { messageId: string; recipientEmail: string };
+    },
+    onSuccess: (result) => {
+      setTrackedMessageId(result.messageId);
+      toast.success(`Diagnostic email queued to ${result.recipientEmail}`);
+      setTimeout(() => diagnostics.refetch(), 8_000);
+    },
+    onError: (error) => toast.error(error instanceof Error ? error.message : "Failed to queue diagnostic email"),
   });
 
   return (
