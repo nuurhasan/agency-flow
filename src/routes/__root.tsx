@@ -83,11 +83,11 @@ function RootComponent() {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Short stale time so mutations elsewhere are picked up when navigating back.
-            // Cached data still renders instantly; refetch happens in the background only when stale.
-            staleTime: 30_000,
+            // Internal single-user tool — bias toward fewer background refetches.
+            staleTime: 60_000,
             gcTime: 30 * 60_000,
             refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
             // refetchOnMount defaults to true: if data is stale on mount, refetch in background.
             // Critical for invalidations triggered while the component was unmounted.
             retry: 1,
