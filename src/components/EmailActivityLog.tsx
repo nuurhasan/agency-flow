@@ -47,6 +47,17 @@ export function EmailActivityLog() {
   const [recipient, setRecipient] = React.useState(user?.email ?? "");
   const [trackedMessageId, setTrackedMessageId] = React.useState<string | null>(null);
 
+  // Track tab visibility so we can pause polling when the tab is hidden.
+  const [isVisible, setIsVisible] = React.useState(
+    typeof document === "undefined" ? true : document.visibilityState === "visible",
+  );
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+    const onChange = () => setIsVisible(document.visibilityState === "visible");
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, []);
+
   React.useEffect(() => {
     if (user?.email && !recipient) setRecipient(user.email);
   }, [recipient, user?.email]);
@@ -69,7 +80,8 @@ export function EmailActivityLog() {
         return true;
       });
     },
-    refetchInterval: 30_000,
+    refetchInterval: isVisible ? 60_000 : false,
+    refetchIntervalInBackground: false,
   });
 
   const diagnostics = useQuery<EmailDiagnostics>({
