@@ -80,7 +80,8 @@ export function EmailActivityLog() {
         return true;
       });
     },
-    refetchInterval: 30_000,
+    refetchInterval: isVisible ? 60_000 : false,
+    refetchIntervalInBackground: false,
   });
 
   const diagnostics = useQuery<EmailDiagnostics>({
