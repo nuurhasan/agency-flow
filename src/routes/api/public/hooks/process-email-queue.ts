@@ -119,7 +119,7 @@ async function moveToDlq(
   }
 }
 
-export const Route = createFileRoute('/lovable/email/queue/process')({
+export const Route = createFileRoute('/api/public/hooks/process-email-queue')({
   server: {
     handlers: {
       POST: async ({ request }) => {
