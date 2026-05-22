@@ -25,8 +25,8 @@ import { Route as ApiEmailDebugRouteImport } from './routes/api/email-debug'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksProcessNotificationsRouteImport } from './routes/api/public/hooks/process-notifications'
+import { Route as ApiPublicHooksProcessEmailQueueRouteImport } from './routes/api/public/hooks/process-email-queue'
 
 const VaultRoute = VaultRouteImport.update({
   id: '/vault',
@@ -110,16 +110,16 @@ const LovableEmailTransactionalPreviewRoute =
     path: '/lovable/email/transactional/preview',
     getParentRoute: () => rootRouteImport,
   } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksProcessNotificationsRoute =
   ApiPublicHooksProcessNotificationsRouteImport.update({
     id: '/api/public/hooks/process-notifications',
     path: '/api/public/hooks/process-notifications',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksProcessEmailQueueRoute =
+  ApiPublicHooksProcessEmailQueueRouteImport.update({
+    id: '/api/public/hooks/process-email-queue',
+    path: '/api/public/hooks/process-email-queue',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -138,8 +138,8 @@ export interface FileRoutesByFullPath {
   '/projects/archived': typeof ProjectsArchivedRoute
   '/projects/': typeof ProjectsIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/hooks/process-notifications': typeof ApiPublicHooksProcessNotificationsRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
@@ -158,8 +158,8 @@ export interface FileRoutesByTo {
   '/projects/archived': typeof ProjectsArchivedRoute
   '/projects': typeof ProjectsIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/hooks/process-notifications': typeof ApiPublicHooksProcessNotificationsRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
@@ -179,8 +179,8 @@ export interface FileRoutesById {
   '/projects/archived': typeof ProjectsArchivedRoute
   '/projects/': typeof ProjectsIndexRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
+  '/api/public/hooks/process-email-queue': typeof ApiPublicHooksProcessEmailQueueRoute
   '/api/public/hooks/process-notifications': typeof ApiPublicHooksProcessNotificationsRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
 }
@@ -201,8 +201,8 @@ export interface FileRouteTypes {
     | '/projects/archived'
     | '/projects/'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/process-email-queue'
     | '/api/public/hooks/process-notifications'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
   fileRoutesByTo: FileRoutesByTo
@@ -221,8 +221,8 @@ export interface FileRouteTypes {
     | '/projects/archived'
     | '/projects'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/process-email-queue'
     | '/api/public/hooks/process-notifications'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
   id:
@@ -241,8 +241,8 @@ export interface FileRouteTypes {
     | '/projects/archived'
     | '/projects/'
     | '/lovable/email/suppression'
+    | '/api/public/hooks/process-email-queue'
     | '/api/public/hooks/process-notifications'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
   fileRoutesById: FileRoutesById
@@ -262,8 +262,8 @@ export interface RootRouteChildren {
   ProjectsArchivedRoute: typeof ProjectsArchivedRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
+  ApiPublicHooksProcessEmailQueueRoute: typeof ApiPublicHooksProcessEmailQueueRoute
   ApiPublicHooksProcessNotificationsRoute: typeof ApiPublicHooksProcessNotificationsRoute
-  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
 }
@@ -382,18 +382,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/process-notifications': {
       id: '/api/public/hooks/process-notifications'
       path: '/api/public/hooks/process-notifications'
       fullPath: '/api/public/hooks/process-notifications'
       preLoaderRoute: typeof ApiPublicHooksProcessNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-email-queue': {
+      id: '/api/public/hooks/process-email-queue'
+      path: '/api/public/hooks/process-email-queue'
+      fullPath: '/api/public/hooks/process-email-queue'
+      preLoaderRoute: typeof ApiPublicHooksProcessEmailQueueRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -414,9 +414,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsArchivedRoute: ProjectsArchivedRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
+  ApiPublicHooksProcessEmailQueueRoute: ApiPublicHooksProcessEmailQueueRoute,
   ApiPublicHooksProcessNotificationsRoute:
     ApiPublicHooksProcessNotificationsRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
 }
