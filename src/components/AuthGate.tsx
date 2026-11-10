@@ -8,7 +8,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const { loading, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const isLoginRoute = location.pathname === "/login";
+  const isLoginRoute = location.pathname === "/login" || location.pathname === "/reset-password";
   // Track whether we've ever seen an authenticated user. Once true, we keep the
   // shell mounted even if `user` momentarily flickers (e.g., token refresh),
   // which prevents a full-screen loader from flashing during route navigation.
