@@ -40,6 +40,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     // 1) subscribe FIRST
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Capture recovery before URL tokens are consumed or the recovery route mounts.
+      if (_event === "PASSWORD_RECOVERY" && session?.user) {
+        sessionStorage.setItem("turgon-password-recovery", session.user.id);
+      }
+      if (_event === "SIGNED_OUT") sessionStorage.removeItem("turgon-password-recovery");
       setUser(session?.user ?? null);
       // defer to avoid deadlocks
       setTimeout(() => {
